@@ -3,8 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Casa Natural · Conservas gourmet</title>
-  <meta name="description" content="Casa Natural: una selección de conservas y productos gourmet para compartir.">
+  <title>Casa Natural · Conservas, aceitunas y mermeladas gourmet en Pilar</title>
+  <meta name="description" content="Aceitunas, tomates secos, berenjenas y mermeladas gourmet artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar. Comprá online o consultá por WhatsApp.">
+  <link rel="canonical" href="https://tucasaesnatural.com/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#21332b">
+  <meta name="geo.region" content="AR-B">
+  <meta name="geo.placename" content="Pilar, Buenos Aires">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Casa Natural">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:title" content="Casa Natural · Conservas y aceitunas gourmet en Pilar">
+  <meta property="og:description" content="Aceitunas, tomates secos, berenjenas y mermeladas artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar.">
+  <meta property="og:url" content="https://tucasaesnatural.com/">
+  <meta property="og:image" content="https://tucasaesnatural.com/assets/banner-casa-natural.jpg">
+  <meta property="og:image:secure_url" content="https://tucasaesnatural.com/assets/banner-casa-natural.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1376">
+  <meta property="og:image:height" content="768">
+  <meta property="og:image:alt" content="Selección de conservas y aceitunas gourmet Casa Natural">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Casa Natural · Conservas y aceitunas gourmet en Pilar">
+  <meta name="twitter:description" content="Aceitunas, tomates secos, berenjenas y mermeladas artesanales. Entrega sin cargo en Pilar. Pago seguro con Mercado Pago.">
+  <meta name="twitter:image" content="https://tucasaesnatural.com/assets/banner-casa-natural.jpg">
+  <link rel="preconnect" href="https://blue-cheetah-451141.hostingersite.com">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "Casa Natural",
+    "description": "Conservas, aceitunas y mermeladas gourmet artesanales con entrega en Pilar.",
+    "url": "https://tucasaesnatural.com/",
+    "image": "https://tucasaesnatural.com/assets/banner-casa-natural.jpg",
+    "telephone": "+541158436511",
+    "priceRange": "$",
+    "currenciesAccepted": "ARS",
+    "paymentAccepted": "Mercado Pago",
+    "address": { "@type": "PostalAddress", "addressLocality": "Pilar", "addressRegion": "Buenos Aires", "addressCountry": "AR" },
+    "areaServed": { "@type": "City", "name": "Pilar" },
+    "sameAs": ["https://wa.me/541158436511"]
+  }
+  </script>
   <style>
     :root { --ink:#21332b; --cream:#f7f1e7; --paper:#fffdf8; --olive:#65734a; --wine:#742e2a; --sand:#e8dbc5; --line:#ded2bf; }
     * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; color:var(--ink); background:var(--cream); font-family:Georgia, "Times New Roman", serif; line-height:1.5; }
@@ -87,6 +126,37 @@
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     document.querySelector('#send-cart').addEventListener('click', async () => { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); if (!lines.length) return; const button = document.querySelector('#send-cart'); const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0); button.disabled = true; button.textContent = 'Redirigiendo a Mercado Pago…'; try { track("InitiateCheckout", {content_ids:lines.map(([index]) => CONFIG.products[index].id), contents:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity, item_price:CONFIG.products[index].price})), value:total, currency:"ARS"}); const response = await fetch(CONFIG.checkoutApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity}))})}); const data = await response.json(); if (!response.ok || !data.init_point) throw new Error(data.error || 'No se pudo iniciar el pago.'); window.location.assign(data.init_point); } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); button.disabled = false; button.textContent = 'Pagar con Mercado Pago'; } });
     const params = new URLSearchParams(window.location.search); const paymentId = params.get('payment_id') || params.get('collection_id'); if (paymentId && !sessionStorage.getItem(`purchase-${paymentId}`)) fetch(`${CONFIG.paymentStatusApi}?payment_id=${encodeURIComponent(paymentId)}`).then(response => response.ok ? response.json() : null).then(payment => { if (payment?.status === 'approved') { track('Purchase', {value:payment.transaction_amount, currency:'ARS', contents:payment.items || [], content_type:'product'}); sessionStorage.setItem(`purchase-${paymentId}`, '1'); alert('¡Pago aprobado! Te vamos a contactar para coordinar la entrega o retiro.'); } });
+    // SEO: datos estructurados de productos generados desde CONFIG (siempre en sincronia con precio/stock real)
+    try {
+      const ld = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Productos Casa Natural",
+        "itemListElement": CONFIG.products.map((p, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "item": {
+            "@type": "Product",
+            "name": p.name,
+            "description": p.description,
+            "image": "https://tucasaesnatural.com/" + p.image,
+            "brand": { "@type": "Brand", "name": "Casa Natural" },
+            "offers": {
+              "@type": "Offer",
+              "priceCurrency": "ARS",
+              "price": p.price,
+              "availability": (p.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              "url": "https://tucasaesnatural.com/#productos",
+              "seller": { "@type": "Organization", "name": "Casa Natural" }
+            }
+          }
+        }))
+      };
+      const s = document.createElement("script");
+      s.type = "application/ld+json";
+      s.textContent = JSON.stringify(ld);
+      document.head.appendChild(s);
+    } catch (e) {}
     renderCart();
   </script>
 </body>
