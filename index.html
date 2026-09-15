@@ -123,7 +123,8 @@
       document.querySelector('#send-cart').disabled = !lines.length;
       document.querySelector('#send-cart').style.opacity = lines.length ? '1' : '.45';
     };
-    document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => `<article class="card"><div class="photo"><img src="${safe(product.image)}" alt="${safe(product.name)}"></div><div class="card-body"><h3>${safe(product.name)}</h3><p>${safe(product.description)}</p><p class="reference-price">Precio Jumbalay <s>${money(product.referencePrice)}</s></p><p class="price" id="price-${index}">${money(product.price)}</p><div class="quantity"><button data-quantity="${index}" data-change="-1" aria-label="Restar ${safe(product.name)}">−</button><strong id="qty-${index}">0</strong><button data-quantity="${index}" data-change="1" aria-label="Sumar ${safe(product.name)}">+</button></div></div></article>`).join("");
+    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => `<article class="card"><div class="photo"><img src="${safe(product.image)}" alt="${safe(product.name)}"></div><div class="card-body"><h3>${safe(product.name)}</h3><p>${safe(product.description)}</p><p class="reference-price">Precio Jumbalay <s>${money(product.referencePrice)}</s></p><p class="price" id="price-${index}">${money(product.price)}</p><div class="quantity"><button data-quantity="${index}" data-change="-1" aria-label="Restar ${safe(product.name)}">−</button><strong id="qty-${index}">0</strong><button data-quantity="${index}" data-change="1" aria-label="Sumar ${safe(product.name)}">+</button></div></div></article>`).join(""); }
+    pintarGrilla();
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     document.querySelector('#send-cart').addEventListener('click', async () => { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); if (!lines.length) return; const button = document.querySelector('#send-cart'); const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0); button.disabled = true; button.textContent = 'Redirigiendo a Mercado Pago…'; try { track("InitiateCheckout", {content_ids:lines.map(([index]) => CONFIG.products[index].id), contents:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity, item_price:CONFIG.products[index].price})), value:total, currency:"ARS"}); const response = await fetch(CONFIG.checkoutApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity}))})}); const data = await response.json(); if (!response.ok || !data.init_point) throw new Error(data.error || 'No se pudo iniciar el pago.'); window.location.assign(data.init_point); } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); button.disabled = false; button.textContent = 'Pagar con Mercado Pago'; } });
     const params = new URLSearchParams(window.location.search); const paymentId = params.get('payment_id') || params.get('collection_id'); if (paymentId && !sessionStorage.getItem(`purchase-${paymentId}`)) fetch(`${CONFIG.paymentStatusApi}?payment_id=${encodeURIComponent(paymentId)}`).then(response => response.ok ? response.json() : null).then(payment => { if (payment?.status === 'approved') { track('Purchase', {value:payment.transaction_amount, currency:'ARS', contents:payment.items || [], content_type:'product'}); sessionStorage.setItem(`purchase-${paymentId}`, '1'); alert('¡Pago aprobado! Te vamos a contactar para coordinar la entrega o retiro.'); } });
@@ -159,6 +160,36 @@
       document.head.appendChild(s);
     } catch (e) {}
     renderCart();
+
+    // ===== Catálogo en vivo =====
+    // Precios, stock y qué productos se muestran salen del panel (api/productos.php),
+    // que es la MISMA fuente que usa el checkout para cobrar. La página ya se dibujó
+    // con los productos de más arriba: si el servidor no contesta, no se rompe nada.
+    (async () => {
+      try {
+        const base = CONFIG.checkoutApi.replace(/\/create-preference\.php.*$/, '');
+        const r = await fetch(base + '/productos.php', { cache: 'no-store' });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!data.ok || !Array.isArray(data.productos) || !data.productos.length) return;
+        // Si ya empezó a cargar el carrito, no le movemos el piso: aplica en la próxima visita.
+        if ([...cart.values()].some(q => q > 0)) return;
+        const host = base.replace(/\/api$/, '');
+        CONFIG.products = data.productos.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: Number(p.price) || 0,
+          referencePrice: Number(p.referencePrice) || 0,
+          stock: Number(p.stock) || 0,
+          // Las fotos que se suben desde el panel viven en el servidor del panel.
+          image: String(p.image || '').startsWith('/') ? host + p.image : p.image,
+        }));
+        cart.clear();
+        pintarGrilla();
+        renderCart();
+      } catch (e) { /* sin conexión al panel: quedan los productos del HTML */ }
+    })();
   </script>
 </body>
 </html>
