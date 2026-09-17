@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>Casa Natural</title>
+  <circle cx="256" cy="256" r="238" fill="#f7f1e7" stroke="#4f5a3b" stroke-width="28"/>
+  <text x="256" y="296" text-anchor="middle" fill="#7a302d" font-family="Georgia, 'Times New Roman', serif" font-size="212" font-weight="700" letter-spacing="-22">CN</text>
+  <circle cx="256" cy="366" r="8" fill="#4f5a3b"/>
+</svg>
