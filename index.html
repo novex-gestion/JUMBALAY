@@ -337,6 +337,15 @@
       ].filter(line => line !== '').join(salto);
       window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
     });
+    const pasosCompra = [
+      ['Elegí', 'Explorá los productos disponibles y armá tu carrito.'],
+      ['Elegí cómo pagar', 'Pagá con Mercado Pago o coordiná transferencia o efectivo por WhatsApp.'],
+      ['Elegí la entrega', 'Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; retiro por Champagnat 1176 las 24 horas o despacho nacional por Correo Argentino.']
+    ];
+    document.querySelectorAll('#como-comprar .step').forEach((paso, indice) => {
+      paso.querySelector('h3').textContent = pasosCompra[indice][0];
+      paso.querySelector('p').textContent = pasosCompra[indice][1];
+    });
   </script>
 </body>
 </html>
