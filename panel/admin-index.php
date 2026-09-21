@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fotos = fotosDe($productos[$i]);
         $nuevas = subirVarias($_FILES['fotos'] ?? [], max(0, 6 - count($fotos)));
         if ($nuevas) { $productos[$i] = conFotos($productos[$i], array_merge($fotos, $nuevas)); }
-        elseif (!empty($_FILES['fotos']['name'][0])) { $error = 'Las fotos no se pudieron subir. Tienen que ser JPG, PNG o WEBP y pesar menos de 6 MB cada una.'; }
+        elseif (!empty($_FILES['fotos']['name'][0])) { $error = 'No se pudieron subir. Las fotos tienen que ser JPG, PNG o WEBP (hasta 6 MB) y los videos MP4 o WEBM (hasta 30 MB).'; }
       }
       if (!$error) {
         $data['productos'] = $productos;
@@ -236,7 +236,9 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
     border-radius:50%;background:var(--wine);color:#fff;font:700 .62rem Arial,sans-serif}
   .galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
   .gfoto{position:relative;margin:0;padding:8px;background:#fff;border:1px solid var(--line)}
-  .gfoto img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
+  .gfoto img,.gfoto video{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;background:#f4f1ea}
+  .tag--video{background:var(--wine)}
+  .mini video{width:76px;height:76px;object-fit:contain;background:#fff;border:1px solid var(--line)}
   .gfoto .tag{position:absolute;top:6px;left:6px;padding:3px 7px;background:var(--olive);color:#fff;
     font:700 .58rem Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase}
   .gacc{position:absolute;top:6px;right:6px;display:flex;gap:4px}
@@ -331,8 +333,8 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
             <input type="text" name="description" value="<?= e($editando['description']) ?>"></label>
         </div>
         <div class="fila" style="margin-top:12px">
-          <label class="campo"><span>Sumar fotos (podés elegir varias · JPG, PNG o WEBP)</span>
-            <input type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple></label>
+          <label class="campo"><span>Sumar fotos o videos (podés elegir varios · JPG, PNG, WEBP, MP4)</span>
+            <input type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple></label>
         </div>
         <div class="fila" style="margin-top:16px">
           <button class="btn" type="submit">Guardar cambios</button>
@@ -345,7 +347,12 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
       <div class="galeria">
         <?php foreach ($galeria as $pos => $foto): ?>
           <figure class="gfoto">
-            <img src="<?= e(imgSrc($foto)) ?>" alt="">
+            <?php if (esVideo($foto)): ?>
+              <video src="<?= e(imgSrc($foto)) ?>" muted playsinline controls preload="metadata"></video>
+              <span class="tag tag--video">Video</span>
+            <?php else: ?>
+              <img src="<?= e(imgSrc($foto)) ?>" alt="">
+            <?php endif; ?>
             <?php if ($pos === 0): ?><span class="tag">Portada</span><?php endif; ?>
             <div class="gacc">
               <?php if ($pos !== 0): ?>
@@ -395,7 +402,14 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
         $id = (string)$p['id']; $vis = !empty($p['visible']); $st = (int)($p['stock'] ?? 0); ?>
         <article class="prod <?= $vis ? '' : 'oculto' ?>">
           <?php $fot = fotosDe($p); ?>
-          <span class="mini"><img src="<?= e(imgSrc((string)($fot[0] ?? ''))) ?>" alt=""><?php if (count($fot) > 1): ?><b><?= count($fot) ?></b><?php endif; ?></span>
+          <span class="mini">
+            <?php $port = (string)($fot[0] ?? ''); if (esVideo($port)): ?>
+              <video src="<?= e(imgSrc($port)) ?>" muted playsinline preload="metadata"></video>
+            <?php else: ?>
+              <img src="<?= e(imgSrc($port)) ?>" alt="">
+            <?php endif; ?>
+            <?php if (count($fot) > 1): ?><b><?= count($fot) ?></b><?php endif; ?>
+          </span>
           <div>
             <h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
             <p class="desc"><?= e($p['description']) ?></p>
@@ -435,7 +449,7 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
         <label class="campo"><span>Precio</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="price" placeholder="0"></span></label>
         <label class="campo"><span>Precio tachado</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="referencePrice" placeholder="0"></span></label>
         <label class="campo"><span>Stock</span><input type="number" min="0" name="stock" value="0"></label>
-        <label class="campo"><span>Fotos (podés elegir varias)</span><input type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple></label>
+        <label class="campo"><span>Fotos o videos (podés elegir varios)</span><input type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple></label>
       </div>
       <div class="fila" style="margin-top:16px"><button class="btn" type="submit">Agregar producto</button></div>
     </form>
