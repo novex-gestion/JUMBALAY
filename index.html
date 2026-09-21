@@ -69,7 +69,8 @@
     .hero-still,.photo { display:grid; place-items:center; text-align:center; color:#5c6849; background:linear-gradient(135deg,#b9c19b,#e7d1b0); border:1px solid rgba(33,51,43,.12); } .hero-still { min-height:420px; overflow:hidden; } .hero-still img { width:100%; height:100%; object-fit:cover; } .photo { aspect-ratio:1/1; overflow:hidden; padding:14px; background:#fff; position:relative; }
     .slides { display:flex; width:100%; height:100%; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none; }
     .slides::-webkit-scrollbar { display:none; }
-    .slides > img { flex:0 0 100%; width:100%; height:100%; scroll-snap-align:center; }
+    .slides > img, .slides > video { flex:0 0 100%; width:100%; height:100%; scroll-snap-align:center; object-fit:contain; }
+    .photo > video { width:100%; height:100%; object-fit:contain; }
     .carr-nav { position:absolute; top:50%; transform:translateY(-50%); z-index:2; width:32px; height:32px; display:grid; place-items:center; padding:0; border:1px solid var(--line); border-radius:50%; background:rgba(255,255,255,.92); color:var(--ink); font:1.1rem/1 Georgia,serif; cursor:pointer; opacity:.85; transition:opacity .15s ease, background .15s ease; }
     .carr-nav:hover { opacity:1; background:#fff; }
     .carr-nav.prev { left:6px; } .carr-nav.next { right:6px; }
@@ -155,6 +156,9 @@
       return s.startsWith('/') ? host + s : s;
     }
 
+    // Los videos se distinguen por la extensión del archivo.
+    function esVideo(src){ return /\.(mp4|webm)(\?|$)/i.test(String(src || "")); }
+
     // Las fotos de un producto: varias si las cargaron en el panel, o la de siempre.
     function fotosDe(product){
       const fotos = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
@@ -164,7 +168,7 @@
     // Convierte en carrusel las fotos que tengan más de una imagen.
     function armarCarruseles(){
       document.querySelectorAll("#product-grid .photo").forEach(caja => {
-        const fotos = [...caja.querySelectorAll(":scope > img")];
+        const fotos = [...caja.querySelectorAll(":scope > img, :scope > video")];
         if (fotos.length < 2) return;
         const pista = document.createElement("div");
         pista.className = "slides";
@@ -186,6 +190,16 @@
           b.addEventListener("click", e => { e.stopPropagation(); mover(paso); });
           caja.appendChild(b);
         }
+        // Solo se reproduce el video que está a la vista; los demás, en pausa.
+        const soloElVisible = () => {
+          const i = Math.round(pista.scrollLeft / pista.clientWidth);
+          [...pista.children].forEach((el, k) => {
+            if (el.tagName !== "VIDEO") return;
+            if (k === i) { el.play().catch(() => {}); } else { el.pause(); }
+          });
+        };
+        soloElVisible();
+        pista.addEventListener("scroll", soloElVisible, { passive: true });
         pista.addEventListener("scroll", () => {
           const i = Math.round(pista.scrollLeft / pista.clientWidth);
           puntos.querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k === i));
@@ -193,7 +207,7 @@
       });
     }
 
-    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card"><div class="photo">${descuento ? `<span class="discount-badge">-${descuento}%</span>` : ""}${fotosDe(product).map(src => `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p>${safe(product.description)}</p>${descuento ? `<p class="reference-price">Precio de lista <s>${money(product.referencePrice)}</s></p>` : ""}<p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}<div class="quantity"><button data-quantity="${index}" data-change="-1" aria-label="Restar ${safe(product.name)}">−</button><strong id="qty-${index}">0</strong><button data-quantity="${index}" data-change="1" aria-label="Sumar ${safe(product.name)}">+</button></div></div></article>`; }).join(""); armarCarruseles(); }
+    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card"><div class="photo">${descuento ? `<span class="discount-badge">-${descuento}%</span>` : ""}${fotosDe(product).map(src => esVideo(src) ? `<video src="${safe(src)}" muted loop playsinline preload="metadata" aria-label="${safe(product.name)}"></video>` : `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p>${safe(product.description)}</p>${descuento ? `<p class="reference-price">Precio de lista <s>${money(product.referencePrice)}</s></p>` : ""}<p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}<div class="quantity"><button data-quantity="${index}" data-change="-1" aria-label="Restar ${safe(product.name)}">−</button><strong id="qty-${index}">0</strong><button data-quantity="${index}" data-change="1" aria-label="Sumar ${safe(product.name)}">+</button></div></div></article>`; }).join(""); armarCarruseles(); }
     pintarGrilla();
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     document.querySelector('#send-cart').addEventListener('click', async () => { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); if (!lines.length) return; const button = document.querySelector('#send-cart'); const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0); button.disabled = true; button.textContent = 'Redirigiendo a Mercado Pago…'; try { track("InitiateCheckout", {content_ids:lines.map(([index]) => CONFIG.products[index].id), contents:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity, item_price:CONFIG.products[index].price})), value:total, currency:"ARS"}); const response = await fetch(CONFIG.checkoutApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items:lines.map(([index,quantity]) => ({id:CONFIG.products[index].id, quantity}))})}); const data = await response.json(); if (!response.ok || !data.init_point) throw new Error(data.error || 'No se pudo iniciar el pago.'); window.location.assign(data.init_point); } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); button.disabled = false; button.textContent = 'Pagar con Mercado Pago'; } });
