@@ -268,10 +268,16 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
   .prod h3{margin:0 0 2px;font-size:1.15rem;font-weight:400}
   .prod .desc{margin:0 0 10px;color:#6d655b;font:.8rem Arial,sans-serif}
   .prod-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-  .economia{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-left:auto}
-  .resultado{min-width:150px;padding:8px 10px;border:1px solid var(--line);background:#f8f5ee;font:.8rem Arial,sans-serif}
-  .resultado b{display:block;color:var(--ink);font:700 1.05rem Georgia,serif}
-  .resultado small{display:block;color:#6d655b;font:.7rem Arial,sans-serif}
+  .economia{margin-left:auto;max-width:100%;font-family:Arial,sans-serif}
+  .economia summary{width:max-content;max-width:100%;padding:3px 0;color:#6d655b;cursor:pointer;
+    font:700 .64rem Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase}
+  .economia summary:hover{color:var(--wine)}
+  .economia-contenido{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;padding:9px 0 2px}
+  .economia .campo span{font-size:.56rem}
+  .economia .money input{width:84px;padding:6px 7px 6px 3px;font-size:.85rem}
+  .resultado{min-width:125px;padding:3px 0;font:.72rem Arial,sans-serif}
+  .resultado b{display:inline;color:var(--ink);font:700 .82rem Arial,sans-serif}
+  .resultado small{display:block;color:#6d655b;font:.65rem Arial,sans-serif}
   .campos{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
   .campo{display:flex;flex-direction:column;gap:4px}
   .campo span{font:700 .62rem Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6d655b}
@@ -436,10 +442,13 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
             <div class="prod-head">
               <div><h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
               <p class="desc"><?= e($p['description']) ?></p></div>
-              <div class="economia" data-rentabilidad>
-                <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata costo" name="costo[<?= e($id) ?>]" value="<?= isset($p['purchaseCost']) ? e(miles((int)$p['purchaseCost'])) : '' ?>" placeholder="Sin cargar"></span></label>
-                <div class="resultado"><span>Rentabilidad bruta</span><b data-ganancia>—</b><small data-margen>Margen: —</small></div>
-              </div>
+              <details class="economia" data-rentabilidad>
+                <summary>Costo y margen</summary>
+                <div class="economia-contenido">
+                  <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata costo" name="costo[<?= e($id) ?>]" value="<?= isset($p['purchaseCost']) ? e(miles((int)$p['purchaseCost'])) : '' ?>" placeholder="Sin cargar"></span></label>
+                  <div class="resultado"><span>Ganancia: </span><b data-ganancia>—</b><small data-margen>Margen: —</small></div>
+                </div>
+              </details>
             </div>
             <div class="campos">
               <label class="campo"><span>Precio</span>
