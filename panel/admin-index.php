@@ -344,10 +344,61 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
     <span><b><?= $agotados ?></b> sin stock</span>
   </p>
 
+  <form method="post">
+    <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+    <input type="hidden" name="accion" value="guardar">
+    <div class="grid">
+      <?php foreach ($productos as $p):
+        $id = (string)$p['id']; $vis = !empty($p['visible']); $st = (int)($p['stock'] ?? 0); ?>
+        <article class="prod <?= $vis ? '' : 'oculto' ?>">
+          <?php $fot = fotosDe($p); ?>
+          <span class="mini">
+            <?php $port = (string)($fot[0] ?? ''); if (esVideo($port)): ?>
+              <video src="<?= e(imgSrc($port)) ?>" muted playsinline preload="metadata"></video>
+            <?php else: ?>
+              <img src="<?= e(imgSrc($port)) ?>" alt="">
+            <?php endif; ?>
+            <?php if (count($fot) > 1): ?><b><?= count($fot) ?></b><?php endif; ?>
+          </span>
+          <div>
+            <div class="prod-head">
+              <div><h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
+              <p class="desc"><?= e($p['description']) ?></p></div>
+              <details class="economia" data-rentabilidad>
+                <summary>Costo y margen</summary>
+                <div class="economia-contenido">
+                  <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata costo" name="costo[<?= e($id) ?>]" value="<?= isset($p['purchaseCost']) ? e(miles((int)$p['purchaseCost'])) : '' ?>" placeholder="Sin cargar"></span></label>
+                  <div class="resultado"><span>Ganancia: </span><b data-ganancia>—</b><small data-margen>Margen: —</small></div>
+                </div>
+              </details>
+            </div>
+            <div class="campos">
+              <label class="campo"><span>Precio</span>
+                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata precio-venta" name="precio[<?= e($id) ?>]" value="<?= e(miles((int)$p['price'])) ?>"></span></label>
+              <label class="campo"><span>Tachado</span>
+                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="tachado[<?= e($id) ?>]" value="<?= e(miles((int)($p['referencePrice'] ?? 0))) ?>"></span></label>
+              <label class="campo"><span>Stock</span>
+                <input type="hidden" name="stock_original[<?= e($id) ?>]" value="<?= $st ?>">
+                <input type="number" min="0" step="1" name="stock[<?= e($id) ?>]" value="<?= $st ?>"></label>
+              <label class="sw <?= $vis ? '' : 'off' ?>">
+                <input type="checkbox" name="visible[<?= e($id) ?>]" <?= $vis ? 'checked' : '' ?>>
+                <?= $vis ? 'En la web' : 'Oculto' ?>
+              </label>
+              <span class="acc">
+                <a class="btn light" href="?editar=<?= urlencode($id) ?>#editar-producto">Texto y foto</a>
+              </span>
+            </div>
+          </div>
+        </article>
+      <?php endforeach; ?>
+    </div>
+    <div class="guardar"><button class="btn" type="submit">Guardar todo</button></div>
+  </form>
+
   <?php if ($editando): ?>
-    <section class="caja">
+    <section class="caja" id="editar-producto">
       <h2>Editar: <?= e($editando['name']) ?></h2>
-      <p class="ayuda">Cambiá el texto o la foto. Para precio y stock usá la lista de abajo.</p>
+      <p class="ayuda">Cambiá el texto o la foto. Para precio y stock usá la lista de arriba.</p>
       <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="accion" value="editar">
@@ -421,57 +472,6 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
       primera del carrusel. Tocá ★ para que una foto pase a ser la portada, y las flechas ‹ › de abajo para ordenarlas.</p>
     </section>
   <?php endif; ?>
-
-  <form method="post">
-    <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-    <input type="hidden" name="accion" value="guardar">
-    <div class="grid">
-      <?php foreach ($productos as $p):
-        $id = (string)$p['id']; $vis = !empty($p['visible']); $st = (int)($p['stock'] ?? 0); ?>
-        <article class="prod <?= $vis ? '' : 'oculto' ?>">
-          <?php $fot = fotosDe($p); ?>
-          <span class="mini">
-            <?php $port = (string)($fot[0] ?? ''); if (esVideo($port)): ?>
-              <video src="<?= e(imgSrc($port)) ?>" muted playsinline preload="metadata"></video>
-            <?php else: ?>
-              <img src="<?= e(imgSrc($port)) ?>" alt="">
-            <?php endif; ?>
-            <?php if (count($fot) > 1): ?><b><?= count($fot) ?></b><?php endif; ?>
-          </span>
-          <div>
-            <div class="prod-head">
-              <div><h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
-              <p class="desc"><?= e($p['description']) ?></p></div>
-              <details class="economia" data-rentabilidad>
-                <summary>Costo y margen</summary>
-                <div class="economia-contenido">
-                  <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata costo" name="costo[<?= e($id) ?>]" value="<?= isset($p['purchaseCost']) ? e(miles((int)$p['purchaseCost'])) : '' ?>" placeholder="Sin cargar"></span></label>
-                  <div class="resultado"><span>Ganancia: </span><b data-ganancia>—</b><small data-margen>Margen: —</small></div>
-                </div>
-              </details>
-            </div>
-            <div class="campos">
-              <label class="campo"><span>Precio</span>
-                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata precio-venta" name="precio[<?= e($id) ?>]" value="<?= e(miles((int)$p['price'])) ?>"></span></label>
-              <label class="campo"><span>Tachado</span>
-                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="tachado[<?= e($id) ?>]" value="<?= e(miles((int)($p['referencePrice'] ?? 0))) ?>"></span></label>
-              <label class="campo"><span>Stock</span>
-                <input type="hidden" name="stock_original[<?= e($id) ?>]" value="<?= $st ?>">
-                <input type="number" min="0" step="1" name="stock[<?= e($id) ?>]" value="<?= $st ?>"></label>
-              <label class="sw <?= $vis ? '' : 'off' ?>">
-                <input type="checkbox" name="visible[<?= e($id) ?>]" <?= $vis ? 'checked' : '' ?>>
-                <?= $vis ? 'En la web' : 'Oculto' ?>
-              </label>
-              <span class="acc">
-                <a class="btn light" href="?editar=<?= urlencode($id) ?>">Texto y foto</a>
-              </span>
-            </div>
-          </div>
-        </article>
-      <?php endforeach; ?>
-    </div>
-    <div class="guardar"><button class="btn" type="submit">Guardar todo</button></div>
-  </form>
 
   <section class="caja">
     <h2>Agregar un producto</h2>
