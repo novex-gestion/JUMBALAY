@@ -19,7 +19,7 @@
       if (checkout && !checkout.disabled) gtag('event', 'begin_checkout');
     });
   </script>
-  <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#send-manual-payment'),n=b.cloneNode(true);b.replaceWith(n);n.addEventListener('click',async()=>{const p=pedidoValido(true);if(!p)return;const w=window.open('about:blank','_blank'),s=String.fromCharCode(10),items=p.lines.map(([i,q])=>({id:CONFIG.products[i].id,quantity:q}));n.disabled=true;n.textContent='Registrando pedido…';let id='';try{const r=await fetch('https://panel.tucasaesnatural.com/api/create-order.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request_id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),payment_method:'transferencia_efectivo',items,delivery:{locality:p.locality,address:p.address,zip:p.zip}})}),x=await r.json();if(!r.ok||!x.order_id)throw Error();id=x.order_id}catch(e){alert('No pudimos registrar el pedido en el panel. Podés enviarlo por WhatsApp igual.')}const d=p.lines.map(([i,q])=>{const x=CONFIG.products[i],a=x.referencePrice>x.price?(x.referencePrice-x.price)*q:0;return ['• '+x.name,q+' x '+money(x.price)+' = '+money(x.price*q),a?'Ahorrás '+money(a)+' en este producto':''].filter(Boolean).join(s)}).join(s+s),t=p.lines.reduce((z,[i,q])=>z+CONFIG.products[i].price*q,0),a=p.lines.reduce((z,[i,q])=>{const x=CONFIG.products[i];return z+(x.referencePrice>x.price?(x.referencePrice-x.price)*q:0)},0),e=p.locality===pickupLocation?'Retiro personal: Champagnat 1176, Pilar (las 24 horas)':['Entrega: '+p.address,'Localidad: '+(p.locality==='other'?'Otra localidad':p.locality),'Código postal: '+p.zip].join(s),m=['Hola, quiero coordinar este pedido de Casa Natural.','',d,'',id?'N.º de pedido: '+id:'','Total: '+money(t),a?'Ahorro total: '+money(a):'','',e,'','Forma de pago: transferencia o efectivo.','Alias para transferencia: juanallegrina1.','Para efectivo, coordinamos por este chat.'].filter(Boolean).join(s),u='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent(m);if(w)w.location.replace(u);else window.open(u,'_blank');n.disabled=false;n.textContent='Pagar por transferencia o efectivo'})})</script><title>Casa Natural · Conservas, aceitunas y mermeladas gourmet en Pilar</title>
+  <title>Casa Natural · Conservas, aceitunas y mermeladas gourmet en Pilar</title>
   <meta name="description" content="Aceitunas, tomates secos, berenjenas y mermeladas gourmet artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar. Comprá online o consultá por WhatsApp.">
   <link rel="canonical" href="https://tucasaesnatural.com/">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -123,6 +123,7 @@
     const CONFIG = {
       whatsappNumber: "5491158436511",
       checkoutApi: "https://panel.tucasaesnatural.com/api/create-preference.php",
+      ordersApi: "https://panel.tucasaesnatural.com/api/create-order.php",
       paymentStatusApi: "https://panel.tucasaesnatural.com/api/payment-status.php",
       metaPixelId: "1551619602829857",
       products: [
@@ -275,6 +276,13 @@
       s.textContent = JSON.stringify(ld);
       document.head.appendChild(s);
     } catch (e) {}
+    deliveryStatus.insertAdjacentHTML('beforebegin', '<div id="customer-fields" style="margin-top:16px;padding-top:14px;border-top:1px solid #ded2bf"><strong style="font:700 14px Arial,sans-serif">Tus datos para coordinar</strong><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">NOMBRE Y APELLIDO</label><input id="customer-name" type="text" autocomplete="name" placeholder="Cómo te llamás" style="width:100%;min-height:43px;padding:10px"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">WHATSAPP</label><input id="customer-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej.: 11 5843 6511" style="width:100%;min-height:43px;padding:10px"></div>');
+    const customerFields = () => {
+      const name = document.querySelector('#customer-name').value.trim().replace(/\s+/g, ' ');
+      const phone = document.querySelector('#customer-phone').value.replace(/\D+/g, '');
+      if (name.length < 2 || !/^\d{8,15}$/.test(phone)) { alert('Ingresá tu nombre y un WhatsApp válido para coordinar el pedido.'); return null; }
+      return {name, phone};
+    };
     renderCart();
 
     // ===== Catálogo en vivo =====
@@ -317,8 +325,16 @@
     const manualPaymentButton = document.querySelector('#send-manual-payment');
     const manualPaymentReplacement = manualPaymentButton.cloneNode(true);
     manualPaymentButton.replaceWith(manualPaymentReplacement);
-    manualPaymentReplacement.addEventListener('click', () => {
+    manualPaymentReplacement.addEventListener('click', async () => {
       const pedido = pedidoValido(true); if (!pedido) return;
+      const cliente = customerFields(); if (!cliente) return;
+      const button = manualPaymentReplacement;
+      // Abrimos la pestaña dentro del gesto del usuario para evitar que el navegador bloquee WhatsApp.
+      // No usamos "noopener" acá: con esa opción el navegador corta la referencia y no permite
+      // reemplazar la pestaña temporal por la URL de WhatsApp después de registrar el pedido.
+      const chat = window.open('about:blank', '_blank');
+      button.disabled = true;
+      button.textContent = 'Registrando pedido…';
       const salto = String.fromCharCode(10);
       const detalle = pedido.lines.map(([index, quantity]) => {
         const product = CONFIG.products[index];
@@ -330,12 +346,50 @@
       const entrega = pedido.locality === pickupLocation
         ? `Retiro personal: Champagnat 1176, Pilar (las 24 horas)`
         : [`Entrega: ${pedido.address}`, `Localidad: ${pedido.locality === 'other' ? 'Otra localidad' : pedido.locality}`, `Código postal: ${pedido.zip}`].join(salto);
+      let numeroPedido = '';
+      try {
+        const response = await fetch(CONFIG.ordersApi, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            request_id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+            payment_method: 'transferencia_efectivo', customer: cliente,
+            items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
+            delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
+          })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.order_id) throw new Error(data.error || 'No se pudo registrar el pedido.');
+        numeroPedido = data.order_id;
+      } catch (error) {
+        alert('No pudimos registrar el pedido en el panel. Podés enviarlo por WhatsApp igual; por favor, avisánoslo en el mensaje.');
+      }
       const mensaje = [
         'Hola, quiero coordinar este pedido de Casa Natural.', '', detalle, '',
-        `Total: ${money(total)}`, ahorroTotal ? `Ahorro total: ${money(ahorroTotal)}` : '', '', entrega, '',
+        numeroPedido ? `N.º de pedido: ${numeroPedido}` : '', `Total: ${money(total)}`, ahorroTotal ? `Ahorro total: ${money(ahorroTotal)}` : '', '', entrega, '',
         'Forma de pago: transferencia o efectivo.', 'Alias para transferencia: juanallegrina1.', 'Para efectivo, coordinamos por este chat.'
       ].filter(line => line !== '').join(salto);
-      window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+      const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
+      if (chat) chat.location.replace(url); else window.open(url, '_blank');
+      button.disabled = false;
+      button.textContent = 'Pagar por transferencia o efectivo';
+    });
+    const mercadoPagoButton = document.querySelector('#send-cart');
+    const mercadoPagoReplacement = mercadoPagoButton.cloneNode(true);
+    mercadoPagoButton.replaceWith(mercadoPagoReplacement);
+    mercadoPagoReplacement.addEventListener('click', async () => {
+      const pedido = pedidoValido(); if (!pedido) return;
+      const cliente = customerFields(); if (!cliente) return;
+      mercadoPagoReplacement.disabled = true; mercadoPagoReplacement.textContent = 'Registrando pedido…';
+      try {
+        const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
+        const order = await orderResponse.json();
+        if (!orderResponse.ok || !order.order_id) throw new Error(order.error || 'No se pudo registrar el pedido.');
+        mercadoPagoReplacement.textContent = 'Redirigiendo a Mercado Pago…';
+        const paymentResponse = await fetch(CONFIG.checkoutApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({order_id:order.order_id, items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
+        const payment = await paymentResponse.json();
+        if (!paymentResponse.ok || !payment.init_point) throw new Error(payment.error || 'No se pudo iniciar el pago.');
+        window.location.assign(payment.init_point);
+      } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); mercadoPagoReplacement.disabled=false; mercadoPagoReplacement.textContent='Pagar con Mercado Pago'; }
     });
     const pasosCompra = [
       ['Elegí', 'Explorá los productos disponibles y armá tu carrito.'],
