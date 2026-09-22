@@ -23,6 +23,19 @@ function guardar(array $data): bool {
   return rename($tmp, ARCHIVO);
 }
 
+// Lee, modifica y guarda el catálogo bajo un mismo bloqueo. Evita que dos
+// pedidos descuenten la misma orden o que una edición pise un descuento nuevo.
+function actualizarCatalogo(callable $modificar): bool {
+  $lock = fopen(ARCHIVO . '.lock', 'c');
+  if (!$lock || !flock($lock, LOCK_EX)) { if ($lock) fclose($lock); return false; }
+  $actual = catalogo();
+  $nuevo = $modificar($actual);
+  $ok = is_array($nuevo) && guardar($nuevo);
+  flock($lock, LOCK_UN);
+  fclose($lock);
+  return $ok;
+}
+
 function claves(): array {
   if (!is_file(CLAVES)) return [];
   $d = json_decode((string)file_get_contents(CLAVES), true);

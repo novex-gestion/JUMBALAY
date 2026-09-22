@@ -8,6 +8,7 @@ El propio panel se actualiza desde estos archivos con el botón
 |---|---|
 | `admin-index.php` | `public_html/admin/index.php` |
 | `admin-lib.php` | `public_html/admin/lib.php` |
+| `admin-pedidos.php` | `public_html/admin/pedidos.php` |
 | `admin-actualizar.php` | `public_html/admin/actualizar.php` |
 | `api-productos.php` | `public_html/api/productos.php` |
 | `raiz-index.php` | `public_html/index.php` |

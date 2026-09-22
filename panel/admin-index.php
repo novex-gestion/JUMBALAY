@@ -66,17 +66,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } else {
     $accion = $_POST['accion'] ?? '';
 
-    // --- Guardar la grilla: precio, precio tachado, stock y visible ---
+    // --- Guardar la grilla: precio, costo privado, stock y visible ---
     if ($accion === 'guardar') {
-      foreach ($productos as $i => $p) {
-        $id = (string)$p['id'];
-        if (isset($_POST['precio'][$id]))  $productos[$i]['price']          = plata($_POST['precio'][$id]);
-        if (isset($_POST['tachado'][$id])) $productos[$i]['referencePrice'] = plata($_POST['tachado'][$id]);
-        if (isset($_POST['stock'][$id]))   $productos[$i]['stock']          = max(0, (int)$_POST['stock'][$id]);
-        $productos[$i]['visible'] = isset($_POST['visible'][$id]);
-      }
-      $data['productos'] = $productos;
-      if (guardar($data)) { $aviso = 'Cambios guardados. Ya se ven en la web.'; }
+      if (actualizarCatalogo(function (array $actual): array {
+        foreach ($actual['productos'] as &$p) {
+          $id = (string)$p['id'];
+          if (isset($_POST['precio'][$id])) $p['price'] = plata($_POST['precio'][$id]);
+          if (isset($_POST['tachado'][$id])) $p['referencePrice'] = plata($_POST['tachado'][$id]);
+          if (is_array($_POST['costo'] ?? null) && array_key_exists($id, $_POST['costo'])) {
+            $valor = trim((string)$_POST['costo'][$id]);
+            $p['purchaseCost'] = $valor === '' ? null : plata($valor);
+          }
+          // Un formulario abierto antes de descontar una orden no repone el stock anterior.
+          if (isset($_POST['stock'][$id], $_POST['stock_original'][$id])
+              && (int)$_POST['stock'][$id] !== (int)$_POST['stock_original'][$id]) {
+            $p['stock'] = max(0, (int)$_POST['stock'][$id]);
+          }
+          $p['visible'] = isset($_POST['visible'][$id]);
+        }
+        unset($p);
+        return $actual;
+      })) { $aviso = 'Cambios guardados. Los precios y el stock ya se ven en la web.'; }
       else { $error = 'No se pudo guardar.'; }
     }
 
@@ -114,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           'description' => trim((string)($_POST['description'] ?? '')),
           'price' => plata($_POST['price'] ?? 0),
           'referencePrice' => plata($_POST['referencePrice'] ?? 0),
+          'purchaseCost' => trim((string)($_POST['purchaseCost'] ?? '')) === '' ? null : plata($_POST['purchaseCost']),
           'stock' => max(0, (int)($_POST['stock'] ?? 0)),
           'images' => $nuevas ?: ['assets/portada-casa-natural.png'],
           'image' => $nuevas[0] ?? 'assets/portada-casa-natural.png',
@@ -256,6 +267,11 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
   .gorden button:disabled{opacity:.3;cursor:not-allowed}
   .prod h3{margin:0 0 2px;font-size:1.15rem;font-weight:400}
   .prod .desc{margin:0 0 10px;color:#6d655b;font:.8rem Arial,sans-serif}
+  .prod-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .economia{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-left:auto}
+  .resultado{min-width:150px;padding:8px 10px;border:1px solid var(--line);background:#f8f5ee;font:.8rem Arial,sans-serif}
+  .resultado b{display:block;color:var(--ink);font:700 1.05rem Georgia,serif}
+  .resultado small{display:block;color:#6d655b;font:.7rem Arial,sans-serif}
   .campos{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
   .campo{display:flex;flex-direction:column;gap:4px}
   .campo span{font:700 .62rem Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6d655b}
@@ -294,13 +310,19 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
     .campo input[type=number]{width:84px}
     .acc{margin-left:0;width:100%}
     .acc .btn{flex:1;text-align:center}
+    .economia{margin-left:0}
   }
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap">
   <span class="marca">Casa Natural</span>
-  <a class="salir" href="?salir=1">Salir</a>
+  <span style="display:flex;gap:8px;align-items:center">
+    <a class="salir" href="pedidos.php">Centro de pedidos</a>
+    <a class="salir" href="logistica.php">Logística nacional</a>
+    <a class="salir" href="cotizador.php">Cotizador WhatsApp</a>
+    <a class="salir" href="?salir=1">Salir</a>
+  </span>
 </div></header>
 
 <div class="wrap">
@@ -411,14 +433,21 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
             <?php if (count($fot) > 1): ?><b><?= count($fot) ?></b><?php endif; ?>
           </span>
           <div>
-            <h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
-            <p class="desc"><?= e($p['description']) ?></p>
+            <div class="prod-head">
+              <div><h3><?= e($p['name']) ?><?= $st <= 0 ? ' — <span style="color:#742e2a;font:700 .7rem Arial,sans-serif">SIN STOCK</span>' : '' ?></h3>
+              <p class="desc"><?= e($p['description']) ?></p></div>
+              <div class="economia" data-rentabilidad>
+                <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata costo" name="costo[<?= e($id) ?>]" value="<?= isset($p['purchaseCost']) ? e(miles((int)$p['purchaseCost'])) : '' ?>" placeholder="Sin cargar"></span></label>
+                <div class="resultado"><span>Rentabilidad bruta</span><b data-ganancia>—</b><small data-margen>Margen: —</small></div>
+              </div>
+            </div>
             <div class="campos">
               <label class="campo"><span>Precio</span>
-                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="precio[<?= e($id) ?>]" value="<?= e(miles((int)$p['price'])) ?>"></span></label>
+                <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata precio-venta" name="precio[<?= e($id) ?>]" value="<?= e(miles((int)$p['price'])) ?>"></span></label>
               <label class="campo"><span>Tachado</span>
                 <span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="tachado[<?= e($id) ?>]" value="<?= e(miles((int)($p['referencePrice'] ?? 0))) ?>"></span></label>
               <label class="campo"><span>Stock</span>
+                <input type="hidden" name="stock_original[<?= e($id) ?>]" value="<?= $st ?>">
                 <input type="number" min="0" step="1" name="stock[<?= e($id) ?>]" value="<?= $st ?>"></label>
               <label class="sw <?= $vis ? '' : 'off' ?>">
                 <input type="checkbox" name="visible[<?= e($id) ?>]" <?= $vis ? 'checked' : '' ?>>
@@ -448,6 +477,7 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
       <div class="fila" style="margin-top:12px">
         <label class="campo"><span>Precio</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="price" placeholder="0"></span></label>
         <label class="campo"><span>Precio tachado</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="referencePrice" placeholder="0"></span></label>
+        <label class="campo"><span>Costo de compra real</span><span class="money"><i>$</i><input type="text" inputmode="numeric" class="plata" name="purchaseCost" placeholder="Sin cargar"></span></label>
         <label class="campo"><span>Stock</span><input type="number" min="0" name="stock" value="0"></label>
         <label class="campo"><span>Fotos o videos (podés elegir varios)</span><input type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple></label>
       </div>
@@ -503,7 +533,20 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
     if (!e.target.classList.contains('plata')) return;
     const limpio = e.target.value.replace(/\D/g, '');
     e.target.value = limpio ? Number(limpio).toLocaleString('es-AR') : '';
+    actualizarRentabilidad(e.target.closest('.prod'));
   });
+  function actualizarRentabilidad(tarjeta) {
+    if (!tarjeta) return;
+    const costo = tarjeta.querySelector('.costo').value.replace(/\D/g, '');
+    const venta = Number(tarjeta.querySelector('.precio-venta').value.replace(/\D/g, ''));
+    const ganancia = tarjeta.querySelector('[data-ganancia]');
+    const margen = tarjeta.querySelector('[data-margen]');
+    if (costo === '' || !venta) { ganancia.textContent = '—'; margen.textContent = 'Margen: —'; return; }
+    const diferencia = venta - Number(costo);
+    ganancia.textContent = new Intl.NumberFormat('es-AR', {style:'currency', currency:'ARS', maximumFractionDigits:0}).format(diferencia);
+    margen.textContent = 'Margen: ' + new Intl.NumberFormat('es-AR', {maximumFractionDigits:1}).format(diferencia / venta * 100) + '%';
+  }
+  document.querySelectorAll('.prod').forEach(actualizarRentabilidad);
 </script>
 </body>
 </html>
