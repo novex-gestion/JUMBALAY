@@ -392,9 +392,9 @@
       } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); mercadoPagoReplacement.disabled=false; mercadoPagoReplacement.textContent='Pagar con Mercado Pago'; }
     });
     const pasosCompra = [
-      ['Elegí', 'Explorá los productos disponibles y armá tu carrito.'],
-      ['Elegí cómo pagar', 'Pagá con Mercado Pago o coordiná transferencia o efectivo por WhatsApp.'],
-      ['Elegí la entrega', 'Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; retiro por Champagnat 1176 las 24 horas o despacho nacional por Correo Argentino.']
+      ['Elegí', 'Explorá los productos, elegí las cantidades y revisá tu carrito antes de avanzar.'],
+      ['Elegí cómo lo recibís', 'Seleccioná entrega sin cargo en Pilar, Del Viso, Derqui o Villa Rosa; retiro personal por Champagnat 1176, Pilar, las 24 horas; u otra localidad para despacho por Correo Argentino. Completá tus datos de contacto.'],
+      ['Elegí cómo pagar', 'Con el pedido y la modalidad de entrega definidos, pagá de forma segura con Mercado Pago o elegí transferencia o efectivo para coordinarlo por WhatsApp.']
     ];
     document.querySelectorAll('#como-comprar .step').forEach((paso, indice) => {
       paso.querySelector('h3').textContent = pasosCompra[indice][0];
