@@ -63,7 +63,8 @@ function reintegrarStockPedido(string $id, bool &$repuso, string &$motivo): bool
     $motivo = 'La orden no está cancelada.'; return false;
   }
   // Si nunca se descontó manualmente, cancelar no cambia el stock.
-  if (!isset(catalogo()['stock_descontado_pedidos'][$id])) return true;
+  $catalogoActual = catalogo();
+  if (!isset($catalogoActual['stock_descontado_pedidos'][$id])) return true;
   $cantidades = cantidadesPedido($pedido);
   if (!$cantidades) { $motivo = 'No se puede reponer: faltan productos o cantidades válidos.'; return false; }
   return actualizarCatalogo(function (array $catalogo) use ($id, $cantidades, &$repuso, &$motivo) {
