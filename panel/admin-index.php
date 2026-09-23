@@ -230,7 +230,7 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
   *{box-sizing:border-box}
   body{margin:0;background:var(--cream);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
   .wrap{width:min(1080px,calc(100% - 28px));margin:auto}
-  header.top{background:var(--ink);color:#f8f4ea;padding:16px 0}
+  header.top{position:sticky;top:0;z-index:100;background:var(--ink);color:#f8f4ea;padding:16px 0;box-shadow:0 3px 12px rgba(0,0,0,.12)}
   header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .marca{font-size:1.5rem;letter-spacing:-.04em}
   .salir{color:#f8f4ea;font:700 .7rem Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
