@@ -26,6 +26,7 @@ if (!($_SESSION['ok'] ?? false)) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Casa Natural · Panel</title>
+  <link rel="icon" type="image/svg+xml" href="https://tucasaesnatural.com/favicon-casa-natural-redondo.svg">
   <style>
     :root{--ink:#21332b;--cream:#f7f1e7;--paper:#fffdf8;--wine:#742e2a;--line:#ded2bf;}
     *{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;
@@ -223,6 +224,7 @@ $agotados = count(array_filter($productos, fn($p) => (int)($p['stock'] ?? 0) <= 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Casa Natural · Panel de productos</title>
+<link rel="icon" type="image/svg+xml" href="https://tucasaesnatural.com/favicon-casa-natural-redondo.svg">
 <style>
   :root{--ink:#21332b;--cream:#f7f1e7;--paper:#fffdf8;--olive:#65734a;--wine:#742e2a;--sand:#e8dbc5;--line:#ded2bf;}
   *{box-sizing:border-box}
