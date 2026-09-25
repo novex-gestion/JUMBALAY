@@ -188,6 +188,14 @@
     @media (max-width:359px) { .products { grid-template-columns:minmax(0,1fr); } .nav-main { gap:8px; } }
     @media (max-width:440px) { .nav { flex-wrap:wrap; justify-content:center; padding:12px 0; gap:8px; } .brand { width:100%; text-align:center; } .nav-links { justify-content:center; } }
     @media (max-width:440px) { .site-header .nav { justify-content:center; } .site-header .brand { width:100%; text-align:center; } .site-header .nav-links { flex-wrap:nowrap; justify-content:center; gap:10px; } .site-header .nav-main { gap:12px; } .site-header .social-link { width:32px; height:32px; } .site-header .header-cart { font-size:0; } .site-header .header-cart svg { width:23px; height:23px; } }
+    .order-confirmation { width:min(600px,calc(100% - 28px)); max-height:90vh; overflow:auto; border:1px solid #ded2bf; padding:28px; background:#fffdf8; color:var(--ink); }
+    .order-confirmation::backdrop { background:rgba(20,35,26,.65); }
+    .order-confirmation h2 { font-size:2rem; margin:12px 0; }
+    .order-confirmation p { line-height:1.5; }
+    .order-confirmation ul { padding-left:20px; line-height:1.6; }
+    .order-confirmation .order-next { padding:16px; background:#eef1e7; }
+    .order-confirmation .button { display:block; width:100%; margin-top:12px; text-align:center; }
+    .order-confirmation .order-close { background:transparent; color:var(--ink); }
   </style>
 </head>
 <body>
@@ -405,18 +413,28 @@
       if (pickupPersonal.checked) deliveryStatus.textContent = 'Retiro disponible las 24 horas en Champagnat 1176, Pilar.';
     });
     document.querySelector('#delivery-whatsapp').textContent = 'SI TENÉS DUDAS, CHATEÁ CON NOSOTROS';
-    // Reemplaza el mensaje manual por una versión legible para WhatsApp.
+    const receipt = document.createElement('dialog');
+    receipt.className = 'order-confirmation';
+    receipt.setAttribute('aria-labelledby', 'order-confirmation-title');
+    document.body.appendChild(receipt);
+    let manualPending = false;
+    let manualAttempt = null;
+    document.addEventListener('click', event => {
+      if (manualPending && event.target.closest('[data-quantity], [data-remove-item], #send-cart, #send-manual-payment')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+    // El pedido se confirma en la web; WhatsApp es un siguiente paso opcional.
     const manualPaymentButton = document.querySelector('#send-manual-payment');
     const manualPaymentReplacement = manualPaymentButton.cloneNode(true);
     manualPaymentButton.replaceWith(manualPaymentReplacement);
     manualPaymentReplacement.addEventListener('click', async () => {
+      if (manualPending) return;
       const pedido = pedidoValido(true); if (!pedido) return;
       const cliente = customerFields(); if (!cliente) return;
       const button = manualPaymentReplacement;
-      // Abrimos la pestaña dentro del gesto del usuario para evitar que el navegador bloquee WhatsApp.
-      // No usamos "noopener" acá: con esa opción el navegador corta la referencia y no permite
-      // reemplazar la pestaña temporal por la URL de WhatsApp después de registrar el pedido.
-      const chat = window.open('about:blank', '_blank');
+      manualPending = true;
       button.disabled = true;
       button.textContent = 'Registrando pedido…';
       const salto = String.fromCharCode(10);
@@ -425,27 +443,35 @@
         const ahorro = product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0;
         return [`• ${product.name}`, `${quantity} x ${money(product.price)} = ${money(product.price * quantity)}`, ahorro ? `Ahorrás ${money(ahorro)} en este producto` : ''].filter(Boolean).join(salto);
       }).join(salto + salto);
-      const total = pedido.lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
-      const ahorroTotal = pedido.lines.reduce((sum, [index, quantity]) => { const product = CONFIG.products[index]; return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0); }, 0);
+      let total = pedido.lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
+      let ahorroTotal = pedido.lines.reduce((sum, [index, quantity]) => { const product = CONFIG.products[index]; return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0); }, 0);
       const entrega = pedido.locality === pickupLocation
         ? `Retiro personal: Champagnat 1176, Pilar (las 24 horas)`
         : [`Entrega: ${pedido.address}`, `Localidad: ${pedido.locality === 'other' ? 'Otra localidad' : pedido.locality}`, `Código postal: ${pedido.zip}`].join(salto);
       let numeroPedido = '';
+      const payload = {
+        payment_method: 'transferencia_efectivo', customer: cliente,
+        items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
+        delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
+      };
+      const fingerprint = JSON.stringify(payload);
+      if (!manualAttempt || manualAttempt.fingerprint !== fingerprint) manualAttempt = {fingerprint, id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`};
       try {
         const response = await fetch(CONFIG.ordersApi, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            request_id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-            payment_method: 'transferencia_efectivo', customer: cliente,
-            items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
-            delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
-          })
+          body: JSON.stringify({...payload, request_id: manualAttempt.id})
         });
         const data = await response.json();
         if (!response.ok || !data.order_id) throw new Error(data.error || 'No se pudo registrar el pedido.');
         numeroPedido = data.order_id;
+        total = Number(data.total);
+        ahorroTotal = Number(data.savings) || 0;
       } catch (error) {
-        alert('No pudimos registrar el pedido en el panel. Podés enviarlo por WhatsApp igual; por favor, avisánoslo en el mensaje.');
+        alert('No pudimos confirmar el registro del pedido. Tu carrito sigue guardado en esta página. Probá nuevamente o consultanos por WhatsApp.');
+        manualPending = false;
+        button.textContent = 'Pagar por transferencia o efectivo';
+        renderCart();
+        return;
       }
       const mensaje = [
         'Hola, quiero coordinar este pedido de Casa Natural.', '', detalle, '',
@@ -453,9 +479,17 @@
         'Forma de pago: transferencia o efectivo.', 'Alias para transferencia: juanallegrina1.', 'Para efectivo, coordinamos por este chat.'
       ].filter(line => line !== '').join(salto);
       const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
-      if (chat) chat.location.replace(url); else window.open(url, '_blank');
-      button.disabled = false;
+      receipt.innerHTML = `<p class="eyebrow">Pedido registrado</p><h2 id="order-confirmation-title" tabindex="-1">¡Recibimos tu pedido!</h2><p>N.º <strong>${safe(numeroPedido)}</strong></p><div class="order-next"><strong>El próximo paso lo damos nosotros.</strong><p>Te vamos a escribir al WhatsApp <strong>${safe(cliente.phone)}</strong> para coordinar el pago y ${pedido.locality === pickupLocation ? 'el retiro' : 'la entrega'}.</p><p><strong>Pago pendiente.</strong> Registrar el pedido no significa que esté pagado.</p></div><p><strong>${safe(cliente.name)}</strong><br>${safe(entrega).replace(/\n/g, '<br>')}</p><ul>${pedido.lines.map(([index, quantity]) => `<li>${quantity} × ${safe(CONFIG.products[index].name)}</li>`).join('')}</ul><p><strong>Total de productos: ${money(total)}</strong>${ahorroTotal ? `<br>Ahorrás ${money(ahorroTotal)}` : ''}</p>${pedido.locality === 'other' ? '<p>El costo del envío nacional se coordina por separado y no está incluido en este total.</p>' : ''}<p>Tu pedido ya está registrado: no hace falta volver a cargarlo. Si querés, también podés enviarnos el resumen por WhatsApp.</p><a class="button" href="${safe(url)}" target="_blank" rel="noopener">Enviar resumen por WhatsApp</a><button class="button order-close" type="button">Seguir mirando</button>`;
+      receipt.querySelector('.order-close').addEventListener('click', () => receipt.close());
+      cart.clear();
+      document.querySelectorAll('[id^="qty-"]').forEach(node => node.textContent = '0');
+      manualPending = false;
+      manualAttempt = null;
       button.textContent = 'Pagar por transferencia o efectivo';
+      renderCart();
+      document.querySelector('#cart-panel').classList.remove('open');
+      receipt.showModal();
+      receipt.querySelector('h2').focus();
     });
     const mercadoPagoButton = document.querySelector('#send-cart');
     const mercadoPagoReplacement = mercadoPagoButton.cloneNode(true);
