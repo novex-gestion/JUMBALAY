@@ -196,6 +196,7 @@
     .order-confirmation .order-next { padding:16px; background:#eef1e7; }
     .order-confirmation .button { display:block; width:100%; margin-top:12px; text-align:center; }
     .order-confirmation .order-close { background:transparent; color:var(--ink); }
+    #send-cart[hidden], .payment-note[hidden] { display:none; }
   </style>
 </head>
 <body>
@@ -233,7 +234,7 @@
     if (CONFIG.metaPixelId) { !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CONFIG.metaPixelId); fbq("track", "PageView"); }
     const safe = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
     const money = value => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(value);
-    const cart = new Map(); const pickupLocation='Retiro por Champagnat 1176, Pilar · 24 hs'; const freeDeliveryLocalities=new Set(['Pilar','Del Viso','Derqui','Villa Rosa']); const pickupPersonal=document.querySelector('#pickup-personal'); const deliveryFields=document.querySelector('#delivery-fields'); const deliveryLocality=document.querySelector('#delivery-locality'); const deliveryZip=document.querySelector('#delivery-zip'); const deliveryAddress=document.querySelector('#delivery-address'); const deliveryStatus=document.querySelector('#delivery-status'); const deliveryWhatsapp=document.querySelector('#delivery-whatsapp'); const actualizarEntrega=()=>{const pickup=pickupPersonal.checked; const ok=pickup||freeDeliveryLocalities.has(deliveryLocality.value); const otraLocalidad=!pickup&&deliveryLocality.value==='other'; deliveryFields.hidden=pickup; deliveryLocality.required=!pickup; deliveryZip.required=!pickup; deliveryAddress.required=!pickup; deliveryStatus.textContent=pickup?'Retiro disponible en Champagnat 1176, Pilar, dentro de las 24 hs.':!deliveryLocality.value?'':ok?'Entrega sin cargo en esta localidad.':otraLocalidad?'El despacho se realiza por Correo Argentino el mismo día de la compra.':'Para envíos fuera de la zona, te cotizamos por WhatsApp con tu código postal.'; deliveryWhatsapp.hidden=pickup||ok||!deliveryLocality.value; if(!pickup&&!ok&&deliveryLocality.value) deliveryWhatsapp.href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent('Hola, quiero consultar el envío a '+deliveryLocality.value+'. Mi código postal es '+deliveryZip.value.trim()+'.');}; pickupPersonal.addEventListener('change',actualizarEntrega); deliveryLocality.addEventListener('change',actualizarEntrega); deliveryZip.addEventListener('input',actualizarEntrega); actualizarEntrega();
+    const cart = new Map(); const pickupLocation='Retiro por Champagnat 1176, Pilar · 24 hs'; const freeDeliveryLocalities=new Set(['Pilar','Del Viso','Derqui','Villa Rosa']); const pickupPersonal=document.querySelector('#pickup-personal'); const deliveryFields=document.querySelector('#delivery-fields'); const deliveryLocality=document.querySelector('#delivery-locality'); const deliveryZip=document.querySelector('#delivery-zip'); const deliveryAddress=document.querySelector('#delivery-address'); const deliveryStatus=document.querySelector('#delivery-status'); const deliveryWhatsapp=document.querySelector('#delivery-whatsapp'); const actualizarEntrega=()=>{const pickup=pickupPersonal.checked; const ok=pickup||freeDeliveryLocalities.has(deliveryLocality.value); const otraLocalidad=!pickup&&deliveryLocality.value==='other'; deliveryFields.hidden=pickup; deliveryLocality.required=!pickup; deliveryZip.required=!pickup; deliveryAddress.required=!pickup; deliveryStatus.textContent=pickup?'Retiro disponible en Champagnat 1176, Pilar, dentro de las 24 hs.':!deliveryLocality.value?'':ok?'Entrega sin cargo en esta localidad.':otraLocalidad?'Envío nacional a cotizar: te confirmaremos costo y plazo por WhatsApp.':'Para envíos fuera de la zona, te cotizamos por WhatsApp con tu código postal.'; deliveryWhatsapp.hidden=pickup||ok||!deliveryLocality.value; if(!pickup&&!ok&&deliveryLocality.value) deliveryWhatsapp.href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent('Hola, quiero consultar el envío a '+deliveryLocality.value+'. Mi código postal es '+deliveryZip.value.trim()+'.');}; pickupPersonal.addEventListener('change',actualizarEntrega); deliveryLocality.addEventListener('change',actualizarEntrega); deliveryZip.addEventListener('input',actualizarEntrega); actualizarEntrega();
     const renderCart = () => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
       const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
@@ -317,6 +318,17 @@
       let address = deliveryAddress.value.trim().replace(/\s+/g, ' ');
       const pickup = pickupPersonal.checked; const locality = pickup ? pickupLocation : deliveryLocality.value; const zip = deliveryZip.value.trim();
       if (!lines.length) return null;
+      if (!pickup && !locality) { alert('Elegí cómo recibir tu pedido.'); deliveryLocality.focus(); return null; }
+      if (!pickup && locality === 'other') {
+        const city = document.querySelector('#national-city').value.trim().replace(/\s+/g, ' ');
+        const province = document.querySelector('#national-province').value.trim().replace(/\s+/g, ' ');
+        if (city.length < 2) { alert('Ingresá tu localidad.'); document.querySelector('#national-city').focus(); return null; }
+        if (province.length < 2) { alert('Ingresá tu provincia.'); document.querySelector('#national-province').focus(); return null; }
+        if (address.length < 5) { alert('Ingresá la dirección de entrega.'); deliveryAddress.focus(); return null; }
+        // Compatibilidad con el panel actual: el destino completo se guarda en la dirección.
+        address += ` · Localidad: ${city} · Provincia: ${province}`;
+        if (address.length > 180) { alert('Acortá la dirección o las referencias para poder registrar el destino completo.'); deliveryAddress.focus(); return null; }
+      }
       if (pickup) address = pickupLocation;
       if (address.length < 5) { alert('Ingresá la dirección de entrega.'); deliveryAddress.focus(); return null; }
       if (!pickup && !/^\d{4}$/.test(zip)) { alert('Ingresá un código postal válido de 4 dígitos.'); deliveryZip.focus(); return null; }
@@ -407,6 +419,25 @@
         renderCart();
       } catch (e) { /* sin conexión al panel: quedan los productos del HTML */ }
     })();
+    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"><p style="font:14px/1.5 Arial,sans-serif"><strong>Envío a cotizar por separado.</strong> El total del carrito incluye solo los productos. Registrá tu pedido y te contactaremos por WhatsApp con el costo y el plazo estimado antes de coordinar el pago y el despacho.</p></div>');
+    const updateNationalDelivery = () => {
+      const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
+      document.querySelector('#national-fields').hidden = !national;
+      document.querySelector('#national-city').required = national;
+      document.querySelector('#national-province').required = national;
+      document.querySelector('#send-cart').hidden = national;
+      const manual = document.querySelector('#send-manual-payment');
+      if (!manualPending) manual.textContent = national ? 'Registrar pedido y cotizar envío' : 'Pagar por transferencia o efectivo';
+      document.querySelector('.payment-note').hidden = national;
+      if (national) {
+        deliveryStatus.textContent = 'El envío todavía no está incluido. Te confirmaremos costo y plazo por WhatsApp.';
+        const city = document.querySelector('#national-city').value.trim();
+        const province = document.querySelector('#national-province').value.trim();
+        deliveryWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hola, quiero consultar un envío a ${city || 'mi localidad'}, ${province || 'mi provincia'}, CP ${deliveryZip.value.trim()}.`)}`;
+      }
+    };
+    [pickupPersonal, deliveryLocality, deliveryZip, document.querySelector('#national-city'), document.querySelector('#national-province')].forEach(node => node.addEventListener('input', updateNationalDelivery));
+    [pickupPersonal, deliveryLocality].forEach(node => node.addEventListener('change', updateNationalDelivery));
     // El retiro es una disponibilidad permanente, no un plazo de preparación.
     document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; o retiro por Champagnat 1176, Pilar, las 24 horas.';
     document.querySelector('#pickup-personal').addEventListener('change', () => {
@@ -471,12 +502,13 @@
         manualPending = false;
         button.textContent = 'Pagar por transferencia o efectivo';
         renderCart();
+        updateNationalDelivery();
         return;
       }
       const mensaje = [
         'Hola, quiero coordinar este pedido de Casa Natural.', '', detalle, '',
         numeroPedido ? `N.º de pedido: ${numeroPedido}` : '', `Total: ${money(total)}`, ahorroTotal ? `Ahorro total: ${money(ahorroTotal)}` : '', '', entrega, '',
-        'Forma de pago: transferencia o efectivo.', 'Alias para transferencia: juanallegrina1.', 'Para efectivo, coordinamos por este chat.'
+        pedido.locality === 'other' ? 'Envío pendiente de cotización: este total incluye solo productos. Por favor, confirmar costo y plazo antes de coordinar el pago y el despacho.' : 'Forma de pago: transferencia o efectivo.', pedido.locality === 'other' ? '' : 'Alias para transferencia: juanallegrina1.', pedido.locality === 'other' ? '' : 'Para efectivo, coordinamos por este chat.'
       ].filter(line => line !== '').join(salto);
       const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
       receipt.innerHTML = `<p class="eyebrow">Pedido registrado</p><h2 id="order-confirmation-title" tabindex="-1">¡Recibimos tu pedido!</h2><p>N.º <strong>${safe(numeroPedido)}</strong></p><div class="order-next"><strong>El próximo paso lo damos nosotros.</strong><p>Te vamos a escribir al WhatsApp <strong>${safe(cliente.phone)}</strong> para coordinar el pago y ${pedido.locality === pickupLocation ? 'el retiro' : 'la entrega'}.</p><p><strong>Pago pendiente.</strong> Registrar el pedido no significa que esté pagado.</p></div><p><strong>${safe(cliente.name)}</strong><br>${safe(entrega).replace(/\n/g, '<br>')}</p><ul>${pedido.lines.map(([index, quantity]) => `<li>${quantity} × ${safe(CONFIG.products[index].name)}</li>`).join('')}</ul><p><strong>Total de productos: ${money(total)}</strong>${ahorroTotal ? `<br>Ahorrás ${money(ahorroTotal)}` : ''}</p>${pedido.locality === 'other' ? '<p>El costo del envío nacional se coordina por separado y no está incluido en este total.</p>' : ''}<p>Tu pedido ya está registrado: no hace falta volver a cargarlo. Si querés, también podés enviarnos el resumen por WhatsApp.</p><a class="button" href="${safe(url)}" target="_blank" rel="noopener">Enviar resumen por WhatsApp</a><button class="button order-close" type="button">Seguir mirando</button>`;
@@ -487,6 +519,7 @@
       manualAttempt = null;
       button.textContent = 'Pagar por transferencia o efectivo';
       renderCart();
+      updateNationalDelivery();
       document.querySelector('#cart-panel').classList.remove('open');
       receipt.showModal();
       receipt.querySelector('h2').focus();
