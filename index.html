@@ -229,6 +229,10 @@
     const shippingCost = (subtotal, locality) => locality === 'other' && subtotal > 0 && subtotal <= 99000 ? 12000 : 0;
     const shippingPolicy = 'flat-12000-over-99000-v1';
     document.querySelector('.cart-total').insertAdjacentHTML('beforebegin', '<div id="shipping-breakdown" style="font:14px/1.7 Arial,sans-serif"><div>Productos: <strong id="products-subtotal"></strong></div><div>Envío: <strong id="shipping-total"></strong></div></div>');
+    let catalogReady = false;
+    const cartStorageKey = 'casa-natural-cart-v1';
+    let savedCart = [];
+    try { const saved = JSON.parse(sessionStorage.getItem(cartStorageKey) || 'null'); if (saved && Date.now() - saved.at < 86400000 && Array.isArray(saved.items)) savedCart = saved.items; } catch (_) {}
     const renderCart = () => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
       const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
@@ -250,6 +254,11 @@
       document.querySelector('#send-cart').style.opacity = lines.length ? '1' : '.45'; const units = lines.reduce((sum, [, quantity]) => sum + quantity, 0); const floatingCount = document.querySelector('#cart-float-count'); floatingCount.textContent = units; floatingCount.hidden = !units;
       document.querySelector('#send-manual-payment').disabled = !lines.length;
       document.querySelector('#send-manual-payment').style.opacity = lines.length ? '1' : '.45';
+      if (catalogReady) {
+        savedCart = lines.map(([index, quantity]) => ({id:CONFIG.products[index].id,quantity}));
+        try { sessionStorage.setItem(cartStorageKey, JSON.stringify({at:Date.now(),items:savedCart})); } catch (_) {}
+      }
+      document.dispatchEvent(new CustomEvent('cn:cart-updated'));
     };
     // Las fotos subidas desde el panel viven en el servidor del panel.
     function resolverFoto(src, host){
@@ -426,12 +435,19 @@
           images: (Array.isArray(p.images) ? p.images : []).filter(Boolean).map(x => resolverFoto(x, host)),
         }));
         cart.clear();
+        for (const item of savedCart) {
+          if (!item || typeof item.id !== 'string') continue;
+          const index = CONFIG.products.findIndex(p => p.id === item.id);
+          if (index >= 0 && Number.isInteger(item.quantity) && item.quantity > 0) cart.set(index, Math.min(item.quantity, CONFIG.products[index].stock));
+        }
+        catalogReady = true;
         pintarGrilla();
+        CONFIG.products.forEach((p, i) => { const q = document.querySelector(`#qty-${i}`); if (q) q.textContent = cart.get(i) || 0; });
         if (!CONFIG.products.length) grid.innerHTML = '<p role="status">Por el momento no hay productos disponibles. Consultanos por WhatsApp.</p>';
         actualizarProductosSEO();
         renderCart();
       } catch (e) {
-        CONFIG.products = []; cart.clear(); renderCart();
+        catalogReady = false; CONFIG.products = []; cart.clear(); renderCart();
         grid.innerHTML = '<div role="alert"><p>No pudimos cargar los precios y la disponibilidad. Para evitar importes incorrectos, la compra no está disponible por el momento.</p><button type="button" class="button" id="retry-catalog">Reintentar</button><p>También podés consultarnos con el botón de WhatsApp.</p></div>';
         grid.querySelector('#retry-catalog').addEventListener('click', cargarCatalogo);
       } finally { clearTimeout(timeout); grid.setAttribute('aria-busy', 'false'); }
@@ -577,6 +593,90 @@
       paso.querySelector('h3').textContent = pasosCompra[indice][0];
       paso.querySelector('p').textContent = pasosCompra[indice][1];
     });
+  </script>
+  <style>
+    #checkout-page[hidden] { display:none; }
+    #checkout-page { max-width:1100px;margin:38px auto 70px;padding:0 22px;color:var(--ink); }
+    .checkout-top { display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px; }
+    .checkout-top h1 { font:2.3rem Georgia,serif;margin:8px 0; }
+    .checkout-back { color:var(--ink);font:700 13px Arial,sans-serif;text-decoration:underline;background:none;border:0;padding:10px 0;cursor:pointer; }
+    .checkout-layout { display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);gap:24px;align-items:start; }
+    #checkout-fields { display:contents; } #checkout-fields[hidden] { display:none; }
+    #checkout-contact { grid-column:1;grid-row:1; } #checkout-delivery { grid-column:1;grid-row:2; } #checkout-payment { grid-column:1;grid-row:3; }
+    .checkout-step,.checkout-review { padding:24px;border:1px solid var(--line);background:#fffdf8;margin-bottom:18px; }
+    .checkout-layout > *,.checkout-step,.checkout-review { min-width:0;overflow-wrap:anywhere; }
+    .checkout-step h2,.checkout-review h2 { font:1.45rem Georgia,serif;margin:0 0 18px; }
+    .checkout-step p,.checkout-review p { font:14px/1.6 Arial,sans-serif; }
+    .checkout-step input:not([type=checkbox]),.checkout-step select { width:100%;min-height:46px;padding:10px;border:1px solid #cfc2ad;background:white;font:16px Arial,sans-serif; }
+    .checkout-step input:focus-visible,.checkout-step select:focus-visible { outline:2px solid #65734a;outline-offset:2px; }
+    .checkout-step .button { width:100%;margin-top:12px;min-height:50px; }
+    .checkout-review { position:sticky;top:22px;grid-column:2;grid-row:1 / span 3; }
+    .checkout-review .cart-list { max-height:none;margin:10px 0 20px; }
+    .checkout-review .cart-total { margin-top:12px; }
+    .checkout-page-mode > main:not(#checkout-page),.checkout-page-mode > .site-header,.checkout-page-mode > .announcement-bar,.checkout-page-mode > footer,.checkout-page-mode > .cart-float,.checkout-page-mode > .whatsapp-float,.checkout-page-mode > #cart-panel { display:none!important; }
+    #checkout-empty { padding:22px;background:#f2ebdd;font:15px/1.6 Arial,sans-serif; }
+    #cart-checkout-link { display:block;margin-top:18px;text-align:center; }
+    #cart-checkout-link[aria-disabled=true] { opacity:.45;pointer-events:none; }
+    .cart-edit-controls { display:flex;gap:8px;align-items:center;margin-top:8px; }
+    .cart-edit-controls button { width:44px;height:44px;border:1px solid #d8ccb9;background:#fff;color:var(--ink);cursor:pointer; }
+    @media(max-width:900px) { #checkout-page{margin:22px auto;padding:0 16px}.checkout-layout{grid-template-columns:1fr;gap:0}.checkout-review{position:static;grid-column:1;grid-row:3}#checkout-payment{grid-row:4}.checkout-step,.checkout-review{padding:20px}.checkout-top{display:block}.checkout-top h1{font-size:2rem} }
+    @media(max-width:360px) { #checkout-page{padding:0 12px}.checkout-step,.checkout-review{padding:16px}.checkout-step h2,.checkout-review h2{font-size:1.3rem} }
+  </style>
+  <script>
+  (() => {
+    const panel = document.querySelector('#cart-panel');
+    const customer = document.querySelector('#customer-fields');
+    const delivery = pickupPersonal.parentElement.parentElement;
+    const payment = document.querySelector('#send-cart');
+    const manual = document.querySelector('#send-manual-payment');
+    const note = document.querySelector('.payment-note');
+    const summaryNodes = ['#cart-list','#shipping-breakdown','.cart-total','#cart-savings'].map(s=>panel.querySelector(s));
+    const page = document.createElement('main'); page.id = 'checkout-page'; page.hidden = true;
+    page.innerHTML = '<div class="checkout-top"><div><p class="eyebrow">Casa Natural · Tu compra</p><h1 tabindex="-1">Finalizar compra</h1></div><a class="checkout-back" href="'+location.pathname+'" data-return-store>← Seguir eligiendo productos</a></div><p id="checkout-empty" role="status" hidden></p><div class="checkout-layout"><div id="checkout-fields"><section class="checkout-step" id="checkout-contact"><h2>1. Tus datos</h2></section><section class="checkout-step" id="checkout-delivery"><h2>2. Entrega o retiro</h2></section><section class="checkout-step" id="checkout-payment"><h2>3. Elegí cómo pagar</h2><p>Revisá el resumen y el total antes de continuar. Mercado Pago te llevará a su sitio para completar el pago. Transferencia registra el pedido con pago pendiente.</p></section></div><section class="checkout-review"><h2>Resumen de tu pedido</h2><div id="checkout-summary"></div><p>Envío gratis en Pilar, Del Viso, Derqui y Villa Rosa. Resto del país: $12.000; gratis en compras de <strong>más de $99.000</strong> en productos. Retiro: gratis.</p></section></div>';
+    document.body.appendChild(page);
+    page.querySelector('#checkout-contact').appendChild(customer);
+    customer.style.borderTop='0';customer.style.marginTop='0';customer.style.paddingTop='0';
+    customer.querySelector('strong').hidden=true;
+    page.querySelector('#checkout-delivery').appendChild(delivery);
+    delivery.style.cssText='margin:0;padding:0;border:0;background:transparent';
+    page.querySelector('#checkout-payment').append(payment,manual,note);
+    const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href=location.pathname+'?checkout=1';link.textContent='Finalizar compra';panel.appendChild(link);
+    const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
+    // Give the existing inputs explicit labels without changing their validation.
+    ['customer-name','customer-phone','delivery-locality','delivery-zip','delivery-address'].forEach(id=>{const input=document.getElementById(id);const label=input.previousElementSibling;if(label?.tagName==='LABEL')label.htmlFor=id;});
+    const isCheckout=()=>new URLSearchParams(location.search).get('checkout')==='1';
+    function update() {
+      const hasItems=[...cart.values()].some(q=>q>0);
+      link.setAttribute('aria-disabled',String(!catalogReady||!hasItems));
+      const empty=page.querySelector('#checkout-empty');empty.hidden=catalogReady&&hasItems;
+      empty.textContent=!catalogReady?'Estamos verificando precios y disponibilidad. Si no podemos cargarlos, volvé a la tienda para reintentar.':'Tu carrito está vacío. Volvé a la tienda para elegir tus productos.';
+      page.querySelector('#checkout-fields').hidden=!catalogReady||!hasItems;
+      page.querySelector('.checkout-review').hidden=!catalogReady||!hasItems;
+      panel.querySelector('.cart-total')?.querySelector('span').replaceChildren(document.createTextNode('Productos'));
+      if(!isCheckout()) { document.querySelector('#cart-total').textContent=money([...cart.entries()].reduce((sum,[i,q])=>sum+CONFIG.products[i].price*q,0)); }
+      document.querySelectorAll('#cart-list .cart-line').forEach(line=>{
+        const i=Number(line.querySelector('[data-remove-item]').dataset.removeItem);
+        const controls=document.createElement('div');controls.className='cart-edit-controls';
+        for(const [change,label] of [[-1,'Quitar una unidad'],[1,'Sumar una unidad']]) {const b=document.createElement('button');b.type='button';b.dataset.quantity=i;b.dataset.change=change;b.setAttribute('aria-label',label+' de '+CONFIG.products[i].name);b.textContent=change===1?'+':'−';b.disabled=change===1&&(cart.get(i)||0)>=CONFIG.products[i].stock;controls.appendChild(b);}
+        line.firstElementChild.appendChild(controls);
+      });
+    }
+    function route(focus=false) {
+      const checkout=isCheckout();page.hidden=!checkout;document.body.classList.toggle('checkout-page-mode',checkout);panel.classList.remove('open');
+      for(const node of summaryNodes) {if(checkout)page.querySelector('#checkout-summary').appendChild(node);else panel.insertBefore(node,link);}
+      document.querySelector('#shipping-breakdown').hidden=!checkout;
+      document.querySelector('.cart-total > span').textContent=checkout?'Total a pagar':'Productos';
+      document.title=checkout?'Finalizar compra · Casa Natural':'Casa Natural';
+      renderCart();
+      if(focus){window.scrollTo(0,0);if(checkout)page.querySelector('h1').focus();}
+    }
+    link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;history.pushState({},'',link.href);route(true);});
+    page.querySelector('[data-return-store]').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname+'#productos');route(true);});
+    receipt.addEventListener('close',()=>{if(isCheckout()&&![...cart.values()].some(q=>q>0)){history.replaceState({},'',location.pathname);route(true);}});
+    window.addEventListener('popstate',()=>route(true));
+    document.addEventListener('cn:cart-updated',update);
+    route();
+  })();
   </script>
 </body>
 </html>
