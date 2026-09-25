@@ -381,11 +381,19 @@
       document.head.appendChild(s);
     } catch (e) {} }
     deliveryStatus.insertAdjacentHTML('beforebegin', '<div id="customer-fields" style="margin-top:16px;padding-top:14px;border-top:1px solid #ded2bf"><strong style="font:700 14px Arial,sans-serif">Tus datos para coordinar</strong><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">NOMBRE Y APELLIDO</label><input id="customer-name" type="text" autocomplete="name" placeholder="Cómo te llamás" style="width:100%;min-height:43px;padding:10px"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">WHATSAPP</label><input id="customer-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej.: 11 5843 6511" style="width:100%;min-height:43px;padding:10px"></div>');
-    const customerFields = () => {
+    document.querySelector('#customer-fields').insertAdjacentHTML('beforeend', '<label for="customer-email" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">EMAIL</label><input id="customer-email" type="email" inputmode="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" aria-describedby="customer-email-help" style="width:100%;min-height:43px;padding:10px"><small id="customer-email-help" style="display:block;margin-top:6px;line-height:1.4">Usaremos este correo para información de tu pedido. Obligatorio para pagar con Mercado Pago; opcional para transferencia o efectivo.</small>');
+    const customerFields = (requireEmail = false) => {
       const name = document.querySelector('#customer-name').value.trim().replace(/\s+/g, ' ');
       const phone = document.querySelector('#customer-phone').value.replace(/\D+/g, '');
       if (name.length < 2 || !/^\d{8,15}$/.test(phone)) { alert('Ingresá tu nombre y un WhatsApp válido para coordinar el pedido.'); return null; }
-      return {name, phone};
+      const emailField = document.querySelector('#customer-email');
+      const email = emailField.value.trim();
+      emailField.value = email;
+      if ((requireEmail && !email) || (email && (!emailField.validity.valid || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))) {
+        alert('Ingresá un email válido para recibir información de tu pedido.');
+        emailField.focus(); return null;
+      }
+      return {name, phone, email, contact_version: 'email-v1'};
     };
     renderCart();
 
@@ -495,7 +503,7 @@
         : [`Entrega: ${pedido.address}`, `Localidad: ${pedido.locality === 'other' ? 'Otra localidad' : pedido.locality}`, `Código postal: ${pedido.zip}`].join(salto);
       let numeroPedido = '';
       const payload = {
-        payment_method: 'transferencia_efectivo', customer: cliente,
+        payment_method: 'transferencia_efectivo', customer: cliente, contact_version: 'email-v1',
         shipping_policy: shippingPolicy, expected_total: total,
         items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
         delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
@@ -547,7 +555,7 @@
     mercadoPagoButton.replaceWith(mercadoPagoReplacement);
     mercadoPagoReplacement.addEventListener('click', async () => {
       const pedido = pedidoValido(); if (!pedido) return;
-      const cliente = customerFields(); if (!cliente) return;
+      const cliente = customerFields(true); if (!cliente) return;
       mercadoPagoReplacement.disabled = true; mercadoPagoReplacement.textContent = 'Registrando pedido…';
       try {
         const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, expected_total:pedido.lines.reduce((sum,[index,quantity])=>sum+CONFIG.products[index].price*quantity,0)+shippingCost(pedido.lines.reduce((sum,[index,quantity])=>sum+CONFIG.products[index].price*quantity,0),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
