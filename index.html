@@ -219,16 +219,7 @@
       ordersApi: "https://panel.tucasaesnatural.com/api/create-order.php",
       paymentStatusApi: "https://panel.tucasaesnatural.com/api/payment-status.php",
       metaPixelId: "1551619602829857",
-      products: [
-        { id: "aceitunas-verdes-magna", name: "Aceitunas verdes Magna", description: "Descarozadas en salmuera · Frasco x 360 g.", price: 8974, referencePrice: 14000, stock: 51, image: "assets/aceitunas-verdes-unificada.png" },
-        { id: "aceitunas-negras-premium", name: "Aceitunas negras premium", description: "Descarozadas en salmuera · Frasco x 360 g.", price: 7157, referencePrice: 14000, stock: 40, image: "assets/aceitunas-negras-unificada.png" },
-        { id: "tomates-secos-mediterraneos", name: "Tomates secos mediterráneos", description: "Con ajo y albahaca · Frasco x 200 g.", price: 11293, referencePrice: 12000, stock: 24, image: "assets/tomates-mediterraneos-unificada.png" },
-        { id: "tomates-secos-patagonicos", name: "Tomates secos patagónicos", description: "Con hongos y parmesano · Frasco x 200 g.", price: 11840, referencePrice: 12000, stock: 8, image: "assets/tomates-patagonicos-unificada.png" },
-        { id: "berenjenas-condimentadas", name: "Berenjenas condimentadas", description: "En aceite · Frasco x 360 g.", price: 9205, referencePrice: 14000, stock: 18, image: "assets/berenjenas-blanco.png" },
-        { id: "mermelada-mango-maracuya", name: "Mermelada de mango y maracuyá", description: "Línea light · Frasco x 420 g.", price: 11575, referencePrice: 12500, stock: 35, image: "assets/mermelada-mango-unificada.png" },
-        { id: "mermelada-limon-miel-jengibre", name: "Mermelada de limón, miel y jengibre", description: "Frasco x 450 g.", price: 7787, referencePrice: 10500, stock: 22, image: "assets/mermelada-limon-unificada.png" },
-        { id: "untable-fruta-frutos-bosque", name: "Untable de fruta natural · Frutos del Bosque", description: "Frutilla, arándanos y mora · Endulzado con ciruelas pasas · Frasco x 190 g.", price: 9900, referencePrice: 18030, stock: 13, image: "assets/untable-fruta-frutos-bosque.png" }
-      ]
+      products: []
     };
     const track = (event, params = {}) => { if (typeof window.fbq === "function") window.fbq("track", event, params); };
     if (CONFIG.metaPixelId) { !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CONFIG.metaPixelId); fbq("track", "PageView"); }
@@ -318,7 +309,7 @@
     }
 
     function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : descuento ? `<span class="discount-badge">-${descuento}%</span>` : ""}${fotosDe(product).map(src => esVideo(src) ? `<video src="${safe(src)}" muted loop playsinline preload="metadata" aria-label="${safe(product.name)}"></video>` : `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p><div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<p class="reference-price">Precio de lista <s>${money(product.referencePrice)}</s></p>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="quantity"><button data-quantity="${index}" data-change="-1" aria-label="Restar ${safe(product.name)}">−</button><strong id="qty-${index}">0</strong><button data-quantity="${index}" data-change="1" aria-label="Sumar ${safe(product.name)}">+</button></div>`}</div></article>`; }).join(""); armarCarruseles(); }
-    pintarGrilla();
+    document.querySelector('#product-grid').innerHTML = '<p role="status">Cargando precios y disponibilidad actualizados…</p>';
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     const pedidoValido = (permitirCotizacionNacional = false) => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
@@ -357,7 +348,7 @@
       window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
     }); const params = new URLSearchParams(window.location.search); const paymentId = params.get('payment_id') || params.get('collection_id'); if (paymentId && !sessionStorage.getItem(`purchase-${paymentId}`)) fetch(`${CONFIG.paymentStatusApi}?payment_id=${encodeURIComponent(paymentId)}`).then(response => response.ok ? response.json() : null).then(payment => { if (payment?.status === 'approved') { track('Purchase', {value:payment.transaction_amount, currency:'ARS', contents:payment.items || [], content_type:'product'}); sessionStorage.setItem(`purchase-${paymentId}`, '1'); alert('¡Pago aprobado! Te vamos a contactar para coordinar la entrega o retiro.'); } });
     // SEO: datos estructurados de productos generados desde CONFIG (siempre en sincronia con precio/stock real)
-    try {
+    function actualizarProductosSEO() { try {
       const ld = {
         "@context": "https://schema.org",
         "@type": "ItemList",
@@ -369,7 +360,7 @@
             "@type": "Product",
             "name": p.name,
             "description": p.description,
-            "image": "https://tucasaesnatural.com/" + p.image,
+            "image": new URL(p.image, 'https://tucasaesnatural.com/').href,
             "brand": { "@type": "Brand", "name": "Casa Natural" },
             "offers": {
               "@type": "Offer",
@@ -382,11 +373,13 @@
           }
         }))
       };
+      document.querySelector('#products-schema')?.remove();
       const s = document.createElement("script");
+      s.id = 'products-schema';
       s.type = "application/ld+json";
       s.textContent = JSON.stringify(ld);
       document.head.appendChild(s);
-    } catch (e) {}
+    } catch (e) {} }
     deliveryStatus.insertAdjacentHTML('beforebegin', '<div id="customer-fields" style="margin-top:16px;padding-top:14px;border-top:1px solid #ded2bf"><strong style="font:700 14px Arial,sans-serif">Tus datos para coordinar</strong><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">NOMBRE Y APELLIDO</label><input id="customer-name" type="text" autocomplete="name" placeholder="Cómo te llamás" style="width:100%;min-height:43px;padding:10px"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">WHATSAPP</label><input id="customer-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej.: 11 5843 6511" style="width:100%;min-height:43px;padding:10px"></div>');
     const customerFields = () => {
       const name = document.querySelector('#customer-name').value.trim().replace(/\s+/g, ' ');
@@ -398,17 +391,20 @@
 
     // ===== Catálogo en vivo =====
     // Precios, stock y qué productos se muestran salen del panel (api/productos.php),
-    // que es la MISMA fuente que usa el checkout para cobrar. La página ya se dibujó
-    // con los productos de más arriba: si el servidor no contesta, no se rompe nada.
-    (async () => {
+    // que es la MISMA fuente que usa el checkout para cobrar. Sin datos vigentes no vendemos.
+    async function cargarCatalogo() {
+      const grid = document.querySelector('#product-grid');
+      grid.setAttribute('aria-busy', 'true');
+      grid.innerHTML = '<p role="status">Cargando precios y disponibilidad actualizados…</p>';
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
       try {
         const base = CONFIG.checkoutApi.replace(/\/create-preference\.php.*$/, '');
-        const r = await fetch(base + '/productos.php', { cache: 'no-store' });
-        if (!r.ok) return;
+        const r = await fetch(base + '/productos.php', { cache: 'no-store', signal: controller.signal });
+        if (!r.ok) throw new Error('Catálogo no disponible');
         const data = await r.json();
-        if (!data.ok || !Array.isArray(data.productos) || !data.productos.length) return;
-        // Si ya empezó a cargar el carrito, no le movemos el piso: aplica en la próxima visita.
-        if ([...cart.values()].some(q => q > 0)) return;
+        if (!data.ok || !Array.isArray(data.productos)) throw new Error('Catálogo no válido');
+        if (data.productos.some(p => !p || typeof p.id !== 'string' || !p.id || typeof p.name !== 'string' || !p.name || !Number.isFinite(Number(p.price)) || Number(p.price) <= 0 || !Number.isInteger(Number(p.stock)) || Number(p.stock) < 0)) throw new Error('Datos de producto no válidos');
         const host = base.replace(/\/api$/, '');
         CONFIG.products = data.productos.map(p => ({
           id: p.id,
@@ -423,9 +419,16 @@
         }));
         cart.clear();
         pintarGrilla();
+        if (!CONFIG.products.length) grid.innerHTML = '<p role="status">Por el momento no hay productos disponibles. Consultanos por WhatsApp.</p>';
+        actualizarProductosSEO();
         renderCart();
-      } catch (e) { /* sin conexión al panel: quedan los productos del HTML */ }
-    })();
+      } catch (e) {
+        CONFIG.products = []; cart.clear(); renderCart();
+        grid.innerHTML = '<div role="alert"><p>No pudimos cargar los precios y la disponibilidad. Para evitar importes incorrectos, la compra no está disponible por el momento.</p><button type="button" class="button" id="retry-catalog">Reintentar</button><p>También podés consultarnos con el botón de WhatsApp.</p></div>';
+        grid.querySelector('#retry-catalog').addEventListener('click', cargarCatalogo);
+      } finally { clearTimeout(timeout); grid.setAttribute('aria-busy', 'false'); }
+    }
+    cargarCatalogo();
     deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"><p style="font:14px/1.5 Arial,sans-serif"><strong>Envío a todo el país: $12.000.</strong> Gratis en compras de más de $99.000 en productos. Una compra de $99.000 paga envío. Pilar, Del Viso, Derqui, Villa Rosa y retiro personal: siempre gratis.</p></div>');
     const updateNationalDelivery = () => {
       const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
