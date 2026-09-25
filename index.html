@@ -450,9 +450,9 @@
     [pickupPersonal, deliveryLocality, deliveryZip, document.querySelector('#national-city'), document.querySelector('#national-province')].forEach(node => node.addEventListener('input', updateNationalDelivery));
     [pickupPersonal, deliveryLocality].forEach(node => node.addEventListener('change', updateNationalDelivery));
     // El retiro es una disponibilidad permanente, no un plazo de preparación.
-    document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; o retiro por Champagnat 1176, Pilar, las 24 horas.';
+    document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; o retiro por Champagnat 1176, Pilar, con coordinación previa por WhatsApp.';
     document.querySelector('#pickup-personal').addEventListener('change', () => {
-      if (pickupPersonal.checked) deliveryStatus.textContent = 'Retiro disponible las 24 horas en Champagnat 1176, Pilar.';
+      if (pickupPersonal.checked) deliveryStatus.textContent = 'Podés coordinar el retiro las 24 horas en Champagnat 1176, Pilar. Antes de acercarte, esperá nuestra confirmación por WhatsApp de que tu pedido está listo. Comprar o pagar no significa que ya esté preparado.';
     });
     document.querySelector('#delivery-whatsapp').textContent = 'SI TENÉS DUDAS, CHATEÁ CON NOSOTROS';
     const receipt = document.createElement('dialog');
@@ -491,7 +491,7 @@
       total += shipping;
       let ahorroTotal = pedido.lines.reduce((sum, [index, quantity]) => { const product = CONFIG.products[index]; return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0); }, 0);
       const entrega = pedido.locality === pickupLocation
-        ? `Retiro personal: Champagnat 1176, Pilar (las 24 horas)`
+        ? `Retiro personal: Champagnat 1176, Pilar. Disponible las 24 horas, con coordinación previa. Antes de acercarte, esperá nuestra confirmación por WhatsApp de que tu pedido está listo.`
         : [`Entrega: ${pedido.address}`, `Localidad: ${pedido.locality === 'other' ? 'Otra localidad' : pedido.locality}`, `Código postal: ${pedido.zip}`].join(salto);
       let numeroPedido = '';
       const payload = {
@@ -562,7 +562,7 @@
     });
     const pasosCompra = [
       ['Elegí', 'Explorá los productos, elegí las cantidades y revisá tu carrito antes de avanzar.'],
-      ['Elegí cómo lo recibís', 'Seleccioná entrega sin cargo en Pilar, Del Viso, Derqui o Villa Rosa; retiro personal por Champagnat 1176, Pilar, las 24 horas; u otra localidad para despacho por Correo Argentino. Completá tus datos de contacto.'],
+      ['Elegí cómo lo recibís', 'Seleccioná entrega local, retiro personal en Champagnat 1176, Pilar, o envío nacional. Completá tus datos de contacto. Para retirar, esperá nuestra confirmación por WhatsApp: el retiro está disponible las 24 horas, con coordinación previa.'],
       ['Elegí cómo pagar', 'Con el pedido y la modalidad de entrega definidos, pagá de forma segura con Mercado Pago o elegí transferencia o efectivo para coordinarlo por WhatsApp.']
     ];
     document.querySelectorAll('#como-comprar .step').forEach((paso, indice) => {
