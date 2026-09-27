@@ -33,8 +33,8 @@
   <meta property="og:title" content="Casa Natural · Conservas y aceitunas gourmet en Pilar">
   <meta property="og:description" content="Aceitunas, tomates secos, berenjenas y mermeladas artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar.">
   <meta property="og:url" content="https://tucasaesnatural.com/">
-  <meta property="og:image" content="https://tucasaesnatural.com/hero-mas-vendidos.png">
-  <meta property="og:image:secure_url" content="https://tucasaesnatural.com/hero-mas-vendidos.png">
+  <meta property="og:image" content="https://tucasaesnatural.com/hero-conservas-real.png">
+  <meta property="og:image:secure_url" content="https://tucasaesnatural.com/hero-conservas-real.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1024">
   <meta property="og:image:height" content="1024">
@@ -42,7 +42,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Casa Natural · Conservas y aceitunas gourmet en Pilar">
   <meta name="twitter:description" content="Aceitunas, tomates secos, berenjenas y mermeladas artesanales. Entrega sin cargo en Pilar. Pago seguro con Mercado Pago.">
-  <meta name="twitter:image" content="https://tucasaesnatural.com/hero-mas-vendidos.png">
+  <meta name="twitter:image" content="https://tucasaesnatural.com/hero-conservas-real.png">
   <link rel="preconnect" href="https://panel.tucasaesnatural.com">
   <script type="application/ld+json">
   {
@@ -51,7 +51,7 @@
     "name": "Casa Natural",
     "description": "Conservas, aceitunas y mermeladas gourmet artesanales con entrega en Pilar.",
     "url": "https://tucasaesnatural.com/",
-    "image": "https://tucasaesnatural.com/hero-mas-vendidos.png",
+    "image": "https://tucasaesnatural.com/hero-conservas-real.png",
     "telephone": "+541158436511",
     "priceRange": "$",
     "currenciesAccepted": "ARS",
@@ -197,7 +197,10 @@
     .order-confirmation .button { display:block; width:100%; margin-top:12px; text-align:center; }
     .order-confirmation .order-close { background:transparent; color:var(--ink); }
     #send-cart[hidden], .payment-note[hidden] { display:none; }
-  </style>
+/* Match the header's 1120px content grid without narrowing the photograph. */
+@media(min-width:761px){.hero-copy{left:max(20px,calc((100% - 1120px)/2));width:420px;max-width:calc(100% - 40px);padding:48px 0}}
+@media(min-width:601px) and (max-width:760px){.hero-copy{left:14px;width:420px;max-width:calc(100% - 28px);padding:36px 0}}
+</style>
   <style>
     .card .reference-price { margin:0 0 3px !important; font:400 .8rem/1.2 Arial,sans-serif !important; color:#777 !important; }
     .card .reference-price s { margin-left:0; }
@@ -217,12 +220,30 @@
 .hero{padding:0 0 36px;background:#faf7f0}.hero>.wrap{width:100%;max-width:none}.hero-banner{display:block;position:relative;max-width:1600px;min-height:0;margin:auto;background:#faf7f0}.hero-photo{height:auto;min-height:0}.hero-photo img{display:block;width:100%;height:auto;object-fit:contain}.hero-copy{width:auto;margin:0;display:flex;align-items:center;text-align:center;padding:38px 24px;background:transparent}.hero-copy h1{font-size:clamp(32px,4.3vw,62px);max-width:850px;line-height:1.06}.hero-copy .lead{margin:16px 0 22px;max-width:550px;font-size:17px}.hero-copy .eyebrow{margin-bottom:12px}.preview-switch{padding:10px 15px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;background:#eee8dc;font:12px Arial,sans-serif}.preview-switch a{color:#34432b;text-decoration:underline;text-underline-offset:3px}.preview-switch strong{color:#34432b}@media(max-width:600px){.hero-copy{padding:30px 22px}.hero-copy .lead{font-size:16px}.hero-copy h1{font-size:36px}.hero-cta{min-height:46px}.hero{padding-bottom:12px}}
 
 .hero-banner{isolation:isolate}.hero-photo{height:clamp(460px,42vw,620px)}.hero-photo img{height:100%;object-fit:cover;object-position:center}.hero-banner:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,29,16,.88),rgba(20,29,16,.66) 30%,rgba(20,29,16,0) 70%);z-index:1;pointer-events:none}.hero-copy{position:absolute;inset:0 auto 0 0;z-index:2;max-width:510px;padding:48px;align-items:flex-start;text-align:left;justify-content:center}.hero-copy h1{color:#fff;font-size:clamp(38px,4vw,58px)}.hero-copy .eyebrow,.hero-copy .lead{color:#fff}.hero-copy .hero-cta{background:#fffdf6;color:#34432b;border-color:#fffdf6}@media(max-width:600px){.hero-photo{height:540px}.hero-photo img{object-position:49% center}.hero-banner:after{background:linear-gradient(180deg,rgba(20,29,16,.88),rgba(20,29,16,.56) 56%,rgba(20,29,16,.05))}.hero-copy{inset:0 0 auto;max-width:none;padding:36px 26px;align-items:center;text-align:center}.hero-copy h1{font-size:39px}.hero-copy .lead{max-width:320px}}
+/* Real-product composition: copy stays within the empty left side. */
+.hero-banner{max-width:1600px;background:#f5f0e7}
+.hero-banner:after{display:none}
+.hero-photo{height:auto;min-height:0}
+.hero-photo img{width:100%;height:auto;object-fit:contain}
+.hero-copy{--copy-left:max(20px,calc((100% - 1120px)/2));left:var(--copy-left);top:0;bottom:auto;width:calc(40% - var(--copy-left) - 24px);max-width:380px;padding:clamp(24px,3vw,48px) 0;margin:0;align-items:flex-start;text-align:left;background:transparent}
+.hero-copy h1{color:#303c29;font-size:clamp(28px,2.5vw,40px);line-height:1.08;letter-spacing:-.045em}
+.hero-copy .eyebrow{color:#465536;font-size:10px;margin-bottom:12px}
+.hero-copy .lead{color:#414b39;font-size:15px;line-height:1.45;margin:16px 0 20px;max-width:none}
+.hero-copy .hero-cta{background:#465536;color:#fff;border-color:#465536;font-size:10px;padding:14px 16px}
+@media(max-width:1000px){
+ .hero-banner{display:flex;flex-direction:column}
+ .hero-copy{position:relative;inset:auto;order:0;width:calc(100% - 28px);max-width:640px;margin:0 auto;padding:28px 0;align-items:flex-start;text-align:left}
+ .hero-copy h1{font-size:clamp(30px,5vw,40px);max-width:520px}
+ .hero-copy .lead{max-width:500px}
+ .hero-photo{order:1;height:auto;overflow:hidden;width:100%}
+ .hero-photo img{width:160%;max-width:none;height:auto;margin-left:-60%;object-fit:contain;object-position:center}
+}
 </style></head>
 <body>
   <div class="announcement-bar"><div class="wrap announcement-content"><span>Armá tu carrito y comprá desde la comodidad de tu casa</span><span>Envíos a todo el país</span></div></div>
   <header class="site-header"><div class="wrap nav"><a class="brand" href="#inicio">Casa Natural</a><div class="nav-links"><nav class="nav-main" aria-label="Navegación principal"><a href="#productos">Productos</a><a href="#como-comprar">Cómo comprar</a></nav><nav class="social-links" aria-label="Redes sociales"><a class="social-link" href="https://www.instagram.com/tucasaesnatural/" target="_blank" rel="noopener noreferrer" aria-label="Casa Natural en Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg></a><a class="social-link" href="https://www.facebook.com/profile.php?id=61594287721318" target="_blank" rel="noopener noreferrer" aria-label="Casa Natural en Facebook" title="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.5 1.6-1.5h1.7V3.3a22 22 0 0 0-2.5-.1c-2.5 0-4.2 1.5-4.2 4.3v2.3H8.3V13h2.8v8"/></svg></a></nav><button class="header-cart" type="button" data-open-cart aria-label="Abrir carrito"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 11h11.5l2-8H6M9 20h.01M18 20h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>Carrito</button></div></div></header>
   <main>
-    <section class="hero" id="inicio"><div class="wrap"><div class="hero-banner"><div class="hero-photo"><img src="hero-mas-vendidos.png" alt="Frascos Jumbalay y selección gastronómica Casa Natural"></div><div class="hero-copy"><p class="eyebrow">Selección delicatessen</p><h1>Sabores para disfrutar y compartir.</h1><p class="lead">Una selección de aceitunas, conservas y untables para llevar a tu mesa.</p><a class="button hero-cta" href="#productos">Explorar la selección</a></div></div></div></section>
+    <section class="hero" id="inicio"><div class="wrap"><div class="hero-banner"><div class="hero-photo"><img src="hero-conservas-real.png" alt="Frascos Jumbalay y selección gastronómica Casa Natural"></div><div class="hero-copy"><p class="eyebrow">Selección delicatessen</p><h1>Sabores para disfrutar y compartir.</h1><p class="lead">Una selección de aceitunas, conservas y untables para llevar a tu mesa.</p><a class="button hero-cta" href="#productos">Explorar la selección</a></div></div></div></section>
     <section id="productos"><div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><h2>Nuestra selección para vos</h2></div><div class="products" id="product-grid"></div></div></section>
     <section id="como-comprar"><div class="wrap"><div class="intro how-intro"><div><p class="eyebrow">Cómo comprar</p><h2>Simple, personal y directo.</h2></div></div><div class="how"><div class="step"><span>01</span><h3>Elegí tus productos</h3><p>Explorá la selección, elegí las cantidades y revisá tu carrito.</p></div><div class="step" id="entrega-retiro"><span>02</span><h3>Elegí cómo recibirlos</h3><p>Seleccioná entrega local, retiro personal o envío nacional. Dejanos tus datos para poder contactarte.</p></div><div class="step"><span>03</span><h3>Elegí cómo pagar</h3><p>Pagá con Mercado Pago o elegí transferencia. Después coordinamos los detalles por WhatsApp.</p></div></div></div></section>
     <section class="business" aria-labelledby="linea-completa-title"><div class="wrap" style="text-align:center;max-width:900px"><h2 id="linea-completa-title" style="margin:0 0 24px;font-size:clamp(26px,3.5vw,42px)">Elegí toda la línea y lo pedimos especialmente para vos</h2><a class="button" href="jumbalay-linea-completa.pdf" download="Catalogo-Jumbalay-Linea-Completa.pdf">Descargar catálogo de la línea completa (PDF)</a></div></section>
