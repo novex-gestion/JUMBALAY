@@ -40,8 +40,14 @@
   document.querySelector('#productos').before(section);
   const nav = document.createElement('a'); nav.href='combos.html';nav.textContent='Combos';
   document.querySelector('.nav-main').prepend(nav);
+  const commerceLink=document.createElement('a');
+  commerceLink.href='#comercios';commerceLink.textContent='Soy un comercio';
+  document.querySelector('.nav-main').append(commerceLink);
+  document.querySelector('#comercios').style.scrollMarginTop='150px';
   document.querySelector('.nav-main a[href="#productos"]').href='index.html#productos';
-  document.querySelector('.nav-main a[href="index.html#productos"]').textContent='Colección para vos';
+  const collectionLink=document.querySelector('.nav-main a[href="index.html#productos"]');
+  collectionLink.textContent='La colección';
+  document.querySelector('.nav-main').prepend(collectionLink);
   document.querySelector('.brand').href='index.html';
   if(comboPage){document.title='Combos | Casa Natural';document.querySelector('link[rel="canonical"]')?.setAttribute('href','https://tucasaesnatural.com/combos.html');}
   function groupPhotos(entries){
