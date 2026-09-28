@@ -99,7 +99,7 @@
     #inicio .promo-copy p,#inicio .hero-copy .lead{grid-row:3;font:16px/1.45 Arial,sans-serif;margin:0;max-width:410px;color:#414b39}
     #inicio .promo-copy del{grid-row:4;margin:0}#inicio .promo-copy strong{grid-row:5;margin:0;font-size:36px}#inicio .promo-save{grid-row:6;margin:0}
     #inicio .promo-copy .promo-cta,#inicio .hero-copy .hero-cta{grid-row:7;align-self:end;margin:0;padding:15px 20px;font:700 11px/1.3 Arial,sans-serif;letter-spacing:.05em;background:#465536;color:white;border:1px solid #465536}
-    #inicio .promo-banner>img{position:absolute;right:3%;bottom:25px;width:52%;height:86%;max-height:none;object-fit:contain;mix-blend-mode:multiply}
+    #inicio .promo-banner>img{position:absolute;right:3%;bottom:25px;width:52%;height:86%;max-height:none;object-fit:contain;mix-blend-mode:normal}
     #inicio .promo-cover .hero-banner{position:static;background:transparent;display:block}
     #inicio .promo-cover .hero-photo{position:absolute;inset:0;width:100%;height:100%}
     @media(max-width:1000px){#inicio .promo-copy h2,#inicio .hero-copy h1{font-size:34px}#inicio .promo-banner>.promo-copy,#inicio .promo-cover .hero-copy{left:28px;width:43%}}
