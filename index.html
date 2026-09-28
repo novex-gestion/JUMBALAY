@@ -240,23 +240,17 @@
 }
 </style>
   <style>
-    #opiniones-jumbalay{background:#ecefE5;padding:72px 0;scroll-margin-top:100px}
-    .jumbalay-reviews-heading{max-width:720px;margin-bottom:32px}
-    .jumbalay-reviews-heading h2{font-size:clamp(30px,4vw,46px);line-height:1.12;margin:0 0 16px;font-weight:400;letter-spacing:-.035em}
-    .jumbalay-reviews-heading>p:last-child{font:16px/1.65 Arial,sans-serif;color:#52604d;max-width:580px;margin:0}
-    .jumbalay-reviews-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-    .jumbalay-review{background:var(--paper);border:1px solid #d6ddcb;border-radius:12px;padding:26px;display:flex;flex-direction:column;min-width:0}
-    .jumbalay-review-product{display:flex;align-items:center;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--line)}
-    .jumbalay-review-product img{width:68px;height:88px;object-fit:contain;border-radius:6px;background:#fff}
-    .jumbalay-review-product h3{font:400 22px/1.2 Georgia,serif;margin:0 0 6px}
-    .jumbalay-review-product p{font:12px/1.5 Arial,sans-serif;color:#626a59;margin:0}
-    .jumbalay-review blockquote{margin:22px 0 28px;font:400 25px/1.4 Georgia,serif;letter-spacing:-.025em;flex:1}
-    .jumbalay-review blockquote::before{content:'“';display:block;font:64px/.8 Georgia,serif;color:#859371;margin-bottom:8px}
-    .jumbalay-review-source{font:12px/1.6 Arial,sans-serif;color:#5a6552;margin:0}
-    .jumbalay-review-source a{display:inline-flex;align-items:center;min-height:44px;color:var(--brand-olive);text-underline-offset:4px;font-weight:700}
-    .jumbalay-review-source a:focus-visible{outline:2px solid var(--brand-olive);outline-offset:4px}
-    .jumbalay-reviews-note{font:13px/1.65 Arial,sans-serif;color:#52604d;max-width:860px;margin:24px 0 0}
-    @media(max-width:760px){#opiniones-jumbalay{padding:48px 0}.jumbalay-reviews-grid{grid-template-columns:1fr}.jumbalay-review{padding:22px}.jumbalay-review blockquote{font-size:24px;margin-bottom:16px}}
+    #opiniones-jumbalay{background:#ecefe5;padding:48px 0;scroll-margin-top:100px}
+    .jumbalay-reviews-heading{max-width:720px;margin-bottom:24px}
+    .jumbalay-reviews-heading h2{font-size:clamp(28px,3.5vw,40px);line-height:1.15;margin:0;font-weight:400;letter-spacing:-.035em}
+    .jumbalay-reviews-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .jumbalay-review{background:var(--paper);border:1px solid #d6ddcb;border-radius:10px;padding:18px;min-width:0}
+    .jumbalay-review h3{font:700 12px/1.45 Arial,sans-serif;color:#52604d;margin:0 0 10px}
+    .jumbalay-review blockquote{margin:0;font:400 19px/1.4 Georgia,serif;overflow-wrap:break-word}
+    .jumbalay-reviews-note{font:12px/1.6 Arial,sans-serif;color:#52604d;margin:20px 0 0}
+    @media(max-width:900px){.jumbalay-reviews-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:600px){#opiniones-jumbalay{padding:36px 0}.jumbalay-reviews-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.jumbalay-review{padding:14px}.jumbalay-review blockquote{font-size:17px}}
+    @media(max-width:340px){.jumbalay-reviews-grid{grid-template-columns:1fr}}
   </style></head>
 <body>
   <div class="announcement-bar"><div class="wrap announcement-content"><span>Armá tu carrito y comprá desde la comodidad de tu casa</span><span>Envíos a todo el país</span></div></div>
@@ -266,13 +260,25 @@
     <section id="productos"><div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><h2>Nuestra colección para vos</h2></div><div class="products" id="product-grid"></div></div></section>
     <section id="opiniones-jumbalay" aria-labelledby="opiniones-jumbalay-title">
       <div class="wrap">
-        <div class="jumbalay-reviews-heading"><p class="eyebrow">Opiniones sobre los productos</p><h2 id="opiniones-jumbalay-title">Lo que dicen quienes<br>probaron Jumbalay.</h2><p>Una selección de reseñas públicas de Mercado Libre sobre los sabores que también encontrás en Casa Natural.</p></div>
+        <div class="jumbalay-reviews-heading"><p class="eyebrow">Opiniones sobre los productos</p><h2 id="opiniones-jumbalay-title">Lo que dicen quienes probaron Jumbalay.</h2></div>
         <div class="jumbalay-reviews-grid">
-          <article class="jumbalay-review"><div class="jumbalay-review-product"><img src="https://panel.tucasaesnatural.com/uploads/p-20260915-0559db4c.png" alt="Frasco de tomates secos mediterráneos Jumbalay" width="68" height="88" loading="lazy"><div><h3>Tomates secos mediterráneos</h3><p>Con ajo y albahaca · 200 g</p></div></div><blockquote>Muy bueno ideales para pastas y pizzas.</blockquote><p class="jumbalay-review-source">Reseña publicada en Mercado Libre<br><a href="https://www.mercadolibre.com.ar/tomates-secos-mediterraneos-con-ajo-albahaca-200g-jumbalay/p/MLA52117066" target="_blank" rel="noopener noreferrer" aria-label="Ver fuente de la reseña de tomates secos en Mercado Libre (abre otra pestaña)">Ver fuente original ↗</a></p></article>
-          <article class="jumbalay-review"><div class="jumbalay-review-product"><img src="https://tucasaesnatural.com/assets/berenjenas-blanco.png" alt="Frasco de berenjenas condimentadas Jumbalay" width="68" height="88" loading="lazy"><div><h3>Berenjenas condimentadas</h3><p>En aceite · 360 g</p></div></div><blockquote>Riquísimas!! parecen caseras!.</blockquote><p class="jumbalay-review-source">Reseña publicada en Mercado Libre<br><a href="https://www.mercadolibre.com.ar/berenjenas-condimentadas-jumbalay-frasco-x-360-gr/p/MLA44301705" target="_blank" rel="noopener noreferrer" aria-label="Ver fuente de la reseña de berenjenas en Mercado Libre (abre otra pestaña)">Ver fuente original ↗</a></p></article>
-          <article class="jumbalay-review"><div class="jumbalay-review-product"><img src="https://panel.tucasaesnatural.com/uploads/p-20260917-963c7601.png" alt="Frasco de pepinitos en vinagre Jumbalay" width="68" height="88" loading="lazy"><div><h3>Pepinitos en vinagre</h3><p>Frasco · 360 g</p></div></div><blockquote>Son riquísimos! pepinos chiquitos, los como de snack!.</blockquote><p class="jumbalay-review-source">Reseña publicada en Mercado Libre<br><a href="https://www.mercadolibre.com.ar/pepinitos-en-vinagre-jumbalay-frasco-x-360-gr-pepinillos/p/MLA44150508" target="_blank" rel="noopener noreferrer" aria-label="Ver fuente de la reseña de pepinitos en Mercado Libre (abre otra pestaña)">Ver fuente original ↗</a></p></article>
+          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Muy bueno ideales para pastas y pizzas.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Riquísimas!! parecen caseras!.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Aceitunas verdes Magna</h3><blockquote>“Las mejores.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pimientos agridulces</h3><blockquote>“Son muy sabrosos y bien condimentados.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pepinitos en vinagre</h3><blockquote>“Son riquísimos! pepinos chiquitos, los como de snack!.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pasta de aceitunas verdes</h3><blockquote>“Espectacular como todo.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Un manjar.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Tomate triturado</h3><blockquote>“Muy buen producto! buenisimo para una súper salsa casera!.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Riquisimas.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Tomates secos patagónicos</h3><blockquote>“Muy ricos y suaves.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Aceitunas verdes Magna</h3><blockquote>“Riquísimas!!!.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pepinitos en vinagre</h3><blockquote>“Los pepinos son excelentes.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pimientos agridulces</h3><blockquote>“Exquisitos , para acompañar carnes, hamburguesa, pizzas.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Riquísimos!!! un manjar.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Buen producto.”</blockquote></article>
         </div>
-        <p class="jumbalay-reviews-note">Estas opiniones corresponden a productos Jumbalay adquiridos a través de otros vendedores. No describen compras ni atención de Casa Natural. Selección consultada el 28/09/2026; los comentarios se reproducen tal como fueron publicados.</p>
+        <p class="jumbalay-reviews-note">Opiniones públicas sobre productos Jumbalay</p>
       </div>
     </section>
     <section id="como-comprar"><div class="wrap"><div class="intro how-intro"><div><p class="eyebrow">Cómo comprar</p><h2>Simple, personal y directo.</h2></div></div><div class="how"><div class="step"><span>01</span><h3>Elegí tus productos</h3><p>Explorá la selección, elegí las cantidades y revisá tu carrito.</p></div><div class="step" id="entrega-retiro"><span>02</span><h3>Elegí cómo recibirlos</h3><p>Seleccioná entrega local, retiro personal o envío nacional. Dejanos tus datos para poder contactarte.</p></div><div class="step"><span>03</span><h3>Elegí cómo pagar</h3><p>Pagá con Mercado Pago o elegí transferencia. Después coordinamos los detalles por WhatsApp.</p></div></div></div></section>
