@@ -54,7 +54,9 @@
   promo.className='combo-promos';promo.hidden=true;
   promo.setAttribute('aria-label','Promociones de combos');
   promo.setAttribute('aria-roledescription','carrusel');
-  if(!comboPage) document.querySelector('#inicio').after(promo);
+  const hero=document.querySelector('#inicio');
+  const originalHero=hero.querySelector('.hero-banner').outerHTML;
+  if(!comboPage) hero.querySelector('.wrap').append(promo);
   const promoStyle=document.createElement('style');
   promoStyle.textContent=`
     .combo-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.combo-card .combo-actions .button{margin:0;min-width:0;padding:14px 8px;font-size:11px;letter-spacing:.03em;min-height:48px}.combo-actions .button.light{background:transparent;color:#465536;border-color:#465536}.combo-actions .button.light:hover{background:#eeefdf}
@@ -65,6 +67,45 @@
     @media(max-width:600px){.combo-promos{padding:0 14px;margin:20px auto}.promo-banner{grid-template-columns:1fr 1fr}.promo-copy{padding:18px 12px}.promo-copy h2{font-size:25px}.promo-copy p{font-size:12px}.promo-copy strong{font-size:25px}.promo-save{font-size:14px}.promo-copy del{font-size:12px}.promo-cta{font-size:10px;padding:10px}.promo-controls{gap:6px}.promo-copy .eyebrow{font-size:10px}}
   `;
   document.head.append(promoStyle);
+  const heroCarouselStyle=document.createElement('style');
+  heroCarouselStyle.textContent=`
+    #inicio .combo-promos{max-width:none;margin:0;padding:0}
+    #inicio .promo-banner{height:clamp(430px,34vw,560px);border:0;border-radius:0;grid-template-columns:.9fr 1.1fr}
+    #inicio .promo-banner>img{height:100%;max-height:560px;object-fit:contain}
+    #inicio .promo-copy{padding:30px clamp(24px,5vw,80px)}
+    #inicio .promo-cover{position:relative;display:block}
+    #inicio .promo-cover .hero-banner{height:100%;min-height:0}
+    #inicio .promo-cover .hero-photo{height:100%;min-height:0}
+    #inicio .promo-cover .hero-photo img{height:100%;width:100%;margin:0;object-fit:cover}
+    #inicio .promo-cover[hidden],#inicio .promo-banner[hidden]{display:none}
+    #inicio .promo-controls{padding:0 8px;gap:8px}
+    #inicio .promo-controls [data-slide]{min-width:12px;min-height:12px;width:12px;height:12px;padding:0;font-size:0}
+    @media(max-width:1000px){#inicio .promo-cover .hero-banner{display:block}#inicio .promo-cover .hero-copy{position:absolute;top:20px;left:24px;width:45%;padding:0;margin:0}#inicio .promo-cover .hero-copy h1{font-size:32px}}
+    @media(max-width:600px){#inicio .promo-banner{height:560px;grid-template-columns:1fr;grid-template-rows:auto 240px}#inicio .promo-copy{padding:24px 24px 8px}#inicio .promo-banner>img{height:240px}#inicio .promo-copy h2{font-size:32px}#inicio .promo-cover .hero-copy{top:24px;left:24px;width:calc(100% - 48px)}#inicio .promo-cover .hero-photo img{object-position:68% bottom}#inicio .promo-cover .hero-photo{position:absolute;bottom:0;width:100%;height:300px}#inicio .promo-cover .hero-banner{background:#f6f1e8}#inicio .promo-cover .hero-copy .lead{max-width:290px}}
+  `;
+  document.head.append(heroCarouselStyle);
+  const unifiedStyle=document.createElement('style');
+  unifiedStyle.textContent=`
+    #inicio .promo-banner{position:relative;isolation:isolate;height:560px;background:#f5eee3 url('carousel-lino-v1.jpg') center/cover no-repeat;display:block}
+    #inicio .promo-banner>.promo-copy,#inicio .promo-cover .hero-copy{position:absolute;inset:44px auto 44px max(28px,calc((100% - 1120px)/2));width:40%;max-width:440px;height:auto;margin:0;padding:0;background:transparent;display:grid;grid-template-rows:26px 106px 60px 24px 48px 30px 1fr;align-items:start;justify-items:start;text-align:left;z-index:2}
+    #inicio .promo-copy .eyebrow,#inicio .hero-copy .eyebrow{grid-row:1;font:700 11px/1.4 Arial,sans-serif;letter-spacing:.16em;color:#465536;margin:0}
+    #inicio .promo-copy h2,#inicio .hero-copy h1{grid-row:2;font-size:40px;line-height:1.08;letter-spacing:-.04em;margin:0;max-width:440px}
+    #inicio .promo-copy p,#inicio .hero-copy .lead{grid-row:3;font:16px/1.45 Arial,sans-serif;margin:0;max-width:410px;color:#414b39}
+    #inicio .promo-copy del{grid-row:4;margin:0}#inicio .promo-copy strong{grid-row:5;margin:0;font-size:36px}#inicio .promo-save{grid-row:6;margin:0}
+    #inicio .promo-copy .promo-cta,#inicio .hero-copy .hero-cta{grid-row:7;align-self:end;margin:0;padding:15px 20px;font:700 11px/1.3 Arial,sans-serif;letter-spacing:.05em;background:#465536;color:white;border:1px solid #465536}
+    #inicio .promo-banner>img{position:absolute;right:3%;bottom:25px;width:52%;height:86%;max-height:none;object-fit:contain;mix-blend-mode:multiply}
+    #inicio .promo-cover .hero-banner{position:static;background:transparent;display:block}
+    #inicio .promo-cover .hero-photo{position:absolute;inset:0;width:100%;height:100%}
+    @media(max-width:1000px){#inicio .promo-copy h2,#inicio .hero-copy h1{font-size:34px}#inicio .promo-banner>.promo-copy,#inicio .promo-cover .hero-copy{left:28px;width:43%}}
+    @media(max-width:600px){#inicio .promo-banner{height:720px;background-position:center}#inicio .promo-banner>.promo-copy,#inicio .promo-cover .hero-copy{inset:24px 24px auto;width:auto;max-width:none;height:386px;grid-template-rows:24px 84px 60px 24px 44px 28px 1fr}#inicio .promo-copy h2,#inicio .hero-copy h1{font-size:32px}#inicio .promo-copy p,#inicio .hero-copy .lead{font-size:14px;max-width:none}#inicio .promo-copy strong{font-size:30px}#inicio .promo-banner>img{right:5%;bottom:10px;width:90%;height:290px}#inicio .promo-cover .hero-photo{top:auto;bottom:0;height:300px}#inicio .promo-cover .hero-photo img{object-position:70% bottom}#inicio .promo-cover .hero-copy{background:transparent}}
+  `;
+  document.head.append(unifiedStyle);
+  const comboTitleStyle=document.createElement('style');
+  comboTitleStyle.textContent=`#inicio .promo-banner[href^="combos.html#combo-"] h2{font-size:clamp(40px,3.6vw,52px);font-weight:700;color:var(--wine);line-height:1.04}@media(max-width:600px){#inicio .promo-banner[href^="combos.html#combo-"] h2{font-size:36px;line-height:1.08}}`;
+  document.head.append(comboTitleStyle);
+  const videoStyle=document.createElement('style');
+  videoStyle.textContent=`#inicio .promo-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}#inicio .promo-video:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(246,240,228,.94) 0%,rgba(246,240,228,.88) 38%,rgba(246,240,228,.3) 68%,rgba(246,240,228,.13));z-index:1;pointer-events:none}.video-toggle{display:block;margin:10px auto;background:#f6f0e4;color:#465536;border:1px solid #465536;padding:9px 14px;cursor:pointer}.video-toggle[hidden]{display:none}@media(max-width:600px){#inicio .promo-video video{object-position:85% center}#inicio .promo-video:after{background:linear-gradient(180deg,rgba(246,240,228,.95) 0%,rgba(246,240,228,.88) 53%,rgba(246,240,228,.15) 78%)}}`;
+  document.head.append(videoStyle);
   let promoIndex=0;
   function selectPromo(index){
     const slides=[...promo.querySelectorAll('.promo-banner')];
@@ -72,17 +113,31 @@
     promoIndex=(index+slides.length)%slides.length;
     slides.forEach((slide,i)=>slide.hidden=i!==promoIndex);
     promo.querySelectorAll('[data-slide]').forEach((dot,i)=>dot.setAttribute('aria-current',String(i===promoIndex)));
+    const video=promo.querySelector('video');
+    const active=video&&!video.closest('.promo-banner').hidden;
+    if(video){if(active&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden){video.play().catch(()=>{});}else video.pause();}
   }
   function renderPromos(){
     if(comboPage||!catalogReady)return;
     const available=definitions.filter(def=>resolve(def).every(e=>e.product));
     promo.hidden=!available.length;
+    if(available.length) hero.querySelector('.wrap > .hero-banner')?.remove();
     promo.innerHTML=available.map((def,i)=>{
       const entries=resolve(def),total=entries.reduce((s,e)=>s+e.product.price,0),list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0),saving=list-total;
       return `<a class="promo-banner" href="combos.html#combo-${def.id}" aria-label="Ver ${safe(def.name)}" ${i!==promoIndex?'hidden':''}><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>${safe(def.name)}</h2><p>${safe(def.description)}</p>${saving>0?`<del>Lista ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="promo-save">Ahorrás ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}<span class="promo-cta">VER ESTE COMBO →</span></div><img src="combo-${def.id}.jpg" alt="${entries.length} frascos de ${safe(def.name)}" width="1536" height="1024"></a>`;
-    }).join('')+`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Combo anterior">←</button>${available.map((def,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(def.name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Combo siguiente">→</button></div>`;
+    }).join('');
+    promo.insertAdjacentHTML('afterbegin',`<div class="promo-banner promo-cover">${originalHero}</div>`);
+    promo.insertAdjacentHTML('beforeend',`<a class="promo-banner" href="index.html#productos" aria-label="Ver nuestra colección para vos"><div class="promo-copy"><span class="eyebrow">CASA NATURAL</span><h2>Nuestra colección para vos</h2><p>Elegí tus favoritos y armá tu propia selección de conservas y untables.</p><span class="promo-cta">EXPLORAR LA COLECCIÓN →</span></div><img src="combo-completa.jpg" alt="Selección de conservas y untables Jumbalay" width="1536" height="1024"></a>`);
+    const names=['Portada',...available.map(d=>d.name),'Nuestra colección para vos'];
+    promo.insertAdjacentHTML('beforeend',`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Diapositiva anterior">←</button>${names.map((name,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Diapositiva siguiente">→</button></div>`);
+    const collection=promo.querySelector('a[aria-label="Ver nuestra colección para vos"]');
+    collection.classList.add('promo-video');
+    collection.querySelector('img').remove();
+    const video=document.createElement('video');video.src='coleccion-video-horizontal.mp4';video.poster='carousel-lino-v1.jpg';video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');collection.prepend(video);
+    selectPromo(promoIndex);
   }
   promo.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;selectPromo(b.hasAttribute('data-slide')?Number(b.dataset.slide):promoIndex+Number(b.dataset.direction));});
+  document.addEventListener('visibilitychange',()=>{const video=promo.querySelector('video');if(video&&document.hidden)video.pause();});
   promo.addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();selectPromo(promoIndex+(event.key==='ArrowRight'?1:-1));}});
   let touchStart=null;
   promo.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
