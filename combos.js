@@ -13,7 +13,7 @@
   document.head.append(style);
   const layoutStyle = document.createElement('style');
   layoutStyle.textContent = `
-    .catalog-selection #combos,.catalog-combos #productos,.catalog-combos #inicio{display:none!important}
+    .catalog-selection #combos,.catalog-combos #productos{display:none!important}
     .catalog-tabs{display:flex;gap:8px;max-width:1120px;margin:0 auto;padding:24px 20px 0}
     .catalog-tabs a{flex:1;text-align:center;padding:20px 12px;border:1px solid #465536;background:#faf7ef;color:#465536;font:700 15px Arial,sans-serif;letter-spacing:.06em;text-decoration:none;border-radius:8px 8px 0 0}
     .catalog-tabs a[aria-current=page]{background:#465536;color:white;border-bottom:4px solid #293422}
@@ -62,7 +62,7 @@
   promo.setAttribute('aria-roledescription','carrusel');
   const hero=document.querySelector('#inicio');
   const originalHero=hero.querySelector('.hero-banner').outerHTML;
-  if(!comboPage) hero.querySelector('.wrap').append(promo);
+  hero.querySelector('.wrap').append(promo);
   const promoStyle=document.createElement('style');
   promoStyle.textContent=`
     .combo-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.combo-card .combo-actions .button{margin:0;min-width:0;padding:14px 8px;font-size:11px;letter-spacing:.03em;min-height:48px}.combo-actions .button.light{background:transparent;color:#465536;border-color:#465536}.combo-actions .button.light:hover{background:#eeefdf}
@@ -133,7 +133,7 @@
     if(!document.hidden)promoTimer=setTimeout(()=>selectPromo(promoIndex+1),8000);
   }
   function renderPromos(){
-    if(comboPage||!catalogReady)return;
+    if(!catalogReady)return;
     const available=definitions.filter(def=>resolve(def).every(e=>e.product));
     promo.hidden=!available.length;
     if(available.length) hero.querySelector('.wrap > .hero-banner')?.remove();
@@ -174,7 +174,7 @@
         if(!add.disabled)add.textContent='AGREGAR AL CARRITO Y SEGUIR COMPRANDO';
       }
     });
-    if(comboPage&&!initialAnchorHandled&&catalogReady){const target=[...section.querySelectorAll('[id]')].find(el=>'#'+el.id===location.hash);if(target){requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));initialAnchorHandled=true;}}
+    if(comboPage&&!initialAnchorHandled&&catalogReady){const target=[...section.querySelectorAll('[id]')].find(el=>'#'+el.id===location.hash)||section;requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'instant'}));initialAnchorHandled=true;}
   }
   function render() {
     const grid = section.querySelector('.combo-grid');
