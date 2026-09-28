@@ -75,7 +75,7 @@
   document.head.append(promoStyle);
   const heroCarouselStyle=document.createElement('style');
   heroCarouselStyle.textContent=`
-    #inicio .combo-promos{max-width:none;margin:0;padding:0}
+    #inicio .combo-promos{position:relative;max-width:none;margin:0;padding:0}
     #inicio .promo-banner{height:clamp(430px,34vw,560px);border:0;border-radius:0;grid-template-columns:.9fr 1.1fr}
     #inicio .promo-banner>img{height:100%;max-height:560px;object-fit:contain}
     #inicio .promo-copy{padding:30px clamp(24px,5vw,80px)}
@@ -112,6 +112,9 @@
   const videoStyle=document.createElement('style');
   videoStyle.textContent=`#inicio .promo-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}#inicio .promo-video:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(246,240,228,.94) 0%,rgba(246,240,228,.88) 38%,rgba(246,240,228,.3) 68%,rgba(246,240,228,.13));z-index:1;pointer-events:none}.video-toggle{display:block;margin:10px auto;background:#f6f0e4;color:#465536;border:1px solid #465536;padding:9px 14px;cursor:pointer}.video-toggle[hidden]{display:none}@media(max-width:600px){#inicio .promo-video video{object-position:85% center}#inicio .promo-video:after{background:linear-gradient(180deg,rgba(246,240,228,.95) 0%,rgba(246,240,228,.88) 53%,rgba(246,240,228,.15) 78%)}}`;
   document.head.append(videoStyle);
+  const navigationStyle=document.createElement('style');
+  navigationStyle.textContent=`#inicio .promo-controls [data-direction]{position:absolute;top:280px;transform:translateY(-50%);z-index:4;width:44px;height:44px;background:rgba(255,253,248,.94);box-shadow:0 2px 10px #0002;border:1px solid #d6d0c4;font-size:24px}#inicio .promo-controls [data-direction="-1"]{left:8px}#inicio .promo-controls [data-direction="1"]{right:8px}#inicio .promo-controls [data-direction]:hover{background:#465536;color:white}@media(max-width:600px){#inicio .promo-controls [data-direction]{top:360px}}`;
+  document.head.append(navigationStyle);
   const motionStyle=document.createElement('style');
   motionStyle.textContent=`#inicio .promo-banner:not([hidden]){animation:promoFade .7s ease both}@keyframes promoFade{from{opacity:0}to{opacity:1}}#inicio .promo-cover .hero-photo{inset:0;height:100%}#inicio .promo-cover video{width:100%;height:100%;object-fit:cover}#inicio .promo-cover .hero-banner:after{display:block;background:linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12) 75%)}#inicio .promo-cover .hero-copy h1,#inicio .promo-cover .hero-copy .eyebrow,#inicio .promo-cover .hero-copy .lead{color:#fff;text-shadow:0 1px 8px #0006}#inicio .promo-collection>img{inset:0;width:100%;height:100%;object-fit:cover}@media(max-width:600px){#inicio .promo-collection>img{top:auto;height:300px;object-position:70% bottom}#inicio .promo-cover .hero-banner:after{background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.1))}}@media(prefers-reduced-motion:reduce){#inicio .promo-banner:not([hidden]){animation:none}}`;
   document.head.append(motionStyle);
