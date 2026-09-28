@@ -152,7 +152,6 @@
     collection.classList.add('promo-video');
     collection.querySelector('img').remove();
     const video=document.createElement('video');video.src='coleccion-video-horizontal.mp4';video.poster='carousel-lino-v1.jpg';video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');collection.prepend(video);
-    promo.querySelector('.promo-controls').insertAdjacentHTML('beforeend','<button type="button" data-autoplay aria-label="Pausar avance automático">Pausar</button>');
     selectPromo(promoIndex);
   }
   promo.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;if(b.hasAttribute('data-autoplay')){autoplayPaused=!autoplayPaused;restartPromoTimer();return;}selectPromo(b.hasAttribute('data-slide')?Number(b.dataset.slide):promoIndex+Number(b.dataset.direction));});
