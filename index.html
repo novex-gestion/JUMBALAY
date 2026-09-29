@@ -11,15 +11,8 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-0KWGE3QME7');
-    document.addEventListener('click', function(event) {
-      const whatsapp = event.target.closest('[data-whatsapp]');
-      if (whatsapp) gtag('event', 'generate_lead', {content_name: whatsapp.dataset.item || 'consulta', contact_method: 'whatsapp'});
-      const add = event.target.closest('[data-quantity][data-change="1"]');
-      if (add) gtag('event', 'add_to_cart', {item_id: add.dataset.quantity, quantity: 1});
-      const checkout = event.target.closest('#send-cart');
-      if (checkout && !checkout.disabled) gtag('event', 'begin_checkout');
-    });
   </script>
+  <script src="ga4-ecommerce.js?v=20260929-1"></script>
   <title>Casa Natural · Conservas, aceitunas y mermeladas gourmet en Pilar</title>
   <meta name="description" content="Aceitunas, tomates secos, berenjenas y mermeladas gourmet artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar. Comprá online o consultá por WhatsApp.">
   <link rel="canonical" href="https://tucasaesnatural.com/">
@@ -302,6 +295,7 @@
       products: []
     };
     const track = (event, params = {}) => { if (typeof window.fbq === "function") window.fbq("track", event, params); };
+    const analyticsUnitPrice = product => cnCoupon.unitPrice(product);
     if (CONFIG.metaPixelId) { !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CONFIG.metaPixelId); fbq("track", "PageView"); }
     const safe = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
     const money = value => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(value);
@@ -378,7 +372,7 @@
       cart.set(index, quantity);
       document.querySelector(`#qty-${index}`).textContent = quantity;
       renderCart();
-      if (quantity > before) track('AddToCart', {content_ids:[product.id],content_name:product.name,content_type:'product',value:product.price*(quantity-before),currency:'ARS'});
+      if (quantity > before) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, quantity - before, analyticsUnitPrice); track('AddToCart', {content_ids:[product.id],content_name:product.name,content_type:'product',value:product.price*(quantity-before),currency:'ARS'}); }
     });
     // Las fotos subidas desde el panel viven en el servidor del panel.
     function resolverFoto(src, host){
@@ -439,7 +433,7 @@
 
     function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : ""}${fotosDe(product).map(src => esVideo(src) ? `<video src="${safe(src)}" muted loop playsinline preload="metadata" aria-label="${safe(product.name)}"></video>` : `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p>${descuento ? `<p class="reference-price"><s aria-label="Precio de lista">${money(product.referencePrice)}</s></p>` : ""}<div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<span class="discount-inline">${descuento}% OFF</span>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="quantity-picker"><label for="quantity-select-${index}">Cantidad:</label><select id="quantity-select-${index}" data-quantity-select="${index}" aria-label="Cantidad de ${safe(product.name)}"><option value="0">Elegir</option>${Array.from({length:product.stock},(_,i)=>`<option value="${i+1}">${i+1} ${i===0 ? "unidad" : "unidades"}</option>`).join("")}</select><span class="available-stock">(${product.stock} disponibles)</span><strong id="qty-${index}" hidden>0</strong></div>`}</div></article>`; }).join(""); armarCarruseles(); }
     document.querySelector('#product-grid').innerHTML = '<p role="status">Cargando precios y disponibilidad actualizados…</p>';
-    document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
+    document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, next - before, analyticsUnitPrice); track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); CNAnalytics.viewCart(lines, CONFIG.products, analyticsUnitPrice); document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     const pedidoValido = (permitirCotizacionNacional = false) => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
       let address = deliveryAddress.value.trim().replace(/\s+/g, ' ');
@@ -475,7 +469,7 @@
       const entrega = pedido.locality === pickupLocation ? 'Retiro por Champagnat 1176, Pilar · 24 hs' : 'Entrega sin cargo';
       const message = `Hola, quiero coordinar este pedido de Casa Natural y pagar por transferencia:\\n${detalle}\\n\\nTotal: ${money(total)}${ahorroTotal ? `\\nAhorro total: ${money(ahorroTotal)}` : ''}\\n\\nDatos de entrega:\\n- Dirección: ${pedido.address}\\n- Localidad: ${pedido.locality}${pedido.zip ? `\\n- Código postal: ${pedido.zip}` : ''}\\n- Modalidad: ${entrega}\\n\\nPara transferencia, el alias es: juan.allegrina.`;
       window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
-    }); const params = new URLSearchParams(window.location.search); const paymentId = params.get('payment_id') || params.get('collection_id'); if (paymentId && !sessionStorage.getItem(`purchase-${paymentId}`)) fetch(`${CONFIG.paymentStatusApi}?payment_id=${encodeURIComponent(paymentId)}`).then(response => response.ok ? response.json() : null).then(payment => { if (payment?.status === 'approved') { track('Purchase', {value:payment.transaction_amount, currency:'ARS', contents:payment.items || [], content_type:'product'}); sessionStorage.setItem(`purchase-${paymentId}`, '1'); alert('¡Pago aprobado! Te vamos a contactar para coordinar la entrega o retiro.'); } });
+    }); const params = new URLSearchParams(window.location.search); const paymentId = params.get('payment_id') || params.get('collection_id'); if (paymentId) fetch(`${CONFIG.paymentStatusApi}?payment_id=${encodeURIComponent(paymentId)}`).then(response => response.ok ? response.json() : null).then(payment => { if (payment?.status === 'approved' && CNAnalytics.purchase(payment)) alert('¡Pago aprobado! Te vamos a contactar para coordinar la entrega o retiro.'); });
     // SEO: datos estructurados de productos generados desde CONFIG (siempre en sincronia con precio/stock real)
     function actualizarProductosSEO() { try {
       const ld = {
@@ -562,6 +556,7 @@
         }
         catalogReady = true;
         pintarGrilla();
+        CNAnalytics.viewItemList(CONFIG.products, analyticsUnitPrice);
         CONFIG.products.forEach((p, i) => { const q = document.querySelector(`#qty-${i}`); if (q) q.textContent = cart.get(i) || 0; });
         if (!CONFIG.products.length) grid.innerHTML = '<p role="status">Por el momento no hay productos disponibles. Consultanos por WhatsApp.</p>';
         actualizarProductosSEO();
@@ -619,6 +614,7 @@
       if (manualPending) return;
       const pedido = pedidoValido(true); if (!pedido) return;
       const cliente = customerFields(); if (!cliente) return;
+      CNAnalytics.checkoutDetails(pedido.lines, CONFIG.products, analyticsUnitPrice, pedido.locality, 'transferencia');
       const button = manualPaymentReplacement;
       manualPending = true;
       button.disabled = true;
@@ -692,6 +688,7 @@
     mercadoPagoReplacement.addEventListener('click', async () => {
       const pedido = pedidoValido(); if (!pedido) return;
       const cliente = customerFields(true); if (!cliente) return;
+      CNAnalytics.checkoutDetails(pedido.lines, CONFIG.products, analyticsUnitPrice, pedido.locality, 'mercado_pago');
       mercadoPagoReplacement.disabled = true; mercadoPagoReplacement.textContent = 'Registrando pedido…';
       try {
         const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, discount_code:cnCoupon.code(), expected_total:cnCoupon.subtotal(pedido.lines)+shippingCost(cnCoupon.subtotal(pedido.lines),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
@@ -793,7 +790,7 @@
       renderCart();
       if(focus){window.scrollTo(0,0);if(checkout)page.querySelector('h1').focus();}
     }
-    link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;history.pushState({},'',link.href);route(true);});
+    link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;CNAnalytics.beginCheckout([...cart.entries()].filter(([,quantity])=>quantity>0),CONFIG.products,analyticsUnitPrice);history.pushState({},'',link.href);route(true);});
     page.querySelector('[data-return-store]').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname+'#productos');route(true);});
     receipt.addEventListener('close',()=>{if(isCheckout()&&![...cart.values()].some(q=>q>0)){history.replaceState({},'',location.pathname);route(true);}});
     window.addEventListener('popstate',()=>route(true));

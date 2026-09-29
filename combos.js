@@ -197,6 +197,7 @@
     entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
     renderCart();
     section.querySelector('#combo-status').textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
+    if(window.CNAnalytics)CNAnalytics.addToCartLines(entries.map(e=>({product:e.product,quantity:1})),product=>cnCoupon.unitPrice(product));
     track('AddToCart',{content_ids:entries.map(e=>e.product.id),contents:entries.map(e=>({id:e.product.id,quantity:1,item_price:e.product.price})),content_type:'product',value:entries.reduce((s,e)=>s+e.product.price,0),currency:'ARS'});
     if(button.hasAttribute('data-buy-combo')){location.href=location.pathname+'?checkout=1';return;}
     document.querySelector('#cart-panel').classList.remove('open');
