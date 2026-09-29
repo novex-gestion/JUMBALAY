@@ -42,6 +42,12 @@ const cnCoupon = (() => {
     box.querySelector('#coupon-apply').addEventListener('click',apply);
     box.querySelector('input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();apply();}});
     box.querySelector('#coupon-remove').addEventListener('click',()=>{applied=null;save();renderCart();refresh();});
+    document.addEventListener('click',event=>{
+      if(document.getElementById('coupon-status')?.dataset.busy && event.target.closest('#cart-checkout-link,#send-cart,#send-manual-payment,#coupon-remove')){
+        event.preventDefault();event.stopImmediatePropagation();
+        document.getElementById('coupon-status').textContent='Esperá un momento: estamos validando tu código.';
+      }
+    },true);
     const move=()=>{const summary=document.getElementById('checkout-summary');if(new URLSearchParams(location.search).get('checkout')==='1')summary.appendChild(box);else panel.insertBefore(box,link);refresh();};
     document.addEventListener('cn:cart-updated',move);move();
   }
