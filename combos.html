@@ -253,6 +253,7 @@
   <aside class="cart-panel" id="cart-panel" aria-label="Tu carrito"><div class="cart-head"><div><p class="eyebrow">Tu selección</p><h3>Tu carrito</h3></div><button class="cart-close" data-close-cart aria-label="Cerrar">×</button></div><div class="cart-list" id="cart-list"></div><div class="cart-total"><span>Total</span><span id="cart-total">$0</span></div><p class="cart-savings" id="cart-savings" hidden></p><div style="margin:18px 0;padding:16px;border:1px solid #ded2bf;background:#f8f5ee"><strong>¿Cómo lo recibís?</strong><p style="margin:6px 0 13px;color:#586259;font:13px Arial,sans-serif">Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa; o retiro por Champagnat 1176, Pilar, dentro de las 24 hs.</p><label style="display:flex;gap:9px;align-items:center;margin:13px 0;font:700 13px Arial,sans-serif"><input id="pickup-personal" type="checkbox"> Retiro personal por Champagnat 1176</label><div id="delivery-fields"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD</label><select id="delivery-locality" style="width:100%;min-height:43px;padding:10px" required><option value="">Elegí tu localidad</option><option>Pilar</option><option>Del Viso</option><option>Derqui</option><option>Villa Rosa</option><option value="other">Otra localidad</option></select><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">CÓDIGO POSTAL</label><input id="delivery-zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="4" placeholder="Ej.: 1629" style="width:100%;min-height:43px;padding:10px" required><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">DIRECCIÓN DE ENTREGA</label><input id="delivery-address" type="text" placeholder="Calle, número, barrio o referencia" style="width:100%;min-height:43px;padding:10px" required></div><p id="delivery-status" style="margin:10px 0 0;color:#52623d;font:700 13px Arial,sans-serif"></p><a id="delivery-whatsapp" href="https://wa.me/5491158436511" target="_blank" rel="noopener" hidden style="display:block;margin-top:11px;padding:11px;background:#25d366;color:#073c1d;font:700 12px Arial,sans-serif;text-align:center;text-decoration:none">CONSULTAR ENTREGA POR WHATSAPP</a></div><button class="button" id="send-cart">Pagar con Mercado Pago</button><button class="button payment-choice" id="send-manual-payment">Pagar por transferencia</button><p class="payment-note">Transferencia: alias <strong>juan.allegrina</strong></p></aside>
   <button class="cart-float" data-open-cart aria-label="Ver mi carrito"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span>Ver mi carrito</span><strong class="cart-float-count" id="cart-float-count" hidden aria-live="polite">0</strong></button>  <a class="whatsapp-float" data-whatsapp data-item="consulta general" href="https://wa.me/5491158436511" target="_blank" rel="noopener" aria-label="Hablar por WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3a13 13 0 0 0-11.1 19.8L3 29l6.4-1.7A13 13 0 1 0 16 3Zm0 23.7a10.7 10.7 0 0 1-5.5-1.5l-.4-.2-3.8 1 1-3.7-.3-.4A10.7 10.7 0 1 1 16 26.7Zm5.9-8c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-.9 1.2-.3.3-.6.1a8.7 8.7 0 0 1-2.5-1.5 9.4 9.4 0 0 1-1.7-2.2c-.2-.3 0-.4.1-.6l.4-.5c.1-.1.2-.3.3-.5s0-.4 0-.5l-1-2.3c-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.4 1 2.8 1.1 3 .2.3.3.5a12.3 12.3 0 0 0 4.7 4.1c.6.3 1.1.5 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.3-.2-.6-.4Z"/></svg><span>WhatsApp</span></a>
   <footer><div class="wrap footer-row"><div><p class="eyebrow">Casa Natural</p><p>Entregas en todo el país · WhatsApp 11 5843-6511</p></div><a class="button" data-whatsapp data-item="consulta general">Hablar por WhatsApp</a></div></footer>
+  <script src="discount-codes.js?v=20260929"></script>
   <script>
     // EDITAR SOLO ESTA SECCIÓN PARA CARGAR EL CONTENIDO REAL.
     const CONFIG = {
@@ -277,7 +278,7 @@
     try { const saved = JSON.parse(sessionStorage.getItem(cartStorageKey) || 'null'); if (saved && Date.now() - saved.at < 86400000 && Array.isArray(saved.items)) savedCart = saved.items; } catch (_) {}
     const renderCart = () => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
-      const total = lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
+      const total = cnCoupon.subtotal(lines);
       const savings = lines.reduce((sum, [index, quantity]) => {
         const product = CONFIG.products[index];
         return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0);
@@ -317,8 +318,8 @@
       document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Elegí entrega o retiro' : shipping ? money(shipping) : 'Gratis';
       document.querySelector('#cart-total').textContent = money(total + shipping);
       const savingsNode = document.querySelector('#cart-savings');
-      savingsNode.hidden = !savings;
-      savingsNode.textContent = savings ? `Con esta compra ahorrás ${money(savings)}` : '';
+      savingsNode.hidden = !(savings + cnCoupon.amount(lines));
+      savingsNode.textContent = savings + cnCoupon.amount(lines) ? `Con esta compra ahorrás ${money(savings + cnCoupon.amount(lines))}` : '';
       document.querySelector('#send-cart').disabled = !lines.length;
       document.querySelector('#send-cart').style.opacity = lines.length ? '1' : '.45'; const units = lines.reduce((sum, [, quantity]) => sum + quantity, 0); const floatingCount = document.querySelector('#cart-float-count'); floatingCount.textContent = units; floatingCount.hidden = !units;
       document.querySelector('#send-manual-payment').disabled = !lines.length;
@@ -589,9 +590,9 @@
       const detalle = pedido.lines.map(([index, quantity]) => {
         const product = CONFIG.products[index];
         const ahorro = product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0;
-        return [`• ${product.name}`, `${quantity} x ${money(product.price)} = ${money(product.price * quantity)}`, ahorro ? `Ahorrás ${money(ahorro)} en este producto` : ''].filter(Boolean).join(salto);
+        return [`• ${product.name}`, `${quantity} x ${money(cnCoupon.unitPrice(product))} = ${money(cnCoupon.unitPrice(product) * quantity)}`, ahorro ? `Ahorrás ${money(ahorro)} en este producto` : ''].filter(Boolean).join(salto);
       }).join(salto + salto);
-      let total = pedido.lines.reduce((sum, [index, quantity]) => sum + CONFIG.products[index].price * quantity, 0);
+      let total = cnCoupon.subtotal(pedido.lines);
       let subtotal = total;
       let shipping = shippingCost(subtotal, pedido.locality);
       total += shipping;
@@ -602,7 +603,7 @@
       let numeroPedido = '';
       const payload = {
         payment_method: 'transferencia_efectivo', customer: cliente, contact_version: 'email-v1',
-        shipping_policy: shippingPolicy, expected_total: total,
+        shipping_policy: shippingPolicy, expected_total: total, discount_code: cnCoupon.code(),
         items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
         delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
       };
@@ -656,7 +657,7 @@
       const cliente = customerFields(true); if (!cliente) return;
       mercadoPagoReplacement.disabled = true; mercadoPagoReplacement.textContent = 'Registrando pedido…';
       try {
-        const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, expected_total:pedido.lines.reduce((sum,[index,quantity])=>sum+CONFIG.products[index].price*quantity,0)+shippingCost(pedido.lines.reduce((sum,[index,quantity])=>sum+CONFIG.products[index].price*quantity,0),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
+        const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, discount_code:cnCoupon.code(), expected_total:cnCoupon.subtotal(pedido.lines)+shippingCost(cnCoupon.subtotal(pedido.lines),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
         const order = await orderResponse.json();
         if (!orderResponse.ok || !order.order_id) throw new Error(order.error || 'No se pudo registrar el pedido.');
         mercadoPagoReplacement.textContent = 'Redirigiendo a Mercado Pago…';
@@ -738,7 +739,7 @@
       page.querySelector('#checkout-fields').hidden=!catalogReady||!hasItems;
       page.querySelector('.checkout-review').hidden=!catalogReady||!hasItems;
       panel.querySelector('.cart-total')?.querySelector('span').replaceChildren(document.createTextNode('Productos'));
-      if(!isCheckout()) { document.querySelector('#cart-total').textContent=money([...cart.entries()].reduce((sum,[i,q])=>sum+CONFIG.products[i].price*q,0)); }
+      if(!isCheckout()) { document.querySelector('#cart-total').textContent=money(cnCoupon.subtotal([...cart.entries()])); }
       document.querySelectorAll('#cart-list .cart-line').forEach(line=>{
         const i=Number(line.querySelector('[data-remove-item]').dataset.removeItem);
         const controls=document.createElement('div');controls.className='cart-edit-controls';
@@ -790,3 +791,4 @@
 <script src="combos.js?v=combos-carrusel-20260928"></script>
 </body>
 </html>
+
