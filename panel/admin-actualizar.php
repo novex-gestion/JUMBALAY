@@ -20,6 +20,7 @@ const ARCHIVOS = [                    // archivo en el repo => dónde se instala
   'admin-pedidos.php' => __DIR__ . '/pedidos.php',
   'admin-actualizar.php' => __DIR__ . '/actualizar.php',
   'api-productos.php' => __DIR__ . '/../api/productos.php',
+  'api-payment-status.php' => __DIR__ . '/../api/payment-status.php',
   'raiz-index.php'    => __DIR__ . '/../index.php',
 ];
 
@@ -53,6 +54,6 @@ foreach (ARCHIVOS as $remoto => $destino) {
 
 $_SESSION['aviso_actualizacion'] = $fallos
   ? ('Se actualizaron ' . count($hechos) . ' archivos. No se pudieron: ' . implode(', ', $fallos))
-  : ('Panel actualizado (' . count($hechos) . ' archivos). Ya tenés la última versión.');
+  : ('Panel actualizado (' . count($hechos) . ' archivos. Ya tenés la última versión.');
 header('Location: index.php');
 exit;
