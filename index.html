@@ -738,6 +738,7 @@
         window.location.assign(payment.init_point);
       } catch (error) { alert(error.message || 'No se pudo iniciar el pago. Probá nuevamente.'); mercadoPagoReplacement.disabled=false; mercadoPagoReplacement.textContent='Pagar con Mercado Pago'; }
     });
+    document.querySelector('#como-comprar .wrap').insertAdjacentHTML('beforeend', '<div id="plazos-condiciones" class="purchase-assurances" style="scroll-margin-top:110px;margin-top:28px;display:grid;gap:20px;font:16px/1.6 Arial,sans-serif"><details><summary style="cursor:pointer;font-weight:700;padding:14px 0;border-bottom:1px solid #d8ccb9">Preparación y envío</summary><p>Con el pago confirmado antes de las 12 h, preparamos tu pedido y lo entregamos al punto de despacho en el día, de lunes a viernes, excepto feriados. Después de ese horario, lo hacemos el próximo día hábil.</p><p>Envíos nacionales por Correo Argentino PAQ.AR Expreso: entrega estimada de 1 a 3 días hábiles desde la admisión del paquete por Correo, según origen y destino. La entrega al punto no garantiza el retiro de Correo ese mismo día.</p></details><details><summary style="cursor:pointer;font-weight:700;padding:14px 0;border-bottom:1px solid #d8ccb9">Si un frasco llega roto</summary><p>Escribinos por WhatsApp con una foto del daño. Podés elegir la devolución del importe del producto dañado o su reposición sin cargo en tu próxima compra. No necesitás volver a comprar para solicitar la devolución.</p></details></div>');
     const pasosCompra = [
       ['Elegí', 'Explorá los productos, elegí las cantidades y revisá tu carrito antes de avanzar.'],
       ['Elegí cómo lo recibís', 'Seleccioná entrega local, retiro personal en Champagnat 1176, Pilar, o envío nacional. Completá tus datos de contacto. Para retirar, esperá nuestra confirmación por WhatsApp: el retiro está disponible las 24 horas, con coordinación previa.'],
@@ -800,6 +801,7 @@
     shippingPreview.className = 'cart-shipping-preview';
     shippingPreview.style.cssText = 'margin:16px 0;padding:12px;border:1px solid #d8ccb9;font:13px/1.5 Arial,sans-serif';
     shippingPreview.innerHTML = '<strong>Envíos y retiro</strong><br>Sin cargo en Pilar, Del Viso, Derqui y Villa Rosa.<br>Resto del país: $12.000; gratis en compras de más de $99.000 en productos.<br>Retiro sin cargo en Pilar, con coordinación previa.';
+    shippingPreview.insertAdjacentHTML('beforeend', '<p style="margin-bottom:0"><a href="#plazos-condiciones" data-close-cart style="font-weight:700;text-decoration:underline">Ver plazos y condiciones</a></p>');
     panel.insertBefore(shippingPreview, link);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
     const review = page.querySelector('.checkout-review');
