@@ -237,6 +237,16 @@
 #inicio .promo-cover .hero-banner .hero-copy,#inicio .promo-banner.promo-all-combos>.promo-copy{grid-template-rows:26px max-content max-content 24px 48px 30px 1fr}
 #inicio .promo-cover .hero-copy h1,#inicio .promo-all-combos .promo-copy h2{padding-bottom:16px}
 </style>
+<style>
+.quantity-stepper{display:flex;align-items:center;border:1px solid #465536;border-radius:4px;overflow:hidden}
+.quantity-stepper button{width:44px;height:44px;border:0;background:transparent;color:#465536;font-size:24px;font-weight:700;cursor:pointer}
+.quantity-stepper output{min-width:28px;text-align:center;font-weight:700}
+.quantity-stepper button:disabled{opacity:.35;cursor:default}
+.product-purchase{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:auto;padding-top:12px}.product-purchase .quantity-picker{display:block;padding:0;margin:0}.product-purchase .quantity-picker>span{display:block;margin-bottom:6px}.quantity-stepper button{width:32px}.quantity-stepper output{min-width:24px}.card .product-add{flex:1;min-width:100px;margin:0;min-height:46px;align-self:flex-end;padding:8px;font-size:10px}
+.product-added[hidden]{display:none}.product-added{margin-top:12px;font:13px/1.4 Arial,sans-serif}
+.card .product-added p{margin:0 0 6px;color:#465536}
+.product-added button{display:block;width:100%;min-height:44px;margin-top:6px;border:1px solid #465536;background:transparent;color:#465536;cursor:pointer}
+</style>
 </head>
 <body>
   <div class="announcement-bar"><div class="wrap announcement-content"><span>Armá tu carrito y comprá desde la comodidad de tu casa</span><span>Envíos a todo el país</span></div></div>
@@ -273,6 +283,7 @@
     const shippingPolicy = 'flat-12000-over-99000-v1';
     document.querySelector('.cart-total').insertAdjacentHTML('beforebegin', '<div id="shipping-breakdown" style="font:14px/1.7 Arial,sans-serif"><div>Productos: <strong id="products-subtotal"></strong></div><div>Envío: <strong id="shipping-total"></strong></div></div>');
     let catalogReady = false;
+    const draftQuantities = new Map();
     const cartStorageKey = 'casa-natural-cart-v1';
     let savedCart = [];
     try { const saved = JSON.parse(sessionStorage.getItem(cartStorageKey) || 'null'); if (saved && Date.now() - saved.at < 86400000 && Array.isArray(saved.items)) savedCart = saved.items; } catch (_) {}
@@ -285,7 +296,14 @@
       }, 0);
       document.querySelector('#cart-list').innerHTML = lines.length ? lines.map(([index, quantity]) => `<div class="cart-line"><div>${safe(CONFIG.products[index].name)}<br><span>${quantity} unidad${quantity > 1 ? 'es' : ''} · ${money(CONFIG.products[index].price * quantity)}</span></div><button class="cart-close" data-remove-item="${index}" aria-label="Quitar producto">×</button></div>`).join('') : '<p class="cart-empty">Todavía no agregaste productos.</p>';
       CONFIG.products.forEach((product, index) => {
-        const quantity = cart.get(index) || 0;
+        const remaining = Math.max(0, product.stock - (cart.get(index) || 0));
+        const quantity = Math.min(draftQuantities.get(index) || 1, remaining || 1);
+        draftQuantities.set(index, quantity);
+        const output = document.querySelector(`#draft-qty-${index}`);
+        if (output) output.textContent = quantity;
+        const add = document.querySelector(`[data-add-product][data-product-index="${index}"]`);
+        if (add) { add.disabled = remaining === 0; add.textContent = remaining ? "AGREGAR AL CARRITO" : "TODO EL STOCK EN TU CARRITO"; }
+        document.querySelectorAll(`[data-draft-change][data-product-index="${index}"]`).forEach(b => b.disabled = remaining === 0 || (Number(b.dataset.draftChange) < 0 ? quantity <= 1 : quantity >= remaining));
         const displayQuantity = quantity || 1;
         const quantitySelect = document.querySelector(`#quantity-select-${index}`);
         if (quantitySelect) {
@@ -330,18 +348,27 @@
       }
       document.dispatchEvent(new CustomEvent('cn:cart-updated'));
     };
-    document.addEventListener('change', event => {
-      const select = event.target.closest('[data-quantity-select]');
-      if (!select) return;
-      const index = Number(select.dataset.quantitySelect);
-      const product = CONFIG.products[index];
-      const quantity = Number(select.value);
-      if (!product || !Number.isInteger(quantity) || quantity < 0 || quantity > product.stock) return;
-      const before = cart.get(index) || 0;
-      cart.set(index, quantity);
-      document.querySelector(`#qty-${index}`).textContent = quantity;
+    document.addEventListener('click', event => {
+      const control = event.target.closest('[data-draft-change], [data-add-product], [data-continue-shopping], [data-finish-shopping]');
+      if (!control) return;
+      if (control.hasAttribute('data-continue-shopping')) { control.closest('.product-added').hidden = true; return; }
+      if (control.hasAttribute('data-finish-shopping')) { document.querySelector('#cart-checkout-link').click(); return; }
+      const index = Number(control.dataset.productIndex), product = CONFIG.products[index];
+      if (!product || manualPending) return;
+      const remaining = Math.max(0, product.stock - (cart.get(index) || 0));
+      if (control.hasAttribute('data-draft-change')) {
+        draftQuantities.set(index, Math.max(1, Math.min(remaining || 1, (draftQuantities.get(index) || 1) + Number(control.dataset.draftChange))));
+        renderCart(); return;
+      }
+      const quantity = Math.min(remaining, draftQuantities.get(index) || 1);
+      if (quantity < 1) return;
+      cart.set(index, (cart.get(index) || 0) + quantity);
       renderCart();
-      if (quantity > before) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, quantity - before, analyticsUnitPrice); track('AddToCart', {content_ids:[product.id],content_name:product.name,content_type:'product',value:product.price*(quantity-before),currency:'ARS'}); }
+      const feedback = control.closest('.card').querySelector('.product-added');
+      feedback.hidden = false;
+      feedback.querySelector('[role="status"]').textContent = quantity + (quantity === 1 ? ' unidad agregada al carrito.' : ' unidades agregadas al carrito.');
+      if (window.CNAnalytics) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, quantity, analyticsUnitPrice); }
+      track('AddToCart', {content_ids:[product.id],content_name:product.name,content_type:'product',value:product.price*quantity,currency:'ARS'});
     });
     // Las fotos subidas desde el panel viven en el servidor del panel.
     function resolverFoto(src, host){
@@ -400,7 +427,7 @@
       });
     }
 
-    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : ""}${fotosDe(product).map(src => esVideo(src) ? `<video src="${safe(src)}" muted loop playsinline preload="metadata" aria-label="${safe(product.name)}"></video>` : `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p>${descuento ? `<p class="reference-price"><s aria-label="Precio de lista">${money(product.referencePrice)}</s></p>` : ""}<div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<span class="discount-inline">${descuento}% OFF</span>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="quantity-picker"><label for="quantity-select-${index}">Cantidad:</label><select id="quantity-select-${index}" data-quantity-select="${index}" aria-label="Cantidad de ${safe(product.name)}"><option value="0">Elegir</option>${Array.from({length:product.stock},(_,i)=>`<option value="${i+1}">${i+1} ${i===0 ? "unidad" : "unidades"}</option>`).join("")}</select><span class="available-stock">(${product.stock} disponibles)</span><strong id="qty-${index}" hidden>0</strong></div>`}</div></article>`; }).join(""); armarCarruseles(); }
+    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : ""}${fotosDe(product).map(src => esVideo(src) ? `<video src="${safe(src)}" muted loop playsinline preload="metadata" aria-label="${safe(product.name)}"></video>` : `<img src="${safe(src)}" alt="${safe(product.name)}" loading="lazy">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p>${descuento ? `<p class="reference-price"><s aria-label="Precio de lista">${money(product.referencePrice)}</s></p>` : ""}<div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<span class="discount-inline">${descuento}% OFF</span>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="product-purchase"><div class="quantity-picker"><span>Cantidad:</span><div class="quantity-stepper"><button type="button" data-draft-change="-1" data-product-index="${index}" aria-label="Reducir cantidad de ${safe(product.name)}">−</button><output id="draft-qty-${index}" aria-label="Cantidad elegida de ${safe(product.name)}">1</output><button type="button" data-draft-change="1" data-product-index="${index}" aria-label="Aumentar cantidad de ${safe(product.name)}">+</button></div><strong id="qty-${index}" hidden>0</strong></div><button type="button" class="button product-add" data-add-product data-product-index="${index}">AGREGAR AL CARRITO</button></div><div class="product-added" hidden><p role="status"></p><button type="button" data-continue-shopping>Seguir comprando</button><button type="button" data-finish-shopping>Finalizar compra</button></div>`}</div></article>`; }).join(""); armarCarruseles(); }
     document.querySelector('#product-grid').innerHTML = '<p role="status">Cargando precios y disponibilidad actualizados…</p>';
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const next = Math.min(product.stock, Math.max(0, before + Number(quantityButton.dataset.change))); cart.set(index, next); document.querySelector(`#qty-${index}`).textContent = next; if (next > before) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, next - before, analyticsUnitPrice); track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); CNAnalytics.viewCart(lines, CONFIG.products, analyticsUnitPrice); document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); document.querySelector(`#qty-${index}`).textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     const pedidoValido = (permitirCotizacionNacional = false) => {
