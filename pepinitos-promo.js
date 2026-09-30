@@ -20,7 +20,10 @@ document.addEventListener('cn:cart-updated',()=>{
     const card=document.querySelector(`#price-${i}`)?.closest('.card');if(!card)return;
     card.querySelector('.price-quantity-label').textContent=`Precio por ${draftQuantities.get(i)||1} promo(s) de 2 frascos`;
     const add=card.querySelector('[data-add-product]');if(!add.disabled)add.textContent='AGREGAR PROMO AL CARRITO';
-    const badge=card.querySelector('.discount-inline');if(badge)badge.textContent='2×1';
+    const badge=card.querySelector('.discount-inline');if(badge){
+      badge.textContent='2×1';
+      Object.assign(badge.style,{backgroundColor:'#E7AE38',color:'#3B290E',fontSize:'1.05rem',fontWeight:'800',padding:'6px 12px',lineHeight:'1.2',borderRadius:'6px',whiteSpace:'nowrap'});
+    }
     const priceRef=card.querySelector('.reference-price s');if(priceRef)priceRef.setAttribute('aria-label','Precio de dos frascos sin promoción');
   });
   document.querySelectorAll('.cart-line').forEach(line=>{
