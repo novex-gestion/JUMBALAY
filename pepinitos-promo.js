@@ -22,7 +22,7 @@ document.addEventListener('cn:cart-updated',()=>{
     const add=card.querySelector('[data-add-product]');if(!add.disabled)add.textContent='AGREGAR PROMO AL CARRITO';
     const badge=card.querySelector('.discount-inline');if(badge){
       badge.textContent='2×1';
-      Object.assign(badge.style,{backgroundColor:'#E7AE38',color:'#3B290E',fontSize:'1.05rem',fontWeight:'800',padding:'6px 12px',lineHeight:'1.2',borderRadius:'6px',whiteSpace:'nowrap'});
+      Object.assign(badge.style,{backgroundColor:'#8B512F',color:'#FFFFFF',fontSize:'1.05rem',fontWeight:'800',padding:'6px 12px',lineHeight:'1.2',borderRadius:'6px',whiteSpace:'nowrap'});
     }
     const priceRef=card.querySelector('.reference-price s');if(priceRef)priceRef.setAttribute('aria-label','Precio de dos frascos sin promoción');
   });
