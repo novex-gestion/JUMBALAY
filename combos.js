@@ -181,7 +181,7 @@
       const total=entries.reduce((s,e)=>s+e.product.price,0);
       const list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0);
       const saving=list-total;
-      const available=entries.every(e=>e.product.stock>(cart.get(e.index)||0));
+      const available=entries.every(e=>cnRemaining(e.product)>0);
       return `<article class="combo-card" data-combo-card="${def.id}"><h3>${safe(def.name)}</h3><p>${safe(def.description)}</p>${groupPhotos(entries)}<ul>${entries.map(e=>`<li>1 frasco de ${safe(e.product.name)}</li>`).join('')}</ul><p class="combo-note">${safe(def.note)}</p><div class="combo-price">${saving>0?`<del>Lista ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="combo-saving">Ahorrás ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}</div><button class="button" type="button" data-add-combo="${def.id}" ${available?'':'disabled'}>${available?'Agregar combo al carrito':'Sin disponibilidad para sumar otro'}</button></article>`;
     }).join('');
   }
@@ -189,7 +189,7 @@
     const button=event.target.closest('[data-add-combo]'); if(!button||!catalogReady)return;
     const def=definitions.find(d=>d.id===button.dataset.addCombo); if(!def)return;
     const entries=resolve(def);
-    if(entries.some(e=>!e.product||e.product.stock<=(cart.get(e.index)||0))) {render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
+    if(entries.some(e=>!e.product||cnRemaining(e.product)<=0)) {render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
     entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
     renderCart();
     section.querySelector('#combo-status').textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
