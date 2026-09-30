@@ -130,24 +130,20 @@
     const video=promo.querySelector('video');
     const active=video&&!video.closest('.promo-banner').hidden;
     if(video){if(active&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.hidden){video.play().catch(()=>{});}else video.pause();}
-    if(!document.hidden)promoTimer=setTimeout(()=>selectPromo(promoIndex+1),8000);
+    if(!document.hidden)promoTimer=setTimeout(()=>selectPromo(promoIndex+1),5000);
   }
   function renderPromos(){
     if(!catalogReady)return;
     const available=definitions.filter(def=>resolve(def).every(e=>e.product));
     promo.hidden=!available.length;
     if(available.length) hero.querySelector('.wrap > .hero-banner')?.remove();
-    promo.innerHTML=available.map((def,i)=>{
-      const entries=resolve(def),total=entries.reduce((s,e)=>s+e.product.price,0),list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0),saving=list-total;
-      return `<a class="promo-banner" href="combos.html#combo-${def.id}" aria-label="Ver ${safe(def.name)}" ${i!==promoIndex?'hidden':''}><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>${safe(def.name)}</h2><p>${safe(def.description)}</p>${saving>0?`<del>Lista ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="promo-save">Ahorrás ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}<span class="promo-cta">VER ESTE COMBO →</span></div><img src="combo-${def.id}-cutout.png" alt="${entries.length} frascos de ${safe(def.name)}" width="1536" height="1024"></a>`;
-    }).join('');
+    promo.innerHTML=`<a class="promo-banner promo-all-combos" href="combos.html#combos" aria-label="Ver todos los combos"><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>Sabores que van juntos.</h2><p>Descubrí nuestros combos y elegí el tuyo para disfrutar o compartir.</p><span class="promo-cta">VER TODOS LOS COMBOS →</span></div><img src="combo-completa-cutout.png" alt="Conservas y untables Jumbalay reunidos en un combo" width="1536" height="1024"></a>`;
     promo.insertAdjacentHTML('afterbegin',`<div class="promo-banner promo-cover">${originalHero}</div>`);
-    promo.insertAdjacentHTML('beforeend',`<a class="promo-banner" href="index.html#productos" aria-label="Ver nuestra colección para vos"><div class="promo-copy"><span class="eyebrow">CASA NATURAL</span><h2>Nuestra colección para vos</h2><p>Elegí tus favoritos y armá tu propia selección de conservas y untables.</p><span class="promo-cta">EXPLORAR LA COLECCIÓN →</span></div><img src="combo-completa.jpg" alt="Selección de conservas y untables Jumbalay" width="1536" height="1024"></a>`);
-    const names=['Portada',...available.map(d=>d.name),'Nuestra colección para vos'];
+    const coverCta=promo.querySelector('.promo-cover .hero-cta');
+    coverCta.href='index.html#productos';
+    coverCta.textContent='VER PRODUCTOS Y PRECIOS';
+    const names=['Presentación','Todos los combos'];
     promo.insertAdjacentHTML('beforeend',`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Diapositiva anterior">←</button>${names.map((name,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Diapositiva siguiente">→</button></div>`);
-    const collection=promo.querySelector('a[aria-label="Ver nuestra colección para vos"]');
-    collection.classList.add('promo-collection');
-    collection.querySelector('img').src='hero-tostada-final.png';
     const coverPhoto=promo.querySelector('.promo-cover .hero-photo');
     const video=document.createElement('video');video.src='portada-video-final.mp4';video.poster='hero-tostada-final.png';video.muted=true;video.loop=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-hidden','true');coverPhoto.replaceChildren(video);
     selectPromo(promoIndex);
