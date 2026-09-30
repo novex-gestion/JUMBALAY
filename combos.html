@@ -575,6 +575,11 @@
       if (!manualPending) manual.textContent = 'Pagar por transferencia';
       document.querySelector('.payment-note').hidden = false;
       renderCart();
+      if (pickupPersonal.checked) {
+        deliveryWhatsapp.href = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + encodeURIComponent('Hola, quiero consultar por el retiro de mi pedido en Champagnat 1176, Pilar.');
+      } else if (!national) {
+        deliveryWhatsapp.href = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + encodeURIComponent('Hola, quiero consultar por la entrega de mi pedido' + (deliveryLocality.value ? ' en ' + deliveryLocality.value : '') + '.');
+      }
       if (national) {
         deliveryStatus.textContent = 'Envío nacional: $12.000. Gratis en compras de más de $99.000 en productos. Coordinamos el despacho por WhatsApp.';
         const city = document.querySelector('#national-city').value.trim();
@@ -755,6 +760,19 @@
     page.querySelector('#checkout-payment').append(payment,manual,note);
     const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href=location.pathname+'?checkout=1';link.textContent='Finalizar compra';panel.appendChild(link);
     const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
+    const shippingPreview = document.createElement('div');
+    shippingPreview.className = 'cart-shipping-preview';
+    shippingPreview.style.cssText = 'margin:16px 0;padding:12px;border:1px solid #d8ccb9;font:13px/1.5 Arial,sans-serif';
+    shippingPreview.innerHTML = '<strong>Envíos y retiro</strong><br>Sin cargo en Pilar, Del Viso, Derqui y Villa Rosa.<br>Resto del país: $12.000; gratis en compras de más de $99.000 en productos.<br>Retiro sin cargo en Pilar, con coordinación previa.';
+    panel.insertBefore(shippingPreview, link);
+    const mobileCheckout = window.matchMedia('(max-width:900px)');
+    const review = page.querySelector('.checkout-review');
+    const arrangeCheckout = () => {
+      if (mobileCheckout.matches) page.querySelector('#checkout-payment').before(review);
+      else page.querySelector('.checkout-layout').appendChild(review);
+    };
+    mobileCheckout.addEventListener('change', arrangeCheckout);
+    arrangeCheckout();
     // Give the existing inputs explicit labels without changing their validation.
     ['customer-name','customer-phone','delivery-locality','delivery-zip','delivery-address'].forEach(id=>{const input=document.getElementById(id);const label=input.previousElementSibling;if(label?.tagName==='LABEL')label.htmlFor=id;});
     const isCheckout=()=>new URLSearchParams(location.search).get('checkout')==='1';
