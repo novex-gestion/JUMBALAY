@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://tucasaesnatural.com/</loc>
-    <lastmod>2026-09-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://tucasaesnatural.com/combos.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+  <url><loc>https://tucasaesnatural.com/</loc></url>
+  <url><loc>https://tucasaesnatural.com/combos.html</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/aceitunas-verdes-magna/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/aceitunas-negras-premium/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/tomates-secos-mediterraneos/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/tomates-secos-patagonicos/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/berenjenas-condimentadas/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/untable-fruta-frutos-bosque/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/pepinitos-en-vinagre/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/pimientos-agridulces/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/pasta-de-aceitunas-verdes/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/pasta-de-aceitunas-negras/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/zanahorias-encurtidas-agridulces/</loc></url>
+  <url><loc>https://tucasaesnatural.com/productos/tomates-triturados/</loc></url>
 </urlset>

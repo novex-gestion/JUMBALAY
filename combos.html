@@ -14,6 +14,7 @@
     gtag('config', 'G-0KWGE3QME7');
   </script>
   <script src="ga4-ecommerce.js?v=20260929-1"></script>
+  <script src="product-links.js?v=20261001-1"></script>
   <title>Casa Natural · Conservas, aceitunas y mermeladas gourmet en Pilar</title>
   <meta name="description" content="Aceitunas, tomates secos, berenjenas y mermeladas gourmet artesanales. Precios imbatibles, pago seguro con Mercado Pago y entrega sin cargo en Pilar. Comprá online o consultá por WhatsApp.">
   <link rel="canonical" href="https://tucasaesnatural.com/">
@@ -554,6 +555,7 @@
         }
         catalogReady = true;
         pintarGrilla();
+        window.CNProductLinks?.(CONFIG.products);
         CNAnalytics.viewItemList(CONFIG.products, analyticsUnitPrice);
         CONFIG.products.forEach((p, i) => { const q = document.querySelector(`#qty-${i}`); if (q) q.textContent = cart.get(i) || 0; });
         if (!CONFIG.products.length) grid.innerHTML = '<p role="status">Por el momento no hay productos disponibles. Consultanos por WhatsApp.</p>';
