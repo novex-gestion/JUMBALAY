@@ -137,7 +137,7 @@
     const available=definitions.filter(def=>resolve(def).every(e=>e.product));
     promo.hidden=!available.length;
     if(available.length) hero.querySelector('.wrap > .hero-banner')?.remove();
-    promo.innerHTML=`<a class="promo-banner promo-all-combos" href="combos.html#combos" aria-label="Ver todos los combos"><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>Combos creados para vos</h2><p>Descubrí nuestros combos y elegí el tuyo para disfrutar o compartir.</p><span class="promo-cta">VER TODOS LOS COMBOS →</span></div><img src="combo-completa-cutout.png" alt="Conservas y untables Jumbalay reunidos en un combo" width="1536" height="1024"></a>`;
+    promo.innerHTML=`<a class="promo-banner promo-all-combos" href="combos.html#combos" aria-label="Ver todos los combos"><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>Combos creados para vos</h2><p>Descubrí nuestros combos y elegí el tuyo para disfrutar o compartir.</p><span class="promo-cta">VER TODOS LOS COMBOS →</span></div><img src="assets/optimized/combo-completa-cutout-1280.webp" srcset="assets/optimized/combo-completa-cutout-640.webp 640w, assets/optimized/combo-completa-cutout-1280.webp 1280w" sizes="(max-width: 650px) 100vw, 60vw" alt="Conservas y untables Jumbalay reunidos en un combo" width="1536" height="1024"></a>`;
     promo.insertAdjacentHTML('afterbegin',`<div class="promo-banner promo-cover">${originalHero}</div>`);
     const coverCta=promo.querySelector('.promo-cover .hero-cta');
     coverCta.href='index.html#productos';
@@ -145,7 +145,7 @@
     const names=['Presentación','Todos los combos'];
     promo.insertAdjacentHTML('beforeend',`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Diapositiva anterior">←</button>${names.map((name,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Diapositiva siguiente">→</button></div>`);
     const coverPhoto=promo.querySelector('.promo-cover .hero-photo');
-    const video=document.createElement('video');video.src='portada-video-final.mp4';video.poster='hero-tostada-final.png';video.muted=true;video.loop=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-hidden','true');coverPhoto.replaceChildren(video);
+    const video=document.createElement('video');video.src='portada-video-final.mp4';video.poster=matchMedia('(max-width: 650px)').matches?'assets/optimized/hero-tostada-final-640.webp':'assets/optimized/hero-tostada-final-1280.webp';video.muted=true;video.loop=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-hidden','true');coverPhoto.replaceChildren(video);
     selectPromo(promoIndex);
   }
   promo.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;selectPromo(b.hasAttribute('data-slide')?Number(b.dataset.slide):promoIndex+Number(b.dataset.direction));});
