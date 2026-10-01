@@ -133,10 +133,9 @@
     if(!document.hidden)promoTimer=setTimeout(()=>selectPromo(promoIndex+1),5000);
   }
   function renderPromos(){
-    if(!catalogReady)return;
-    const available=definitions.filter(def=>resolve(def).every(e=>e.product));
-    promo.hidden=!available.length;
-    if(available.length) hero.querySelector('.wrap > .hero-banner')?.remove();
+    // Editorial slides have no prices or stock: initialize independently, once.
+    promo.hidden=false;
+    hero.querySelector('.wrap > .hero-banner')?.remove();
     promo.innerHTML=`<a class="promo-banner promo-all-combos" href="combos.html#combos" aria-label="Ver todos los combos"><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>Combos creados para vos</h2><p>Descubrí nuestros combos y elegí el tuyo para disfrutar o compartir.</p><span class="promo-cta">VER TODOS LOS COMBOS →</span></div><img src="assets/optimized/combo-completa-cutout-1280.webp" srcset="assets/optimized/combo-completa-cutout-640.webp 640w, assets/optimized/combo-completa-cutout-1280.webp 1280w" sizes="(max-width: 650px) 100vw, 60vw" alt="Conservas y untables Jumbalay reunidos en un combo" width="1536" height="1024"></a>`;
     promo.insertAdjacentHTML('afterbegin',`<div class="promo-banner promo-cover">${originalHero}</div>`);
     const coverCta=promo.querySelector('.promo-cover .hero-cta');
@@ -156,7 +155,6 @@
   promo.addEventListener('touchend',e=>{if(!touchStart)return;const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy))selectPromo(promoIndex+(dx<0?1:-1));touchStart=null;},{passive:true});
   let initialAnchorHandled=false;
   function refreshPromos(){
-    renderPromos();
     section.querySelectorAll('[data-combo-card]').forEach(card=>{
       card.id='combo-'+card.dataset.comboCard;
       const add=card.querySelector('[data-add-combo]');
@@ -200,6 +198,7 @@
   });
   document.addEventListener('cn:cart-updated',render);
   document.addEventListener('cn:cart-updated',refreshPromos);
+  renderPromos();
   render();
   refreshPromos();
 })();
