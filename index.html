@@ -42,7 +42,8 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Store",
+    "@type": ["Store", "OnlineStore"],
+    "@id": "https://tucasaesnatural.com/#tienda",
     "name": "Casa Natural",
     "description": "Conservas, aceitunas y mermeladas gourmet artesanales con entrega en Pilar.",
     "url": "https://tucasaesnatural.com/",
@@ -52,7 +53,30 @@
     "currenciesAccepted": "ARS",
     "paymentAccepted": "Mercado Pago",
     "address": { "@type": "PostalAddress", "addressLocality": "Pilar", "addressRegion": "Buenos Aires", "addressCountry": "AR" },
-    "areaServed": { "@type": "City", "name": "Pilar" },
+    "areaServed": { "@type": "Country", "name": "Argentina" },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "merchantReturnLink": "https://tucasaesnatural.com/cambios-devoluciones/"
+    },
+    "hasShippingService": {
+      "@type": "ShippingService",
+      "name": "Entregas Casa Natural en Argentina",
+      "description": "Entrega sin cargo en Pilar, Del Viso, Derqui y Villa Rosa. Resto del país: $12.000; gratis en compras de más de $99.000 en productos. El importe se confirma en el carrito según destino y compra.",
+      "shippingConditions": [
+        {
+          "@type": "ShippingConditions",
+          "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "AR" },
+          "orderValue": { "@type": "MonetaryAmount", "currency": "ARS", "maxValue": 99000 },
+          "shippingRate": { "@type": "MonetaryAmount", "currency": "ARS", "maxValue": 12000 }
+        },
+        {
+          "@type": "ShippingConditions",
+          "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "AR" },
+          "orderValue": { "@type": "MonetaryAmount", "currency": "ARS", "minValue": 99000.01 },
+          "shippingRate": { "@type": "MonetaryAmount", "currency": "ARS", "value": 0 }
+        }
+      ]
+    },
     "sameAs": ["https://wa.me/5491158436511"]
   }
   </script>
