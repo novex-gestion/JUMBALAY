@@ -41,7 +41,7 @@
   const nav = document.createElement('a'); nav.href='combos.html';nav.textContent='Combos';
   document.querySelector('.nav-main').prepend(nav);
   const commerceLink=document.createElement('a');
-  commerceLink.href='#comercios';commerceLink.textContent='Soy un comercio';
+  commerceLink.href='comercios/';commerceLink.textContent='Soy un comercio';
   document.querySelector('.nav-main').append(commerceLink);
   document.querySelector('#comercios').style.scrollMarginTop='150px';
   document.querySelector('.nav-main a[href="#productos"]').href='index.html#productos';
