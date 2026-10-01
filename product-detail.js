@@ -29,6 +29,43 @@
       ? data.items.filter(x => x && typeof x.id === 'string' && Number.isInteger(x.quantity) && x.quantity > 0) : [];
     } catch (_) { return []; }
   }
+  const money = value => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(value);
+  const cartDialog = document.createElement('dialog');
+  cartDialog.id='detail-cart';cartDialog.setAttribute('aria-labelledby','detail-cart-title');
+  cartDialog.innerHTML='<div class="detail-cart-heading"><h2 id="detail-cart-title">Tu carrito</h2><button type="button" id="detail-cart-close" aria-label="Cerrar carrito">×</button></div><div id="detail-cart-lines"></div><p id="detail-cart-subtotal"></p><p class="detail-cart-note">El envío y los códigos de descuento se revisan antes de pagar.</p><a class="button" id="detail-cart-checkout" href="../../index.html?checkout=1">CONTINUAR AL PAGO</a><button type="button" id="detail-cart-continue">Seguir comprando</button>';
+  document.body.append(cartDialog);
+  const floatingCart=document.createElement('button');floatingCart.type='button';floatingCart.id='detail-cart-toggle';floatingCart.setAttribute('aria-controls',cartDialog.id);floatingCart.setAttribute('aria-haspopup','dialog');
+  document.body.append(floatingCart);
+  const headerCart=document.createElement('button');headerCart.type='button';headerCart.className='header-cart';headerCart.setAttribute('aria-haspopup','dialog');
+  $('header a[href*="checkout=1"]').replaceWith(headerCart);
+  const viewCart=document.createElement('button');viewCart.type='button';viewCart.className='button';viewCart.id='view-detail-cart';viewCart.textContent='VER CARRITO';
+  $('#next').prepend(viewCart);
+  function cartLines() { return readCart().map(x=>[catalog.findIndex(p=>p.id===x.id),x.quantity]).filter(([i])=>i>=0); }
+  function renderCart() {
+    const items=readCart();let total=0,complete=!!catalog.length;
+    const count=items.reduce((n,x)=>n+x.quantity*(catalog.find(p=>p.id===x.id)?.promoUnits||1),0);
+    floatingCart.textContent=`VER CARRITO · ${count}`;headerCart.textContent=`MI CARRITO (${count})`;
+    $('#detail-cart-lines').replaceChildren();
+    for(const item of items){
+      const p=catalog.find(p=>p.id===item.id);const line=document.createElement('div');line.className='detail-cart-line';
+      const name=document.createElement('strong');name.textContent=p?.name||item.id;
+      const detail=document.createElement('p');const amount=p?unitPrice(p)*item.quantity:0;
+      if(!p||!Number.isFinite(amount)||amount<=0)complete=false;
+      total+=amount;
+      detail.textContent=p?`${item.quantity} ${p.promoUnits?`promo(s) · ${item.quantity*p.promoUnits} frascos`:'unidad(es)'} · ${money(amount)}`:`${item.quantity} unidad(es) · Precio pendiente de verificar`;
+      const remove=document.createElement('button');remove.type='button';remove.textContent='Quitar';remove.setAttribute('aria-label',`Quitar ${p?.name||item.id}`);
+      remove.onclick=()=>{try{sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items:readCart().filter(x=>x.id!==item.id)}));if(product)update();else renderCart();}catch(_){$('#detail-cart-subtotal').textContent='No pudimos actualizar el carrito. Intentá nuevamente.';}};
+      line.append(name,detail,remove);$('#detail-cart-lines').append(line);
+    }
+    if(!items.length)$('#detail-cart-lines').textContent='Tu carrito está vacío. Elegí un producto para empezar.';
+    $('#detail-cart-subtotal').textContent=items.length?(complete?`Subtotal de productos: ${money(total)}`:'El precio se confirmará al cargar el catálogo.'):'Subtotal: $0';
+    $('#detail-cart-checkout').hidden=!items.length;
+  }
+  function openCart(){renderCart();cartDialog.showModal();$('#detail-cart-close').focus();window.CNAnalytics?.viewCart(cartLines(),catalog,unitPrice);}
+  for(const button of [floatingCart,headerCart,viewCart])button.onclick=openCart;
+  $('#detail-cart-close').onclick=$('#detail-cart-continue').onclick=()=>cartDialog.close();
+  cartDialog.addEventListener('click',e=>{if(e.target===cartDialog){const r=cartDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)cartDialog.close();}});
+  renderCart();
   function remaining() {
     const source = product.promoSource || product.id;
     const physical = catalog.find(p=>p.id===source);
@@ -41,6 +78,7 @@
     $('#plus').disabled = quantity >= left; $('#add').disabled = !left;
     $('#add').textContent = left ? (product.promoUnits?'AGREGAR PROMO AL CARRITO':'AGREGAR AL CARRITO') : product.stock ? 'TODO EL STOCK EN TU CARRITO' : 'SIN STOCK';
     $('#availability').textContent = product.stock ? 'Disponible · Precio y stock actualizados' : 'Temporalmente agotado';
+    renderCart();
   }
   async function load() {
     reference.hidden = discount.hidden = saving.hidden = true;
