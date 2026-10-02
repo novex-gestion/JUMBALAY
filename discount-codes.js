@@ -11,7 +11,7 @@ const cnCoupon = (() => {
     const status=document.getElementById('coupon-status');
     if (!status || status.dataset.busy) return;
     const lines=[...cart.entries()].filter(([,q])=>q>0);
-    status.textContent=applied ? `Código ${applied.code}: ahorrás ${money(amount(lines))} (${applied.percent}%).` : '';
+    status.textContent=applied ? `Código ${applied.code} aplicado: ${applied.percent}% de descuento, incluido en el subtotal.` : '';
     document.getElementById('coupon-remove').hidden=!applied;
   }
   async function apply() {

@@ -327,7 +327,7 @@
   <script src="pepinitos-promo.js?v=20260930-2"></script>
   <script src="ga4-ecommerce.js?v=20260929-1"></script>
   <script src="product-links.js?v=20261001-1"></script>
-  <script src="discount-codes.js?v=20260929-2"></script>
+  <script src="discount-codes.js?v=20261002-summary"></script>
   <script>
     // EDITAR SOLO ESTA SECCIÓN PARA CARGAR EL CONTENIDO REAL.
     if(typeof cnCoupon==='undefined')window.cnCoupon={amount:()=>0,subtotal:lines=>lines.reduce((s,[i,q])=>s+CONFIG.products[i].price*q,0),unitPrice:p=>p.price,code:()=>''};
@@ -398,12 +398,21 @@
       });
       const locality = pickupPersonal.checked ? pickupLocation : deliveryLocality.value;
       const shipping = shippingCost(total, locality);
-      document.querySelector('#products-subtotal').textContent = money(total);
+      const couponDiscount = cnCoupon.amount(lines);
+      document.querySelector('#products-subtotal').textContent = money(total + couponDiscount);
+      let couponRow = document.querySelector('#coupon-breakdown');
+      if (!couponRow) {
+        couponRow = document.createElement('div');
+        couponRow.id = 'coupon-breakdown';
+        document.querySelector('#products-subtotal').parentElement.after(couponRow);
+      }
+      couponRow.hidden = !couponDiscount;
+      couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
       document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Elegí entrega o retiro' : shipping ? money(shipping) : 'Gratis';
       document.querySelector('#cart-total').textContent = money(total + shipping);
       const savingsNode = document.querySelector('#cart-savings');
       savingsNode.hidden = !(savings + cnCoupon.amount(lines));
-      savingsNode.textContent = savings + cnCoupon.amount(lines) ? `Con esta compra ahorrás ${money(savings + cnCoupon.amount(lines))}` : '';
+      savingsNode.textContent = savings + couponDiscount ? `Ahorrás ${money(savings + couponDiscount)} frente al precio de lista${couponDiscount ? ', incluyendo tu código' : ''}.` : '';
       document.querySelector('#send-cart').disabled = !lines.length;
       document.querySelector('#send-cart').style.opacity = lines.length ? '1' : '.45'; const units = lines.reduce((sum, [, quantity]) => sum + quantity, 0); const floatingCount = document.querySelector('#cart-float-count'); floatingCount.textContent = units; floatingCount.hidden = !units;
       document.querySelector('#send-manual-payment').disabled = !lines.length;
@@ -868,7 +877,7 @@
     function update() {
       const hasItems=[...cart.values()].some(q=>q>0);
       document.querySelector('.cart-total > span').textContent = isCheckout()
-        ? (pickupPersonal.checked || deliveryLocality.value ? 'Total a pagar' : 'Subtotal')
+        ? (pickupPersonal.checked || deliveryLocality.value ? 'Total a pagar' : cnCoupon.code() ? 'Subtotal con descuento' : 'Subtotal')
         : 'Productos';
       link.setAttribute('aria-disabled',String(!catalogReady||!hasItems));
       const empty=page.querySelector('#checkout-empty');empty.hidden=catalogReady&&hasItems;
