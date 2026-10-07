@@ -20,6 +20,7 @@ const ARCHIVOS = [                    // archivo en el repo => dónde se instala
   'admin-pedidos.php' => __DIR__ . '/pedidos.php',
   'admin-actualizar.php' => __DIR__ . '/actualizar.php',
   'api-productos.php' => __DIR__ . '/../api/productos.php',
+  'api-merchant-feed.php' => __DIR__ . '/../api/merchant-feed.php',
   'api-payment-status.php' => __DIR__ . '/../api/payment-status.php',
   'raiz-index.php'    => __DIR__ . '/../index.php',
 ];
