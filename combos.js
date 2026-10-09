@@ -1,7 +1,9 @@
 /* Bundles use existing product IDs; checkout and inventory remain server-validated. */
 (() => {
   const comboPage = /\/combos\.html$/.test(location.pathname);
+  const promoPage = /\/promos\.html$/.test(location.pathname);
   document.documentElement.classList.add(comboPage ? 'catalog-combos' : 'catalog-selection');
+  document.documentElement.classList.toggle('catalog-promos',promoPage);
   const definitions = [
     {id:'bruschetta',name:'La Bruschetta',description:'Tres sabores para tu próxima tostada.',note:'3 frascos · Pan no incluido.',items:['pasta-de-aceitunas-verdes','tomates-secos-mediterraneos','aceitunas-negras-premium']},
     {id:'amigos',name:'Mesa de Amigos',description:'Una selección para acompañar tu próxima picada.',note:'4 frascos para compartir.',items:['aceitunas-verdes-magna','berenjenas-condimentadas','pepinitos-en-vinagre','tomates-secos-mediterraneos']},
@@ -13,12 +15,10 @@
   document.head.append(style);
   const layoutStyle = document.createElement('style');
   layoutStyle.textContent = `
-    .catalog-selection #combos,.catalog-combos #productos{display:none!important}
-    .catalog-tabs{display:flex;gap:8px;max-width:1120px;margin:0 auto;padding:24px 20px 0}
-    .catalog-tabs a{flex:1;text-align:center;padding:20px 12px;border:1px solid #465536;background:#faf7ef;color:#465536;font:700 15px Arial,sans-serif;letter-spacing:.06em;text-decoration:none;border-radius:8px 8px 0 0}
-    .catalog-tabs a[aria-current=page]{background:#465536;color:white;border-bottom:4px solid #293422}
-    .catalog-tabs a:hover{box-shadow:inset 0 0 0 2px #465536}
-    .catalog-tabs a:focus-visible{outline:3px solid #9c463b;outline-offset:3px}
+    .catalog-selection #combos,.catalog-combos #productos,.catalog-combos #promos,.catalog-selection #promos,.catalog-promos #productos{display:none!important}
+    .catalog-promos #promos{display:block!important}
+    #promos{scroll-margin-top:100px;padding:40px 0 64px;background:#f6f2e9}
+    #promo-grid:empty:after{content:'Estamos actualizando las promociones.';font:15px Arial,sans-serif}
     .catalog-combos #combos{padding-top:32px}.combo-explainer{margin-bottom:12px}#combo-status:empty{display:none}
     .combo-photo{position:relative;display:block;isolation:isolate;overflow:hidden;height:270px;background:#f5f1e7;margin:12px 0 18px;border-radius:8px}
     .combo-photo:after{content:'';position:absolute;bottom:16px;left:14%;right:14%;height:18px;background:radial-gradient(ellipse,#b9b3a0,transparent 70%);z-index:-1}
@@ -28,28 +28,34 @@
     .combo-photo.many img{width:auto;height:190px;bottom:50px}
     .combo-photo.many img.small-jar{height:157px;bottom:4px}
     @media(max-width:850px){.combo-grid{grid-template-columns:1fr}}
-    @media(max-width:650px){.catalog-tabs{padding:18px 14px 0;gap:6px}.catalog-tabs a{font-size:12px;letter-spacing:.02em;padding:18px 8px}.combo-photo{height:230px}.combo-photo img{height:200px}.combo-photo img.small-jar{height:165px}.combo-photo.many img{height:165px}.combo-photo.many img.small-jar{height:140px}.nav-main{gap:12px}}
+    @media(max-width:650px){.combo-photo{height:230px}.combo-photo img{height:200px}.combo-photo img.small-jar{height:165px}.combo-photo.many img{height:165px}.combo-photo.many img.small-jar{height:140px}.nav-main{gap:12px}}
   `;
   document.head.append(layoutStyle);
-  const tabs=document.createElement('nav');tabs.className='catalog-tabs';tabs.setAttribute('aria-label','Elegí cómo comprar');
-  tabs.innerHTML=`<a href="combos.html" ${comboPage?'aria-current="page"':''}>COMBOS</a><a href="index.html#productos" ${!comboPage?'aria-current="page"':''}>COLECCIÓN PARA VOS</a>`;
-  document.querySelector('#productos').before(tabs);
+  const shopMenu=document.querySelector('.nav-shop');
+  const activePage=comboPage?'combos.html':promoPage?'promos.html':/\/coleccion\.html$/.test(location.pathname)?'coleccion.html':null;
+  if(activePage)shopMenu.querySelector(`a[href="${activePage}"]`)?.setAttribute('aria-current','page');
+  document.addEventListener('click',event=>{if(!shopMenu.contains(event.target))shopMenu.open=false;});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&shopMenu.open){shopMenu.open=false;shopMenu.querySelector('summary').focus();}});
+  const promoSection=document.createElement('section');promoSection.id='promos';promoSection.setAttribute('aria-labelledby','promos-title');
+  promoSection.innerHTML='<div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><h2 id="promos-title">Promos para compartir</h2><p>Elegí la oferta que mejor te sirve. Cada promo indica cuántas unidades incluye y cuánto ahorrás frente a comprarlas sueltas.</p></div><div class="products" id="promo-grid"></div></div>';
+  document.querySelector('#productos').before(promoSection);
+  window.cnPlacePromoCards=products=>{
+    const grid=document.querySelector('#promo-grid');grid.replaceChildren();
+    products.forEach((product,index)=>{
+      if(!product.promoUnits)return;
+      const card=document.getElementById(`price-${index}`)?.closest('.card');
+      if(card)grid.append(card);
+    });
+  };
   const section = document.createElement('section');
   section.id = 'combos'; section.setAttribute('aria-labelledby','combos-title');
   section.innerHTML = '<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><h2 id="combos-title">Combos</h2><p class="combo-explainer">Selecciones listas para sumar a tu carrito. Un frasco de cada producto, con los precios vigentes de la web. El ahorro se compara con el precio de lista; no es un descuento adicional por combo. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>';
   document.querySelector('#productos').before(section);
-  const nav = document.createElement('a'); nav.href='combos.html';nav.textContent='Combos';
-  document.querySelector('.nav-main').prepend(nav);
   const commerceLink=document.createElement('a');
   commerceLink.href='comercios/';commerceLink.textContent='Soy un comercio';
   document.querySelector('.nav-main').append(commerceLink);
   document.querySelector('#comercios').style.scrollMarginTop='150px';
-  document.querySelector('.nav-main a[href="#productos"]').href='index.html#productos';
-  const collectionLink=document.querySelector('.nav-main a[href="index.html#productos"]');
-  collectionLink.textContent='La colección';
-  document.querySelector('.nav-main').prepend(collectionLink);
   document.querySelector('.brand').href='index.html';
-  if(comboPage){document.title='Combos | Casa Natural';document.querySelector('link[rel="canonical"]')?.setAttribute('href','https://tucasaesnatural.com/combos.html');}
   function groupPhotos(entries){
     const def=definitions.find(d=>d.items.length===entries.length && d.items.every(id=>entries.some(e=>e.product.id===id)));
     return `<img class="combo-family" loading="lazy" decoding="async" width="1536" height="1024" style="display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;margin:12px 0 18px" src="combo-${def.id}.jpg" alt="${safe(def.name)}: ${entries.map(e=>safe(e.product.name)).join(', ')}">`;
@@ -139,7 +145,7 @@
     promo.innerHTML=`<a class="promo-banner promo-all-combos" href="combos.html#combos" aria-label="Ver todos los combos"><div class="promo-copy"><span class="eyebrow">COMBOS CASA NATURAL</span><h2>Combos creados para vos</h2><p>Descubrí nuestros combos y elegí el tuyo para disfrutar o compartir.</p><span class="promo-cta">VER TODOS LOS COMBOS →</span></div><img src="assets/optimized/combo-completa-cutout-1280.webp" srcset="assets/optimized/combo-completa-cutout-640.webp 640w, assets/optimized/combo-completa-cutout-1280.webp 1280w" sizes="(max-width: 650px) 100vw, 60vw" alt="Conservas y untables Jumbalay reunidos en un combo" width="1536" height="1024"></a>`;
     promo.insertAdjacentHTML('afterbegin',`<div class="promo-banner promo-cover">${originalHero}</div>`);
     const coverCta=promo.querySelector('.promo-cover .hero-cta');
-    coverCta.href='index.html#productos';
+    coverCta.href='coleccion.html';
     coverCta.textContent='VER PRODUCTOS Y PRECIOS';
     const names=['Presentación','Todos los combos'];
     promo.insertAdjacentHTML('beforeend',`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Diapositiva anterior">←</button>${names.map((name,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Diapositiva siguiente">→</button></div>`);

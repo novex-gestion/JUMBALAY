@@ -2,7 +2,7 @@
 function cnPromoCatalog(products) {
   return products.flatMap(p => {
     if(p.id==='pepinitos-en-vinagre' && p.price===10500) return [
-      {...p,collectionHidden:true},
+      p,
       {...p,id:'pepinitos-2x1',name:'Pepinitos en vinagre · 2×1',
         description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. Envío según condiciones habituales.',
         referencePrice:21000,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos'}
@@ -33,7 +33,8 @@ document.addEventListener('cn:cart-updated',()=>{
       badge.textContent=p.promoLabel||'PROMO';
       Object.assign(badge.style,{backgroundColor:'#8B512F',color:'#FFFFFF',fontSize:'1.05rem',fontWeight:'800',padding:'6px 12px',lineHeight:'1.2',borderRadius:'6px',whiteSpace:'nowrap'});
     }
-    const priceRef=card.querySelector('.reference-price s');if(priceRef)priceRef.setAttribute('aria-label',`Precio de ${p.promoUnits} ${p.promoNoun||'frascos'} sin promoción`);
+    const priceRef=card.querySelector('.reference-price s');if(priceRef)priceRef.setAttribute('aria-label',`Precio de ${p.promoUnits} ${p.promoNoun||'frascos'} comprados por separado`);
+    const saving=card.querySelector('.saving');if(saving)saving.textContent=`Ahorrás ${money(p.referencePrice-p.price)} frente a comprarlos sueltos`;
   });
   document.querySelectorAll('.cart-line').forEach(line=>{
     const remove=line.querySelector('[data-remove-item]');const p=CONFIG.products[Number(remove?.dataset.removeItem)];

@@ -89,7 +89,7 @@
       const data = await response.json();
       if(!data.ok || !Array.isArray(data.productos))throw Error('catalog');
       catalog = cnPromoCatalog(data.productos);
-      product = id==='pepinitos-en-vinagre' ? catalog.find(p=>p.id==='pepinitos-2x1') : catalog.find(p=>p.id===id);
+      product = catalog.find(p=>p.id===id);
       if(!product || !Number.isFinite(Number(product.price)) || Number(product.price)<=0 || !Number.isInteger(Number(product.stock)) || Number(product.stock)<0) throw Error('product');
       product.stock=Number(product.stock);
       $('h1').textContent=product.name;
@@ -102,8 +102,8 @@
         struck.textContent = money(listPrice); struck.setAttribute('aria-label','Precio de lista');
         reference.replaceChildren(struck);
         discount.textContent = `${Math.round((listPrice - Number(product.price)) / listPrice * 100)}% OFF`;
-        if(product.promoUnits){discount.textContent=product.promoLabel||'PROMO';discount.style.cssText='background:#8B512F;color:white;padding:6px 12px;border-radius:6px';struck.setAttribute('aria-label',`Precio de ${product.promoUnits} ${product.promoNoun||'frascos'} sin promoción`);}
-        saving.textContent = `Ahorrás ${money(listPrice - Number(product.price))}`;
+        if(product.promoUnits){discount.textContent=product.promoLabel||'PROMO';discount.style.cssText='background:#8B512F;color:white;padding:6px 12px;border-radius:6px';struck.setAttribute('aria-label',`Precio de ${product.promoUnits} ${product.promoNoun||'frascos'} comprados por separado`);}
+        saving.textContent = `Ahorrás ${money(listPrice - Number(product.price))}${product.promoUnits?' frente a comprarlos sueltos':''}`;
         reference.hidden = discount.hidden = saving.hidden = false;
       }
       $('#description').textContent = product.description;

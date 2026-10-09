@@ -1,8 +1,8 @@
 /* Links only published product routes; preserve quick-add and image navigation. */
 window.CNProductLinks = products => {
-  const routes = new Set(['aceitunas-verdes-magna','aceitunas-negras-premium','tomates-secos-mediterraneos','tomates-secos-patagonicos','berenjenas-condimentadas','untable-fruta-frutos-bosque','pepinitos-en-vinagre','pimientos-agridulces','pasta-de-aceitunas-verdes','pasta-de-aceitunas-negras','zanahorias-encurtidas-agridulces','tomates-triturados','tomates-triturados-4x3']);
+  const routes = new Set(['aceitunas-verdes-magna','aceitunas-negras-premium','tomates-secos-mediterraneos','tomates-secos-patagonicos','berenjenas-condimentadas','untable-fruta-frutos-bosque','pepinitos-en-vinagre','pepinitos-2x1','pimientos-agridulces','pasta-de-aceitunas-verdes','pasta-de-aceitunas-negras','zanahorias-encurtidas-agridulces','tomates-triturados','tomates-triturados-4x3']);
   products.forEach((product,index)=>{
-    const id=product.id==='pepinitos-2x1'?'pepinitos-en-vinagre':product.id;
+    const id=product.id;
     const card=document.getElementById(`price-${index}`)?.closest('.card');
     if(!routes.has(id)||!card||card.querySelector('.product-detail-link'))return;
     const href=`productos/${id}/`;
