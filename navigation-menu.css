@@ -1,5 +1,6 @@
 .site-header{position:sticky;top:0;z-index:30}
 html{scroll-padding-top:110px}
+@media(min-width:1051px){.site-header .nav{position:relative}.site-header .nav-main{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap}}
 .nav-shop{position:relative}
 .nav-shop summary{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:10px;list-style:none;cursor:pointer;color:#fffaf0;font:700 .72rem/1 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:14px 12px;min-height:42px;box-sizing:border-box;border-radius:8px}
 .nav-shop summary::-webkit-details-marker{display:none}
