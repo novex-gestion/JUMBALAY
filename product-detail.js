@@ -11,7 +11,7 @@
   const track = (event,p,q=1) => window.fbq?.('track',event,{content_ids:[p.id],content_name:p.name,content_type:'product',value:unitPrice(p)*q,currency:'ARS'});
   let product, catalog = [], quantity = 1;
   const unitPrice = p => {
-    try { const c = JSON.parse(sessionStorage.getItem('cn-discount-v1')); if(!p.couponExcluded && c && Date.now()-c.at<86400000 && c.percent>0 && c.percent<=30)return p.price-Math.round(p.price*c.percent/100); } catch (_) {}
+    try { const c = JSON.parse(sessionStorage.getItem('cn-discount-v1')); if(!p.couponExcluded && !p.promoSource && !p.promoUnits && c && Date.now()-c.at<86400000 && c.percent>0 && c.percent<=30)return p.price-Math.round(p.price*c.percent/100); } catch (_) {}
     return Number(p.price);
   };
   const reference = document.createElement('p');

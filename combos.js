@@ -37,7 +37,8 @@
   document.addEventListener('click',event=>{if(!shopMenu.contains(event.target))shopMenu.open=false;});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&shopMenu.open){shopMenu.open=false;shopMenu.querySelector('summary').focus();}});
   const promoSection=document.createElement('section');promoSection.id='promos';promoSection.setAttribute('aria-labelledby','promos-title');
-  promoSection.innerHTML='<div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><h2 id="promos-title">Promos para compartir</h2><p>Elegí la oferta que mejor te sirve. Cada promo indica cuántas unidades incluye y cuánto ahorrás frente a comprarlas sueltas.</p></div><div class="products" id="promo-grid"></div></div>';
+  const promoHeading=promoPage?'h1':'h2';
+  promoSection.innerHTML=`<div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><${promoHeading} id="promos-title">Promos para compartir</${promoHeading}><p>Elegí la oferta que mejor te sirve. Cada promo indica cuántas unidades incluye y cuánto ahorrás frente a comprarlas sueltas.</p></div><div class="products" id="promo-grid"></div></div>`;
   document.querySelector('#productos').before(promoSection);
   window.cnPlacePromoCards=products=>{
     const grid=document.querySelector('#promo-grid');grid.replaceChildren();
@@ -49,7 +50,8 @@
   };
   const section = document.createElement('section');
   section.id = 'combos'; section.setAttribute('aria-labelledby','combos-title');
-  section.innerHTML = '<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><h2 id="combos-title">Combos</h2><p class="combo-explainer">Selecciones listas para sumar a tu carrito. Un frasco de cada producto, con los precios vigentes de la web. El ahorro se compara con el precio de lista; no es un descuento adicional por combo. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>';
+  const comboHeading=comboPage?'h1':'h2';
+  section.innerHTML = `<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><${comboHeading} id="combos-title">Combos</${comboHeading}><p class="combo-explainer">Selecciones listas para sumar a tu carrito. Un frasco de cada producto, con los precios vigentes de la web. El ahorro se compara con el precio de lista; no es un descuento adicional por combo. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>`;
   document.querySelector('#productos').before(section);
   const commerceLink=document.createElement('a');
   commerceLink.href='comercios/';commerceLink.textContent='Soy un comercio';
@@ -68,6 +70,15 @@
   promo.setAttribute('aria-roledescription','carrusel');
   const hero=document.querySelector('#inicio');
   const originalHero=hero.querySelector('.hero-banner').outerHTML;
+  if(activePage){
+    hero.remove();
+    if(activePage==='coleccion.html'){
+      const title=document.querySelector('#productos .product-intro h2');
+      const heading=document.createElement('h1');
+      heading.textContent=title.textContent;
+      title.replaceWith(heading);
+    }
+  }
   hero.querySelector('.wrap').append(promo);
   const promoStyle=document.createElement('style');
   promoStyle.textContent=`
@@ -154,7 +165,7 @@
     selectPromo(promoIndex);
   }
   promo.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;selectPromo(b.hasAttribute('data-slide')?Number(b.dataset.slide):promoIndex+Number(b.dataset.direction));});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(promoTimer);promo.querySelector('video')?.pause();}else selectPromo(promoIndex);});
+  document.addEventListener('visibilitychange',()=>{if(activePage)return;if(document.hidden){clearTimeout(promoTimer);promo.querySelector('video')?.pause();}else selectPromo(promoIndex);});
   promo.addEventListener('keydown',event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();selectPromo(promoIndex+(event.key==='ArrowRight'?1:-1));}});
   let touchStart=null;
   promo.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
@@ -204,7 +215,7 @@
   });
   document.addEventListener('cn:cart-updated',render);
   document.addEventListener('cn:cart-updated',refreshPromos);
-  renderPromos();
+  if(!activePage)renderPromos();
   render();
   refreshPromos();
 })();

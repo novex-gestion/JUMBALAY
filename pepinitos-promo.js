@@ -4,8 +4,8 @@ function cnPromoCatalog(products) {
     if(p.id==='pepinitos-en-vinagre' && p.price===10500) return [
       p,
       {...p,id:'pepinitos-2x1',name:'Pepinitos en vinagre · 2×1',
-        description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. Envío según condiciones habituales.',
-        referencePrice:21000,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos'}
+        description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. No acumulable con códigos de descuento. Envío según condiciones habituales.',
+        referencePrice:21000,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos',couponExcluded:true}
     ];
     if(p.id==='tomates-triturados' && p.price===3360) return [p,
       {...p,id:'tomates-triturados-4x3',name:'Tomates triturados · Promo 4×3',
