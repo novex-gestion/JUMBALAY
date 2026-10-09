@@ -11,7 +11,7 @@
   const track = (event,p,q=1) => window.fbq?.('track',event,{content_ids:[p.id],content_name:p.name,content_type:'product',value:unitPrice(p)*q,currency:'ARS'});
   let product, catalog = [], quantity = 1;
   const unitPrice = p => {
-    try { const c = JSON.parse(sessionStorage.getItem('cn-discount-v1')); if(c && Date.now()-c.at<86400000 && c.percent>0 && c.percent<=30)return p.price-Math.round(p.price*c.percent/100); } catch (_) {}
+    try { const c = JSON.parse(sessionStorage.getItem('cn-discount-v1')); if(!p.couponExcluded && c && Date.now()-c.at<86400000 && c.percent>0 && c.percent<=30)return p.price-Math.round(p.price*c.percent/100); } catch (_) {}
     return Number(p.price);
   };
   const reference = document.createElement('p');
@@ -52,7 +52,7 @@
       const detail=document.createElement('p');const amount=p?unitPrice(p)*item.quantity:0;
       if(!p||!Number.isFinite(amount)||amount<=0)complete=false;
       total+=amount;
-      detail.textContent=p?`${item.quantity} ${p.promoUnits?`promo(s) · ${item.quantity*p.promoUnits} frascos`:'unidad(es)'} · ${money(amount)}`:`${item.quantity} unidad(es) · Precio pendiente de verificar`;
+      detail.textContent=p?`${item.quantity} ${p.promoUnits?`promo(s) · ${item.quantity*p.promoUnits} ${p.promoNoun||'frascos'}`:'unidad(es)'} · ${money(amount)}`:`${item.quantity} unidad(es) · Precio pendiente de verificar`;
       const remove=document.createElement('button');remove.type='button';remove.textContent='Quitar';remove.setAttribute('aria-label',`Quitar ${p?.name||item.id}`);
       remove.onclick=()=>{try{sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items:readCart().filter(x=>x.id!==item.id)}));if(product)update();else renderCart();}catch(_){$('#detail-cart-subtotal').textContent='No pudimos actualizar el carrito. Intentá nuevamente.';}};
       line.append(name,detail,remove);$('#detail-cart-lines').append(line);
@@ -89,11 +89,11 @@
       const data = await response.json();
       if(!data.ok || !Array.isArray(data.productos))throw Error('catalog');
       catalog = cnPromoCatalog(data.productos);
-      product = catalog.find(p=>p.promoSource===id) || catalog.find(p=>p.id===id);
+      product = id==='pepinitos-en-vinagre' ? catalog.find(p=>p.id==='pepinitos-2x1') : catalog.find(p=>p.id===id);
       if(!product || !Number.isFinite(Number(product.price)) || Number(product.price)<=0 || !Number.isInteger(Number(product.stock)) || Number(product.stock)<0) throw Error('product');
       product.stock=Number(product.stock);
       $('h1').textContent=product.name;
-      $('.purchase .eyebrow').textContent=product.promoUnits?'PRECIO POR PROMO DE 2 FRASCOS':'PRECIO POR UNIDAD';
+      $('.purchase .eyebrow').textContent=product.promoUnits?`PRECIO POR PROMO DE ${product.promoUnits} ${(product.promoNoun||'frascos').toUpperCase()}`:'PRECIO POR UNIDAD';
       $('#price').textContent = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(product.price);
       const listPrice = Number(product.referencePrice);
       if (Number.isFinite(listPrice) && listPrice > Number(product.price)) {
@@ -102,7 +102,7 @@
         struck.textContent = money(listPrice); struck.setAttribute('aria-label','Precio de lista');
         reference.replaceChildren(struck);
         discount.textContent = `${Math.round((listPrice - Number(product.price)) / listPrice * 100)}% OFF`;
-        if(product.promoUnits){discount.textContent='2×1';discount.style.cssText='background:#8B512F;color:white;padding:6px 12px;border-radius:6px';struck.setAttribute('aria-label','Precio de dos frascos sin promoción');}
+        if(product.promoUnits){discount.textContent=product.promoLabel||'PROMO';discount.style.cssText='background:#8B512F;color:white;padding:6px 12px;border-radius:6px';struck.setAttribute('aria-label',`Precio de ${product.promoUnits} ${product.promoNoun||'frascos'} sin promoción`);}
         saving.textContent = `Ahorrás ${money(listPrice - Number(product.price))}`;
         reference.hidden = discount.hidden = saving.hidden = false;
       }
@@ -119,7 +119,7 @@
   }
   $('#minus').onclick=()=>{quantity--;update();};$('#plus').onclick=()=>{quantity++;update();};$('#retry').onclick=load;
   $('#add').onclick=()=>{
-    try { if(!product || quantity>remaining()) {update();return;} const items=readCart();const existing=items.find(x=>x.id===product.id);if(existing)existing.quantity+=quantity;else items.push({id:product.id,quantity});sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items}));$('#feedback').textContent=product.promoUnits?`Agregaste ${quantity} promo(s): ${quantity*product.promoUnits} frascos al carrito.`:`Agregaste ${quantity} unidad(es) al carrito.`;$('#next').hidden=false;window.CNAnalytics?.addToCart(product,quantity,unitPrice);track('AddToCart',product,quantity);update(); }
+    try { if(!product || quantity>remaining()) {update();return;} const items=readCart();const existing=items.find(x=>x.id===product.id);if(existing)existing.quantity+=quantity;else items.push({id:product.id,quantity});sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items}));$('#feedback').textContent=product.promoUnits?`Agregaste ${quantity} promo(s): ${quantity*product.promoUnits} ${product.promoNoun||'frascos'} al carrito.`:`Agregaste ${quantity} unidad(es) al carrito.`;$('#next').hidden=false;window.CNAnalytics?.addToCart(product,quantity,unitPrice);track('AddToCart',product,quantity);update(); }
     catch(_){$('#feedback').textContent='No pudimos guardar el carrito en este navegador. Volvé a la colección para comprar.';}
   };
   document.querySelectorAll('a[href*="checkout=1"]').forEach(link=>link.addEventListener('click',()=>{
