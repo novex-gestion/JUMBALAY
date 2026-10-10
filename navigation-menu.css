@@ -22,3 +22,7 @@ html{scroll-padding-top:110px}
 @media(max-width:440px){html{scroll-padding-top:120px}.nav-shop-menu{min-width:185px}.site-header .nav-main{flex-wrap:nowrap!important;gap:3px}.site-header .nav-links{gap:4px}.site-header .social-links{gap:3px}.site-header .social-link{width:25px;height:25px}.site-header .header-cart svg{width:19px;height:19px}.site-header .nav-shop summary{gap:6px;padding:8px 4px}.site-header .nav-main a,.site-header .nav-shop summary{font-size:8px;letter-spacing:0}}
 @media(max-width:600px){.catalog-shortcuts{gap:8px;padding:24px 14px 0}.catalog-shortcuts a{min-height:58px;font-size:12px;letter-spacing:.02em}}
 @media(prefers-reduced-motion:reduce){.nav-shop summary::before,.nav-shop-chevron{transition:none}}
+
+/* Banda superior: 40% menos de altura. */
+.announcement-bar .announcement-content{min-height:26.4px!important}
+.announcement-bar .announcement-group{padding-top:4px!important;padding-bottom:4px!important}
