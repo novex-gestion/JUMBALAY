@@ -4,12 +4,12 @@ function cnPromoCatalog(products) {
     if(p.id==='pepinitos-en-vinagre' && p.price===10500) return [
       p,
       {...p,id:'pepinitos-2x1',name:'Pepinitos en vinagre · 2×1',
-        description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. No acumulable con códigos de descuento. Envío según condiciones habituales.',
+        description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. Acumulable con el cupón del Club Casa Natural; otros códigos mantienen sus condiciones. Envío según condiciones habituales.',
         referencePrice:21000,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos',couponExcluded:true}
     ];
     if(p.id==='tomates-triturados' && p.price===3360) return [p,
       {...p,id:'tomates-triturados-4x3',name:'Tomates triturados · Promo 4×3',
-        description:'Llevá 4 botellas de 1 litro y pagá 3: $10.080 el pack. No acumulable con códigos de descuento.',
+        description:'Llevá 4 botellas de 1 litro y pagá 3: $10.080 el pack. Acumulable con el cupón del Club Casa Natural; otros códigos mantienen sus condiciones.',
         price:10080,referencePrice:13440,stock:Math.floor(p.stock/4),
         promoSource:p.id,promoUnits:4,promoLabel:'4×3',promoNoun:'botellas',couponExcluded:true}
     ];
@@ -38,6 +38,6 @@ document.addEventListener('cn:cart-updated',()=>{
   });
   document.querySelectorAll('.cart-line').forEach(line=>{
     const remove=line.querySelector('[data-remove-item]');const p=CONFIG.products[Number(remove?.dataset.removeItem)];
-    if(p?.promoUnits){const q=cart.get(Number(remove.dataset.removeItem))||0;line.querySelector('span').textContent=`${q} promo(s) · ${q*p.promoUnits} ${p.promoNoun||'frascos'} · ${money(p.price*q)}`;}
+    if(p?.promoUnits){const q=cart.get(Number(remove.dataset.removeItem))||0;line.querySelector('span').textContent=`${q} promo(s) · ${q*p.promoUnits} ${p.promoNoun||'frascos'} · ${money(cnCoupon.unitPrice(p)*q)}`;}
   });
 });
