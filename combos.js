@@ -47,6 +47,7 @@
       const card=document.getElementById(`price-${index}`)?.closest('.card');
       if(card)grid.append(card);
     });
+    if(!activePage)syncMotherSlide(products);
   };
   const section = document.createElement('section');
   section.id = 'combos'; section.setAttribute('aria-labelledby','combos-title');
@@ -123,6 +124,25 @@
     @media(max-width:600px){#inicio .promo-banner{height:720px;background-position:center}#inicio .promo-banner>.promo-copy,#inicio .promo-cover .hero-copy{inset:24px 24px auto;width:auto;max-width:none;height:386px;grid-template-rows:24px 84px 60px 24px 44px 28px 1fr}#inicio .promo-copy h2,#inicio .hero-copy h1{font-size:32px}#inicio .promo-copy p,#inicio .hero-copy .lead{font-size:14px;max-width:none}#inicio .promo-copy strong{font-size:30px}#inicio .promo-banner>img{right:5%;bottom:10px;width:90%;height:290px}#inicio .promo-cover .hero-photo{top:auto;bottom:0;height:300px}#inicio .promo-cover .hero-photo img{object-position:70% bottom}#inicio .promo-cover .hero-copy{background:transparent}}
   `;
   document.head.append(unifiedStyle);
+  const motherStyle=document.createElement('style');
+  motherStyle.textContent=`
+    #inicio .promo-mother{background:#e9d9c4 url('carousel-lino-v1.jpg') center/cover no-repeat}
+    #inicio .promo-mother .promo-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:11px;top:24px;bottom:24px;width:45%;max-width:520px}
+    #inicio .promo-mother .eyebrow{color:#773d37;font-weight:800}
+    #inicio .promo-mother h2{color:#66342f;font-family:Georgia,serif;font-size:clamp(44px,5vw,72px);line-height:.92;letter-spacing:-.055em;margin:0}
+    #inicio .promo-mother h2 span{display:block}
+    #inicio .promo-mother h2 .mother-line{color:white;background:#783d38;padding:5px 15px 10px;margin:8px 0 0 -15px;border-radius:3px}
+    #inicio .promo-mother p{font-size:clamp(15px,1.5vw,19px);line-height:1.35;max-width:385px;margin:0}
+    #inicio .promo-mother .mother-off{color:#783d38;font:800 clamp(30px,3.2vw,42px)/1 Arial,sans-serif}
+    #inicio .promo-mother .mother-dates{font:700 12px/1.4 Arial,sans-serif;letter-spacing:.11em;color:#783d38}
+    #inicio .promo-mother .promo-cta{align-self:flex-start;background:#783d38;border-color:#783d38;margin:5px 0 0}
+    #inicio .promo-mother>img{right:1%;width:55%;height:90%;bottom:5%}
+    @media(max-width:850px){#inicio .promo-mother .promo-copy{left:26px;width:48%}#inicio .promo-mother h2{font-size:clamp(38px,5vw,52px)}}
+    @media(max-width:900px){#inicio .promo-mother{height:720px}#inicio .promo-mother .promo-copy{top:20px;left:22px;right:22px;bottom:auto;width:auto;height:auto;gap:7px}#inicio .promo-mother h2{font-size:clamp(42px,11vw,58px)}#inicio .promo-mother h2 .mother-line{margin-top:5px;padding:3px 12px 8px;margin-left:-12px}#inicio .promo-mother p{font-size:14px;max-width:330px}#inicio .promo-mother .mother-off{font-size:31px}#inicio .promo-mother .mother-dates{font-size:10px}#inicio .promo-mother .promo-cta{padding:11px 15px;font-size:11px}#inicio .promo-mother>img{right:2%;bottom:6px;width:96%;height:290px}}
+    @media(min-width:601px) and (max-width:900px){#inicio .combo-promos.mother-active .promo-controls [data-direction]{top:410px}}
+    @media(max-width:380px){#inicio .promo-mother .promo-copy{gap:5px}#inicio .promo-mother h2{font-size:40px}#inicio .promo-mother>img{height:275px}}
+  `;
+  document.head.append(motherStyle);
   const comboTitleStyle=document.createElement('style');
   comboTitleStyle.textContent=`#inicio .promo-banner[href^="combos.html#combo-"] h2{font-size:clamp(40px,3.6vw,52px);font-weight:700;color:var(--wine);line-height:1.04}@media(max-width:600px){#inicio .promo-banner[href^="combos.html#combo-"] h2{font-size:36px;line-height:1.08}}`;
   document.head.append(comboTitleStyle);
@@ -142,6 +162,7 @@
     const slides=[...promo.querySelectorAll('.promo-banner')];
     if(!slides.length)return;
     promoIndex=(index+slides.length)%slides.length;
+    promo.classList.toggle('mother-active',slides[promoIndex].classList.contains('promo-mother'));
     slides.forEach((slide,i)=>slide.hidden=i!==promoIndex);
     promo.querySelectorAll('[data-slide]').forEach((dot,i)=>dot.setAttribute('aria-current',String(i===promoIndex)));
     const video=promo.querySelector('video');
@@ -162,6 +183,20 @@
     promo.insertAdjacentHTML('beforeend',`<div class="promo-controls"><button type="button" data-direction="-1" aria-label="Diapositiva anterior">←</button>${names.map((name,i)=>`<button type="button" data-slide="${i}" aria-label="Mostrar ${safe(name)}" aria-current="${i===promoIndex}">${i+1}</button>`).join('')}<button type="button" data-direction="1" aria-label="Diapositiva siguiente">→</button></div>`);
     const coverPhoto=promo.querySelector('.promo-cover .hero-photo');
     const video=document.createElement('video');video.src='portada-video-final.mp4';video.poster=matchMedia('(max-width: 650px)').matches?'assets/optimized/hero-tostada-final-640.webp':'assets/optimized/hero-tostada-final-1280.webp';video.muted=true;video.loop=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-hidden','true');coverPhoto.replaceChildren(video);
+    selectPromo(promoIndex);
+  }
+  function syncMotherSlide(products){
+    const product=products.find(p=>p.id==='mesa-completa-mama-2026');
+    const old=promo.querySelector('.promo-mother');
+    if(!product){old?.remove();return;}
+    if(old)return;
+    const slide=document.createElement('a');
+    slide.className='promo-banner promo-mother';slide.href='promos.html#promos';
+    slide.setAttribute('aria-label','Ver la promo La Mesa Completa de mamá con 10% de descuento');
+    slide.innerHTML=`<div class="promo-copy"><span class="eyebrow">ESPECIAL DÍA DE LA MADRE</span><h2><span>La Mesa</span><span>Completa</span><span class="mother-line">de mamá</span></h2><p>Siete sabores para poner la mesa y disfrutar juntos en su día.</p><strong class="mother-off">10% OFF</strong><span class="mother-dates">DEL 13 AL 17 DE OCTUBRE</span><span class="promo-cta">VER EL COMBO →</span></div><img src="assets/optimized/combo-completa-cutout-640.webp" alt="Los siete productos de La Mesa Completa" width="768" height="512">`;
+    promo.querySelector('.promo-controls').before(slide);
+    const dots=promo.querySelector('.promo-controls');
+    dots.querySelector('[data-direction="1"]').insertAdjacentHTML('beforebegin','<button type="button" data-slide="2" aria-label="Mostrar promo del Día de la Madre" aria-current="false">3</button>');
     selectPromo(promoIndex);
   }
   promo.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;selectPromo(b.hasAttribute('data-slide')?Number(b.dataset.slide):promoIndex+Number(b.dataset.direction));});

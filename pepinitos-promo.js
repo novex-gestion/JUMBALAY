@@ -17,11 +17,16 @@ function cnPromoCatalog(products) {
   });
 }
 function cnRemaining(product) {
-  const source=product.promoSource||product.id;
-  const physical=CONFIG.products.find(p=>p.id===source);
-  let used=0;
-  for(const [i,q] of cart){const p=CONFIG.products[i];if((p.promoSource||p.id)===source)used+=q*(p.promoUnits||1);}
-  return Math.max(0,Math.floor(((physical?.stock||0)-used)/(product.promoUnits||1)));
+  const parts=p=>p.promoComponents||[{id:p.promoSource||p.id,units:p.promoUnits||1}];
+  return Math.max(0,Math.min(...parts(product).map(part=>{
+    const physical=CONFIG.products.find(p=>p.id===part.id);
+    let used=0;
+    for(const [i,q] of cart){
+      const component=parts(CONFIG.products[i]).find(x=>x.id===part.id);
+      if(component)used+=q*component.units;
+    }
+    return Math.floor(((physical?.stock||0)-used)/part.units);
+  })));
 }
 document.addEventListener('cn:cart-updated',()=>{
   CONFIG.products.forEach((p,i)=>{
