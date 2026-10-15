@@ -4,7 +4,7 @@ const cnCoupon = (() => {
   const key = 'cn-discount-v1';
   try { const saved = JSON.parse(sessionStorage.getItem(key)); if (saved && Date.now()-saved.at<86400000) applied=saved; } catch (_) {}
   const save = () => { try { applied ? sessionStorage.setItem(key,JSON.stringify(applied)) : sessionStorage.removeItem(key); } catch (_) {} };
-  const eligible = product => !['mesa-completa-mama-2026','combo-bruschetta-5off'].includes(product.id) && (applied?.stackable===true || (!product.couponExcluded && !product.promoSource && !product.promoUnits));
+  const eligible = product => !product.couponExcluded && !product.promoSource && !product.promoUnits;
   const qualifies = lines => {
     if(!applied)return false;
     const base=lines.reduce((s,[i,q])=>s+CONFIG.products[i].price*q,0), min=applied.minimum||0;
@@ -52,7 +52,7 @@ const cnCoupon = (() => {
     const panel=document.getElementById('cart-panel'),link=document.getElementById('cart-checkout-link');
     if(!panel||!link)return;
     const box=document.createElement('section');box.id='coupon-box';
-    box.innerHTML='<label for="coupon-input">¿Tenés un código de descuento?</label><div class="coupon-row"><input id="coupon-input" maxlength="24" autocomplete="off" autocapitalize="characters" placeholder="Ingresá tu código"><button id="coupon-apply" type="button">Aplicar</button></div><p id="coupon-status" role="status" aria-live="polite"></p><button id="coupon-remove" type="button" hidden>Quitar código</button><p class="coupon-note">El cupón del Club suma un 10% sobre el precio vigente, incluso en promociones, excepto La Mesa Completa de mamá y La Bruschetta 5% OFF. Otros códigos mantienen sus condiciones. No incluye envío. Un código por compra.</p>';
+    box.innerHTML='<label for="coupon-input">¿Tenés un código de descuento?</label><div class="coupon-row"><input id="coupon-input" maxlength="24" autocomplete="off" autocapitalize="characters" placeholder="Ingresá tu código"><button id="coupon-apply" type="button">Aplicar</button></div><p id="coupon-status" role="status" aria-live="polite"></p><button id="coupon-remove" type="button" hidden>Quitar código</button><p class="coupon-note">Los códigos se aplican solo a productos sin promoción; no se acumulan con combos promocionales, 2×1 ni 4×3. No incluyen envío. Un código por compra.</p>';
     const style=document.createElement('style');style.textContent='#coupon-box{margin:18px 0;padding:16px 0;border-top:1px solid #ded2bf;font:14px/1.5 Arial,sans-serif}#coupon-box label{display:block;font-weight:700;margin-bottom:8px}.coupon-row{display:flex;gap:8px}.coupon-row input{min-width:0;flex:1;width:100%;padding:11px;border:1px solid #b9bfac;border-radius:3px;font:inherit;text-transform:uppercase}.coupon-row button{padding:11px 16px;background:#465536;color:white;border:0;border-radius:3px;font-weight:700;cursor:pointer}#coupon-remove{background:none;border:0;text-decoration:underline;color:#7c302c;cursor:pointer;padding:0}.coupon-note{font-size:12px;color:#646951}#coupon-status{margin:8px 0;color:#465536}';document.head.appendChild(style);
     panel.insertBefore(box,link);box.querySelector('input').value=applied?.code||'';
     box.querySelector('#coupon-apply').addEventListener('click',apply);
