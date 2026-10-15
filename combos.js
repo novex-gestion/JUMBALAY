@@ -52,7 +52,7 @@
   const section = document.createElement('section');
   section.id = 'combos'; section.setAttribute('aria-labelledby','combos-title');
   const comboHeading=comboPage?'h1':'h2';
-  section.innerHTML = `<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><${comboHeading} id="combos-title">Combos</${comboHeading}><p class="combo-explainer">Selecciones listas para sumar a tu carrito. Un frasco de cada producto, con los precios vigentes de la web. El ahorro se compara con el precio de lista; no es un descuento adicional por combo. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>`;
+  section.innerHTML = `<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><${comboHeading} id="combos-title">Combos</${comboHeading}><p class="combo-explainer">Selecciones listas para sumar a tu carrito. La Bruschetta tiene un 5% de descuento adicional frente a comprar sus tres frascos por separado; los demás combos suman los precios vigentes de cada producto. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>`;
   document.querySelector('#productos').before(section);
   const commerceLink=document.createElement('a');
   commerceLink.href='comercios/';commerceLink.textContent='Soy un comercio';
@@ -228,23 +228,30 @@
     grid.innerHTML=definitions.map(def=>{
       const entries=resolve(def), missing=entries.some(e=>!e.product);
       if(missing) return `<article class="combo-card"><h3>${safe(def.name)}</h3><p>Esta selección no está disponible por el momento.</p></article>`;
-      const total=entries.reduce((s,e)=>s+e.product.price,0);
-      const list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0);
+      const bundle=def.id==='bruschetta'?CONFIG.products.find(p=>p.id==='combo-bruschetta-5off'):null;
+      const total=bundle?bundle.price:entries.reduce((s,e)=>s+e.product.price,0);
+      const list=bundle?bundle.referencePrice:entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0);
       const saving=list-total;
-      const available=entries.every(e=>cnRemaining(e.product)>0);
-      return `<article class="combo-card" data-combo-card="${def.id}"><h3>${safe(def.name)}</h3><p>${safe(def.description)}</p>${groupPhotos(entries)}<ul>${entries.map(e=>`<li>1 frasco de ${safe(e.product.name)}</li>`).join('')}</ul><p class="combo-note">${safe(def.note)}</p><div class="combo-price">${saving>0?`<del>Lista ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="combo-saving">Ahorrás ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}</div><button class="button" type="button" data-add-combo="${def.id}" ${available?'':'disabled'}>${available?'Agregar combo al carrito':'Sin disponibilidad para sumar otro'}</button></article>`;
+      const available=bundle?cnRemaining(bundle)>0:entries.every(e=>cnRemaining(e.product)>0);
+      return `<article class="combo-card" data-combo-card="${def.id}"><h3>${safe(def.name)}</h3><p>${safe(def.description)}</p>${groupPhotos(entries)}<ul>${entries.map(e=>`<li>1 frasco de ${safe(e.product.name)}</li>`).join('')}</ul><p class="combo-note">${safe(def.note)}</p><div class="combo-price">${saving>0?`<del>${bundle?'Por separado':'Lista'} ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="combo-saving">Ahorrás ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}</div><button class="button" type="button" data-add-combo="${def.id}" ${available?'':'disabled'}>${available?'Agregar combo al carrito':'Sin disponibilidad para sumar otro'}</button></article>`;
     }).join('');
   }
   section.addEventListener('click',event=>{
     const button=event.target.closest('[data-add-combo]'); if(!button||!catalogReady)return;
     const def=definitions.find(d=>d.id===button.dataset.addCombo); if(!def)return;
     const entries=resolve(def);
+    const bundle=def.id==='bruschetta'?CONFIG.products.find(p=>p.id==='combo-bruschetta-5off'):null;
     if(entries.some(e=>!e.product||cnRemaining(e.product)<=0)) {render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
-    entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
+    if(bundle){
+      if(cnRemaining(bundle)<=0){render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
+      const index=CONFIG.products.findIndex(p=>p.id===bundle.id);
+      cart.set(index,(cart.get(index)||0)+1);
+    }else entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
     renderCart();
     section.querySelector('#combo-status').textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
-    if(window.CNAnalytics)CNAnalytics.addToCartLines(entries.map(e=>({product:e.product,quantity:1})),product=>cnCoupon.unitPrice(product));
-    track('AddToCart',{content_ids:entries.map(e=>e.product.id),contents:entries.map(e=>({id:e.product.id,quantity:1,item_price:e.product.price})),content_type:'product',value:entries.reduce((s,e)=>s+e.product.price,0),currency:'ARS'});
+    const added=bundle?[{product:bundle,quantity:1}]:entries.map(e=>({product:e.product,quantity:1}));
+    if(window.CNAnalytics)CNAnalytics.addToCartLines(added,product=>cnCoupon.unitPrice(product));
+    track('AddToCart',{content_ids:added.map(e=>e.product.id),contents:added.map(e=>({id:e.product.id,quantity:1,item_price:e.product.price})),content_type:'product',value:added.reduce((s,e)=>s+e.product.price,0),currency:'ARS'});
     if(button.hasAttribute('data-buy-combo')){location.href=location.pathname+'?checkout=1';return;}
     document.querySelector('#cart-panel').classList.remove('open');
   });
