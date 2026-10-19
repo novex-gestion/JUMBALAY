@@ -5,7 +5,8 @@ window.CNAnalytics = (() => {
   const viewed = new Set();
   const positive = value => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : 0;
   const emit = (name, params) => {
-    if (typeof window.gtag === 'function') window.gtag('event', name, params);
+    if (typeof window.gtag !== 'function') return false;
+    try { window.gtag('event', name, params); return true; } catch (_) { return false; }
   };
   const item = (product, quantity, unitPrice = product?.price) => ({
     item_id: String(product?.id || ''),
@@ -55,6 +56,7 @@ window.CNAnalytics = (() => {
       emit('add_payment_info', { ...data, payment_type: paymentType });
     },
     purchase(payment) {
+      if (payment?.purchase_owner === 'server') return true; // Server owns this conversion; preserve receipt UI.
       const transactionId = String(payment?.transaction_id || payment?.payment_id || payment?.id || '');
       const items = validItems((Array.isArray(payment?.items) ? payment.items : []).map(line => ({
         item_id: String(line.item_id || line.id || ''),
@@ -66,9 +68,42 @@ window.CNAnalytics = (() => {
       if (!transactionId || !items.length || !value) return false;
       const key = `cn-ga4-purchase-${transactionId}`;
       try { if (localStorage.getItem(key)) return false; } catch (_) {}
-      emit('purchase', { transaction_id: transactionId, affiliation: 'Casa Natural', currency, value, shipping: positive(payment?.shipping), items });
+      const emitted = emit('purchase', { transaction_id: transactionId, affiliation: 'Casa Natural', currency, value, shipping: positive(payment?.shipping), items });
+      if (!emitted) return false;
       try { localStorage.setItem(key, '1'); } catch (_) {}
       return true;
     }
+  };
+})();
+
+// Attach only measurement context to this shop's existing order-creation request.
+// No prices, items, delivery, payment method or request ID are changed.
+(() => {
+  const originalFetch = window.fetch;
+  if (typeof originalFetch !== 'function') return;
+  const cookie = name => { try { const v=document.cookie.split('; ').find(v=>v.startsWith(name+'=')); return v?decodeURIComponent(v.slice(name.length+1)):''; } catch (_) { return ''; } };
+  const context = async () => {
+    const result = {};
+    const ga=cookie('_ga').match(/^GA\d+\.\d+\.(\d+\.\d+)$/);
+    if (ga) result.client_id=ga[1];
+    for (const key of ['fbp','fbc']) { const value=cookie('_'+key); if (/^fb\.\d\.\d{10,16}\.[A-Za-z0-9_.-]{1,200}$/.test(value)) result[key]=value; }
+    if (typeof window.gtag==='function') {
+      const get=field=>new Promise(resolve=>{const timer=setTimeout(()=>resolve(''),180);try{window.gtag('get','G-0KWGE3QME7',field,value=>{clearTimeout(timer);resolve(String(value||''));});}catch(_){clearTimeout(timer);resolve('');}});
+      const [client,session]=await Promise.all([get('client_id'),get('session_id')]);
+      if (/^\d{1,20}\.\d{1,20}$/.test(client)) result.client_id=client;
+      if (/^\d{1,20}$/.test(session)) result.session_id=session;
+    }
+    return result;
+  };
+  window.fetch = async function(input, init) {
+    let next=init;
+    try {
+      const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:'',location.href);
+      if(url.origin==='https://panel.tucasaesnatural.com'&&url.pathname==='/api/create-order.php'&&init?.method?.toUpperCase()==='POST'&&typeof init.body==='string') {
+        const body=JSON.parse(init.body);
+        if(body&&typeof body==='object'&&!Array.isArray(body))next={...init,body:JSON.stringify({...body,analytics_context:await context()})};
+      }
+    } catch (_) {} // Measurement cannot prevent order submission.
+    return originalFetch.call(this,input,next);
   };
 })();
