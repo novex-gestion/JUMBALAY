@@ -1,16 +1,16 @@
 // Shared stock remains expressed in physical jars. The promo is a pair.
 function cnPromoCatalog(products) {
   return products.flatMap(p => {
-    if(p.id==='pepinitos-en-vinagre' && p.price===10500) return [
+    if(p.id==='pepinitos-en-vinagre' && p.price===7800) return [
       p,
       {...p,id:'pepinitos-2x1',name:'Pepinitos en vinagre · 2×1',
-        description:'Llevá 2 frascos por $10.500 · $5.250 cada uno. El selector cuenta promos de 2 frascos. Acumulable con el cupón del Club Casa Natural; otros códigos mantienen sus condiciones. Envío según condiciones habituales.',
-        referencePrice:21000,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos',couponExcluded:true}
+        description:'Llevá 2 frascos por $7.800 · $3.900 cada uno. El selector cuenta promos de 2 frascos. No acumulable con códigos de descuento. Envío según condiciones habituales.',
+        referencePrice:15600,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos',couponExcluded:true}
     ];
-    if(p.id==='tomates-triturados' && p.price===3360) return [p,
+    if(p.id==='tomates-triturados' && p.price===3130) return [p,
       {...p,id:'tomates-triturados-4x3',name:'Tomates triturados · Promo 4×3',
-        description:'Llevá 4 botellas de 1 litro y pagá 3: $10.080 el pack. Acumulable con el cupón del Club Casa Natural; otros códigos mantienen sus condiciones.',
-        price:10080,referencePrice:13440,stock:Math.floor(p.stock/4),
+        description:'Llevá 4 botellas de 1 litro y pagá 3: $9.390 el pack. No acumulable con códigos de descuento.',
+        price:9390,referencePrice:12520,stock:Math.floor(p.stock/4),
         promoSource:p.id,promoUnits:4,promoLabel:'4×3',promoNoun:'botellas',couponExcluded:true}
     ];
     return [p];

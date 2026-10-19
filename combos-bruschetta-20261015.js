@@ -45,6 +45,7 @@
     products.forEach((product,index)=>{
       if(!product.promoUnits)return;
       const card=document.getElementById(`price-${index}`)?.closest('.card');
+      if(product.id==='combo-bruschetta-5off'){card?.remove();return;}
       if(card)grid.append(card);
     });
     if(!activePage)syncMotherSlide(products);
