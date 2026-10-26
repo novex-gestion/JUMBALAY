@@ -30,3 +30,5 @@ html{scroll-padding-top:110px}
 
 /* Compact screens: wrap groups without shrinking or overlapping controls. */
 @media(max-width:1050px){.site-header .nav .nav-links{flex-wrap:wrap;justify-content:center;column-gap:12px;row-gap:10px}.site-header .nav .nav-main,.site-header .nav .social-links{flex:0 0 auto}}
+/* Casa Natural: carrito por encima del encabezado sticky (z-index:30). */
+#cart-panel.cart-panel { z-index: 40; }
