@@ -41,7 +41,7 @@
   <meta name="twitter:description" content="Descubrí nuestra colección y combos para compartir. Envíos a todo el país, pago seguro con Mercado Pago y envío local gratis desde $40.000 en Pilar.">
   <meta name="twitter:image" content="https://tucasaesnatural.com/coleccion-compartir-20260930.jpg">
   <link rel="preconnect" href="https://panel.tucasaesnatural.com">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":["Store","OnlineStore"],"@id":"https://tucasaesnatural.com/#tienda","name":"Casa Natural","description":"Conservas, aceitunas y mermeladas gourmet artesanales con entrega en Pilar.","url":"https://tucasaesnatural.com/","image":"https://tucasaesnatural.com/hero-tostada-final.png","telephone":"+541158436511","priceRange":"$","currenciesAccepted":"ARS","paymentAccepted":"Mercado Pago","address":{"@type":"PostalAddress","addressLocality":"Pilar","addressRegion":"Buenos Aires","addressCountry":"AR"},"areaServed":{"@type":"Country","name":"Argentina"},"hasMerchantReturnPolicy":{"@type":"MerchantReturnPolicy","returnMethod":["https://schema.org/ReturnByMail","https://schema.org/ReturnInStore"],"merchantReturnLink":"https://tucasaesnatural.com/cambios-devoluciones/"},"hasShippingService":{"@type":"ShippingService","name":"Entregas Casa Natural en Argentina","description":"Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos. Resto del país: $12.000; gratis en compras a partir de $99.000 en productos. El importe se confirma en el carrito según destino y compra.","shippingConditions":[{"@type":"ShippingConditions","shippingDestination":{"@type":"DefinedRegion","addressCountry":"AR"},"orderValue":{"@type":"MonetaryAmount","currency":"ARS","maxValue":98999.99},"shippingRate":{"@type":"MonetaryAmount","currency":"ARS","maxValue":12000}},{"@type":"ShippingConditions","shippingDestination":{"@type":"DefinedRegion","addressCountry":"AR"},"orderValue":{"@type":"MonetaryAmount","currency":"ARS","minValue":99000},"shippingRate":{"@type":"MonetaryAmount","currency":"ARS","value":0}}]},"sameAs":["https://www.instagram.com/tucasaesnatural/","https://www.facebook.com/profile.php?id=61594287721318","https://wa.me/5491158436511"]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":["Store","OnlineStore"],"@id":"https://tucasaesnatural.com/#tienda","name":"Casa Natural","description":"Conservas, aceitunas y mermeladas gourmet artesanales con entrega en Pilar.","url":"https://tucasaesnatural.com/","image":"https://tucasaesnatural.com/hero-tostada-final.png","telephone":"+541158436511","priceRange":"$","currenciesAccepted":"ARS","paymentAccepted":"Mercado Pago","address":{"@type":"PostalAddress","addressLocality":"Pilar","addressRegion":"Buenos Aires","addressCountry":"AR"},"areaServed":{"@type":"Country","name":"Argentina"},"hasMerchantReturnPolicy":{"@type":"MerchantReturnPolicy","returnMethod":["https://schema.org/ReturnByMail","https://schema.org/ReturnInStore"],"merchantReturnLink":"https://tucasaesnatural.com/cambios-devoluciones/"},"hasShippingService":{"@type":"ShippingService","name":"Entregas Casa Natural en Argentina","description":"Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos. Resto del país: Correo Argentino cotizado según CP y bultos; gratis desde $99.000 en productos después de descuentos. El importe se confirma en el carrito según destino y compra.","shippingConditions":[{"@type":"ShippingConditions","shippingDestination":{"@type":"DefinedRegion","addressCountry":"AR"},"orderValue":{"@type":"MonetaryAmount","currency":"ARS","minValue":99000},"shippingRate":{"@type":"MonetaryAmount","currency":"ARS","value":0}}]},"sameAs":["https://www.instagram.com/tucasaesnatural/","https://www.facebook.com/profile.php?id=61594287721318","https://wa.me/5491158436511"]}</script>
   <style>
     :root { --ink:#303b28; --cream:#f7f1e7; --paper:#fffdf8; --olive:#52623d; --brand-olive:#465536; --wine:#742e2a; --sand:#e8dbc5; --line:#ded2bf; }
     * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; color:var(--ink); background:var(--cream); font-family:Georgia, "Times New Roman", serif; line-height:1.5; }
@@ -311,12 +311,50 @@
     const analyticsUnitPrice = product => cnCoupon.unitPrice(product);
     if (CONFIG.metaPixelId) { !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CONFIG.metaPixelId); fbq("track", "PageView"); }
     const safe = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
-    const money = value => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(value);
-    const cart = new Map(); const pickupLocation='Retiro por Champagnat 1176, Pilar · 24 hs'; const freeDeliveryLocalities=new Set(['Pilar','Del Viso','Derqui','Villa Rosa']); const pickupPersonal=document.querySelector('#pickup-personal'); const deliveryFields=document.querySelector('#delivery-fields'); const deliveryLocality=document.querySelector('#delivery-locality'); const deliveryZip=document.querySelector('#delivery-zip'); const deliveryAddress=document.querySelector('#delivery-address'); const deliveryStatus=document.querySelector('#delivery-status'); const deliveryWhatsapp=document.querySelector('#delivery-whatsapp'); const actualizarEntrega=()=>{const pickup=pickupPersonal.checked; const ok=pickup||freeDeliveryLocalities.has(deliveryLocality.value); const otraLocalidad=!pickup&&deliveryLocality.value==='other'; deliveryFields.hidden=pickup; deliveryLocality.required=!pickup; deliveryZip.required=!pickup; deliveryAddress.required=!pickup; deliveryStatus.textContent=pickup?'Retiro disponible en Champagnat 1176, Pilar, dentro de las 24 hs.':!deliveryLocality.value?'':ok?'Envío local: $5.000; gratis desde $40.000 en productos después de descuentos.':otraLocalidad?'Envío nacional: $12.000; gratis en compras a partir de $99.000 en productos.':'Para envíos fuera de la zona, te cotizamos por WhatsApp con tu código postal.'; deliveryWhatsapp.hidden=pickup||ok||!deliveryLocality.value; if(!pickup&&!ok&&deliveryLocality.value) deliveryWhatsapp.href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent('Hola, quiero consultar el envío a '+deliveryLocality.value+'. Mi código postal es '+deliveryZip.value.trim()+'.');}; pickupPersonal.addEventListener('change',actualizarEntrega); deliveryLocality.addEventListener('change',actualizarEntrega); deliveryZip.addEventListener('input',actualizarEntrega); actualizarEntrega();
+    const money = value => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:2 }).format(value);
+    const cart = new Map(); const pickupLocation='Retiro por Champagnat 1176, Pilar · 24 hs'; const freeDeliveryLocalities=new Set(['Pilar','Del Viso','Derqui','Villa Rosa']); const pickupPersonal=document.querySelector('#pickup-personal'); const deliveryFields=document.querySelector('#delivery-fields'); const deliveryLocality=document.querySelector('#delivery-locality'); const deliveryZip=document.querySelector('#delivery-zip'); const deliveryAddress=document.querySelector('#delivery-address'); const deliveryStatus=document.querySelector('#delivery-status'); const deliveryWhatsapp=document.querySelector('#delivery-whatsapp'); const actualizarEntrega=()=>{const pickup=pickupPersonal.checked; const ok=pickup||freeDeliveryLocalities.has(deliveryLocality.value); const otraLocalidad=!pickup&&deliveryLocality.value==='other'; deliveryFields.hidden=pickup; deliveryLocality.required=!pickup; deliveryZip.required=!pickup; deliveryAddress.required=!pickup; deliveryStatus.textContent=pickup?'Retiro disponible en Champagnat 1176, Pilar, dentro de las 24 hs.':!deliveryLocality.value?'':ok?'Envío local: $5.000; gratis desde $40.000 en productos después de descuentos.':otraLocalidad?'Envío nacional cotizado por Correo Argentino; gratis desde $99.000 en productos después de descuentos.':'Para envíos fuera de la zona, te cotizamos por WhatsApp con tu código postal.'; deliveryWhatsapp.hidden=pickup||ok||!deliveryLocality.value; if(!pickup&&!ok&&deliveryLocality.value) deliveryWhatsapp.href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent('Hola, quiero consultar el envío a '+deliveryLocality.value+'. Mi código postal es '+deliveryZip.value.trim()+'.');}; pickupPersonal.addEventListener('change',actualizarEntrega); deliveryLocality.addEventListener('change',actualizarEntrega); deliveryZip.addEventListener('input',actualizarEntrega); actualizarEntrega();
     const localPostalCodes = {'Pilar':'1629','Del Viso':'1669','Derqui':'1635','Villa Rosa':'1631'};
-    const shippingCost = (subtotal, locality) => locality === pickupLocation ? 0 : Object.hasOwn(localPostalCodes,locality) ? (subtotal >= 40000 ? 0 : 5000) : locality === 'other' && subtotal < 99000 ? 12000 : 0;
-    const shippingPolicy = 'local-5000-from-40000-national-12000-from-99000-v3';
+    const quoteApi = 'https://panel.tucasaesnatural.com/api/quote-shipping.php';
+    const shippingQuote = {key:'', data:null, pending:false, error:'', timer:null, controller:null, at:0};
+    const nationalQuoteKey = lines => JSON.stringify({zip:deliveryZip.value.trim(),items:lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity}))});
+    const activeNationalRate = lines => {
+      if (shippingQuote.key !== nationalQuoteKey(lines) || !shippingQuote.data || Date.now()-shippingQuote.at>600000) return null;
+      if (shippingQuote.data.valid_to && Date.parse(shippingQuote.data.valid_to) <= Date.now()) return null;
+      return shippingQuote.data.services?.find(rate=>rate.code==='CP') || null;
+    };
+    const shippingCost = (subtotal, locality, lines=[...cart.entries()].filter(([,quantity])=>quantity>0)) => {
+      if (locality === pickupLocation) return 0;
+      if (Object.hasOwn(localPostalCodes, locality)) return subtotal >= 40000 ? 0 : 5000;
+      if (locality === 'other') { const rate=activeNationalRate(lines); return rate ? (subtotal >= 99000 ? 0 : rate.cost_cents/100) : null; }
+      return null;
+    };
+    const shippingPolicy = 'micorreo-clasico-national-free-99000-v1';
     document.querySelector('.cart-total').insertAdjacentHTML('beforebegin', '<div id="shipping-breakdown" style="font:14px/1.7 Arial,sans-serif"><div>Productos: <strong id="products-subtotal"></strong></div><div>Envío: <strong id="shipping-total"></strong></div></div>');
+    document.querySelector('#shipping-breakdown').insertAdjacentHTML('afterend','<div id="correo-quote-status" role="status" style="font:13px/1.5 Arial,sans-serif;margin:5px 0"></div>');
+    const requestNationalQuote = (lines, immediate=false) => {
+      if (pickupPersonal.checked || deliveryLocality.value !== 'other' || !/^[0-9]{4}$/.test(deliveryZip.value.trim()) || !lines.length) return;
+      const key=nationalQuoteKey(lines);
+      if (shippingQuote.key===key && (shippingQuote.pending || activeNationalRate(lines) || shippingQuote.error)) return;
+      clearTimeout(shippingQuote.timer); shippingQuote.controller?.abort();
+      shippingQuote.key=key; shippingQuote.data=null; shippingQuote.error=''; shippingQuote.pending=true;
+      const run=async()=>{
+        const controller=new AbortController(); shippingQuote.controller=controller;
+        try {
+          const request=JSON.parse(key);
+          const response=await fetch(quoteApi,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:controller.signal});
+          const result=await response.json();
+          if (shippingQuote.key!==key) return;
+          if (!response.ok || !result.services?.some(rate=>rate.code==='CP')) throw new Error(result.error || 'Correo Argentino no ofrece Clásico para este destino.');
+          shippingQuote.data=result; shippingQuote.at=Date.now(); shippingQuote.error='';
+        } catch(error) {
+          if (error.name==='AbortError' || shippingQuote.key!==key) return;
+          shippingQuote.error=error.message || 'No se pudo cotizar el envío.';
+        } finally {
+          if (shippingQuote.key===key) {shippingQuote.pending=false; renderCart();}
+        }
+      };
+      shippingQuote.timer=setTimeout(run,immediate?0:450);
+    };
     let catalogReady = false;
     const draftQuantities = new Map();
     const cartStorageKey = 'casa-natural-cart-v1';
@@ -366,6 +404,7 @@
         if (plus) plus.disabled = quantity >= product.stock;
       });
       const locality = pickupPersonal.checked ? pickupLocation : deliveryLocality.value;
+      if (locality === 'other') requestNationalQuote(lines);
       const shipping = shippingCost(total, locality);
       const couponDiscount = cnCoupon.amount(lines);
       document.querySelector('#products-subtotal').textContent = money(total + couponDiscount);
@@ -377,21 +416,31 @@
       }
       couponRow.hidden = !couponDiscount;
       couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
-      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Elegí entrega o retiro' : shipping ? money(shipping) : 'Gratis';
-      document.querySelector('#cart-total').textContent = money(total + shipping);
+      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Elegí entrega o retiro' : shipping === null ? 'Pendiente de cotización' : shipping ? money(shipping) : 'Gratis';
+      document.querySelector('#cart-total').textContent = shipping === null ? money(total) + ' + envío' : money(total + shipping);
+      const quoteStatus=document.querySelector('#correo-quote-status');
+      const rate=locality==='other' ? activeNationalRate(lines) : null;
+      quoteStatus.hidden=locality!=='other' || !lines.length;
+      quoteStatus.innerHTML=rate ? `Correo Argentino Clásico · ${shippingQuote.data.packages.length} bulto${shippingQuote.data.packages.length===1?'':'s'} · Tarifa Correo: ${money(rate.cost_cents/100)}${total>=99000?' · Envío sin cargo para vos':''}` : !/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Ingresá un código postal de 4 dígitos para cotizar.' : shippingQuote.error ? `${safe(shippingQuote.error)} <button type="button" id="retry-correoshop-quote">Reintentar</button>` : 'Cotizando el envío con Correo Argentino…';
       const savingsNode = document.querySelector('#cart-savings');
       savingsNode.hidden = !(savings + cnCoupon.amount(lines));
       savingsNode.textContent = savings + couponDiscount ? `Ahorrás ${money(savings + couponDiscount)} frente al precio de lista${couponDiscount ? ', incluyendo tu código' : ''}.` : '';
-      document.querySelector('#send-cart').disabled = !lines.length;
-      document.querySelector('#send-cart').style.opacity = lines.length ? '1' : '.45'; const units = lines.reduce((sum, [, quantity]) => sum + quantity, 0); const floatingCount = document.querySelector('#cart-float-count'); floatingCount.textContent = units; floatingCount.hidden = !units;
-      document.querySelector('#send-manual-payment').disabled = !lines.length;
-      document.querySelector('#send-manual-payment').style.opacity = lines.length ? '1' : '.45';
+      document.querySelector('#send-cart').disabled = !lines.length || (locality==='other' && !rate);
+      document.querySelector('#send-cart').style.opacity = lines.length && (locality!=='other'||rate) ? '1' : '.45'; const units = lines.reduce((sum, [, quantity]) => sum + quantity, 0); const floatingCount = document.querySelector('#cart-float-count'); floatingCount.textContent = units; floatingCount.hidden = !units;
+      document.querySelector('#send-manual-payment').disabled = !lines.length || (locality==='other' && !rate);
+      document.querySelector('#send-manual-payment').style.opacity = lines.length && (locality!=='other'||rate) ? '1' : '.45';
       if (catalogReady) {
         savedCart = lines.map(([index, quantity]) => ({id:CONFIG.products[index].id,quantity}));
         try { sessionStorage.setItem(cartStorageKey, JSON.stringify({at:Date.now(),items:savedCart})); } catch (_) {}
       }
       document.dispatchEvent(new CustomEvent('cn:cart-updated'));
     };
+    document.addEventListener('click', event => {
+      if (event.target.id !== 'retry-correoshop-quote') return;
+      shippingQuote.key=''; shippingQuote.error='';
+      requestNationalQuote([...cart.entries()].filter(([,quantity])=>quantity>0),true);
+      renderCart();
+    });
     document.addEventListener('click', event => {
       const control = event.target.closest('[data-draft-change], [data-add-product], [data-continue-shopping], [data-finish-shopping]');
       if (!control) return;
@@ -547,7 +596,7 @@
             "brand": { "@type": "Brand", "name": "Casa Natural" },
             "offers": {
               "hasMerchantReturnPolicy": {"@type":"MerchantReturnPolicy","returnMethod":["https://schema.org/ReturnByMail","https://schema.org/ReturnInStore"],"applicableCountry":"AR","returnPolicyCategory":"https://schema.org/MerchantReturnFiniteReturnWindow","merchantReturnDays":10,"returnFees":"https://schema.org/FreeReturn","merchantReturnLink":"https://tucasaesnatural.com/cambios-devoluciones/","description":"Arrepentimiento dentro de los 10 días corridos, conforme a las condiciones y excepciones de la política publicada. Contactar a Casa Natural para coordinar la devolución."},
-              "shippingDetails": {"@type":"OfferShippingDetails","shippingDestination":{"@type":"DefinedRegion","addressCountry":"AR"},"shippingRate":{"@type":"MonetaryAmount","currency":"ARS","maxValue":12000},"shippingSettingsLink":"https://tucasaesnatural.com/#plazos-condiciones","description":"Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos; resto del país $12.000, gratis desde $99.000 en productos. Plazos nacionales estimados desde la admisión de Correo; ver condiciones.","deliveryTime":{"@type":"ShippingDeliveryTime","handlingTime":{"@type":"QuantitativeValue","minValue":0,"maxValue":1,"unitCode":"DAY"},"transitTime":{"@type":"QuantitativeValue","minValue":1,"maxValue":3,"unitCode":"DAY"},"businessDays":{"@type":"OpeningHoursSpecification","dayOfWeek":["https://schema.org/Monday","https://schema.org/Tuesday","https://schema.org/Wednesday","https://schema.org/Thursday","https://schema.org/Friday"]},"cutoffTime":"12:00:00-03:00"}},
+              "shippingDetails": {"@type":"OfferShippingDetails","shippingDestination":{"@type":"DefinedRegion","addressCountry":"AR"},"shippingSettingsLink":"https://tucasaesnatural.com/#plazos-condiciones","description":"Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos; resto del país según cotización de Correo Argentino, gratis desde $99.000 en productos después de descuentos. Plazos nacionales estimados desde la admisión de Correo; ver condiciones.","deliveryTime":{"@type":"ShippingDeliveryTime","handlingTime":{"@type":"QuantitativeValue","minValue":0,"maxValue":1,"unitCode":"DAY"},"transitTime":{"@type":"QuantitativeValue","minValue":1,"maxValue":3,"unitCode":"DAY"},"businessDays":{"@type":"OpeningHoursSpecification","dayOfWeek":["https://schema.org/Monday","https://schema.org/Tuesday","https://schema.org/Wednesday","https://schema.org/Thursday","https://schema.org/Friday"]},"cutoffTime":"12:00:00-03:00"}},
               "@type": "Offer",
               "priceCurrency": "ARS",
               "price": p.price,
@@ -639,7 +688,7 @@
       } finally { clearTimeout(timeout); grid.setAttribute('aria-busy', 'false'); }
     }
     cargarCatalogo();
-    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"><p style="font:14px/1.5 Arial,sans-serif"><strong>Envío a todo el país: $12.000.</strong> Gratis en compras a partir de $99.000 en productos. Una compra de $99.000 ya tiene envío gratis. Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 después de descuentos. Retiro personal: siempre gratis.</p></div>');
+    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"><p style="font:14px/1.5 Arial,sans-serif"><strong>Envío a todo el país cotizado por Correo Argentino.</strong> Gratis desde $99.000 en productos después de descuentos. Una compra de $99.000 ya tiene envío gratis. Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 después de descuentos. Retiro personal: siempre gratis.</p></div>');
     const updateNationalDelivery = () => {
       const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
       document.querySelector('#national-fields').hidden = !national;
@@ -656,7 +705,7 @@
         deliveryWhatsapp.href = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + encodeURIComponent('Hola, quiero consultar por la entrega de mi pedido' + (deliveryLocality.value ? ' en ' + deliveryLocality.value : '') + '.');
       }
       if (national) {
-        deliveryStatus.textContent = 'Envío nacional: $12.000. Gratis en compras a partir de $99.000 en productos. Coordinamos el despacho por WhatsApp.';
+        deliveryStatus.textContent = 'Envío nacional con Correo Argentino: ingresá tu CP y el carrito se cotiza en tiempo real. Gratis desde $99.000 en productos después de descuentos. El despacho se coordina tras confirmar el pedido.';
         const city = document.querySelector('#national-city').value.trim();
         const province = document.querySelector('#national-province').value.trim();
         deliveryWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hola, quiero consultar un envío a ${city || 'mi localidad'}, ${province || 'mi provincia'}, CP ${deliveryZip.value.trim()}.`)}`;
@@ -689,6 +738,7 @@
     manualPaymentReplacement.addEventListener('click', async () => {
       if (manualPending) return;
       const pedido = pedidoValido(true); if (!pedido) return;
+      if (pedido.locality==='other' && !activeNationalRate(pedido.lines)) { alert('Esperá la cotización de Correo Argentino antes de registrar el pedido.'); renderCart(); return; }
       const cliente = customerFields(); if (!cliente) return;
       CNAnalytics.checkoutDetails(pedido.lines, CONFIG.products, analyticsUnitPrice, pedido.locality, 'transferencia');
       const button = manualPaymentReplacement;
@@ -712,7 +762,7 @@
       let numeroPedido = '';
       const payload = {
         payment_method: 'transferencia_efectivo', customer: cliente, contact_version: 'email-v1',
-        shipping_policy: shippingPolicy, expected_total: total, discount_code: cnCoupon.code(),
+        shipping_policy: shippingPolicy, correo_service: pedido.locality==='other' ? 'CP' : null, packing_fingerprint: pedido.locality==='other' ? shippingQuote.data.packing_fingerprint : null, correo_cost_cents: pedido.locality==='other' ? activeNationalRate(pedido.lines).cost_cents : null, expected_total: total, discount_code: cnCoupon.code(),
         items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
         delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
       };
@@ -763,11 +813,12 @@
     mercadoPagoButton.replaceWith(mercadoPagoReplacement);
     mercadoPagoReplacement.addEventListener('click', async () => {
       const pedido = pedidoValido(); if (!pedido) return;
+      if (pedido.locality==='other' && !activeNationalRate(pedido.lines)) { alert('Esperá la cotización de Correo Argentino antes de pagar.'); renderCart(); return; }
       const cliente = customerFields(true); if (!cliente) return;
       CNAnalytics.checkoutDetails(pedido.lines, CONFIG.products, analyticsUnitPrice, pedido.locality, 'mercado_pago');
       mercadoPagoReplacement.disabled = true; mercadoPagoReplacement.textContent = 'Registrando pedido…';
       try {
-        const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, discount_code:cnCoupon.code(), expected_total:cnCoupon.subtotal(pedido.lines)+shippingCost(cnCoupon.subtotal(pedido.lines),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
+        const orderResponse = await fetch(CONFIG.ordersApi, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, payment_method:'mercado_pago', customer:cliente, shipping_policy:shippingPolicy, correo_service:pedido.locality==='other'?'CP':null, packing_fingerprint:pedido.locality==='other'?shippingQuote.data.packing_fingerprint:null, correo_cost_cents:pedido.locality==='other'?activeNationalRate(pedido.lines).cost_cents:null, discount_code:cnCoupon.code(), expected_total:cnCoupon.subtotal(pedido.lines)+shippingCost(cnCoupon.subtotal(pedido.lines),pedido.locality), items:pedido.lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity})), delivery:{locality:pedido.locality,address:pedido.address,zip:pedido.zip}})});
         const order = await orderResponse.json();
         if (!orderResponse.ok || !order.order_id) throw new Error(order.error || 'No se pudo registrar el pedido.');
         mercadoPagoReplacement.textContent = 'Redirigiendo a Mercado Pago…';
@@ -826,7 +877,7 @@
     const note = document.querySelector('.payment-note');
     const summaryNodes = ['#cart-list','#shipping-breakdown','.cart-total','#cart-savings'].map(s=>panel.querySelector(s));
     const page = document.createElement('main'); page.id = 'checkout-page'; page.hidden = true;
-    page.innerHTML = '<div class="checkout-top"><div><p class="eyebrow">Casa Natural · Tu compra</p><h1 tabindex="-1">Finalizar compra</h1></div><a class="checkout-back" href="'+location.pathname+'" data-return-store>← Seguir eligiendo productos</a></div><p id="checkout-empty" role="status" hidden></p><div class="checkout-layout"><div id="checkout-fields"><section class="checkout-step" id="checkout-contact"><h2>1. Tus datos</h2></section><section class="checkout-step" id="checkout-delivery"><h2>2. Entrega o retiro</h2></section><section class="checkout-step" id="checkout-payment"><h2>3. Elegí cómo pagar</h2><p>Revisá el resumen y el total antes de continuar. Mercado Pago te llevará a su sitio para completar el pago. Transferencia registra el pedido con pago pendiente.</p></section></div><section class="checkout-review"><h2>Resumen de tu pedido</h2><div id="checkout-summary"></div><p>Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos. Resto del país: $12.000; gratis en compras <strong>a partir de $99.000</strong> en productos. Retiro: gratis.</p></section></div>';
+    page.innerHTML = '<div class="checkout-top"><div><p class="eyebrow">Casa Natural · Tu compra</p><h1 tabindex="-1">Finalizar compra</h1></div><a class="checkout-back" href="'+location.pathname+'" data-return-store>← Seguir eligiendo productos</a></div><p id="checkout-empty" role="status" hidden></p><div class="checkout-layout"><div id="checkout-fields"><section class="checkout-step" id="checkout-contact"><h2>1. Tus datos</h2></section><section class="checkout-step" id="checkout-delivery"><h2>2. Entrega o retiro</h2></section><section class="checkout-step" id="checkout-payment"><h2>3. Elegí cómo pagar</h2><p>Revisá el resumen y el total antes de continuar. Mercado Pago te llevará a su sitio para completar el pago. Transferencia registra el pedido con pago pendiente.</p></section></div><section class="checkout-review"><h2>Resumen de tu pedido</h2><div id="checkout-summary"></div><p>Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos. Resto del país: cotización de Correo Argentino según CP y bultos; gratis desde <strong>$99.000</strong> en productos después de descuentos. Retiro: gratis.</p></section></div>';
     document.body.appendChild(page);
     page.querySelector('#checkout-contact').appendChild(customer);
     customer.style.borderTop='0';customer.style.marginTop='0';customer.style.paddingTop='0';
@@ -839,7 +890,7 @@
     const shippingPreview = document.createElement('div');
     shippingPreview.className = 'cart-shipping-preview';
     shippingPreview.style.cssText = 'margin:16px 0;padding:12px;border:1px solid #d8ccb9;font:13px/1.5 Arial,sans-serif';
-    shippingPreview.innerHTML = '<strong>Envíos y retiro</strong><br>Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos.<br>Resto del país: $12.000; gratis en compras a partir de $99.000 en productos.<br>Retiro sin cargo en Pilar, con coordinación previa.';
+    shippingPreview.innerHTML = '<strong>Envíos y retiro</strong><br>Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos.<br>Resto del país: Correo Argentino cotizado según CP y bultos; gratis desde $99.000 en productos después de descuentos.<br>Retiro sin cargo en Pilar, con coordinación previa.';
     shippingPreview.insertAdjacentHTML('beforeend', '<p style="margin-bottom:0"><a href="#plazos-condiciones" data-close-cart style="font-weight:700;text-decoration:underline">Ver plazos y condiciones</a></p><p><a href="cambios-devoluciones/">Cambios y devoluciones</a></p>');
     panel.insertBefore(shippingPreview, link);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
