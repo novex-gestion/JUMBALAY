@@ -318,8 +318,7 @@
     const shippingQuote = {key:'', data:null, pending:false, error:'', timer:null, controller:null, at:0};
     const nationalQuoteKey = lines => JSON.stringify({zip:deliveryZip.value.trim(),items:lines.map(([index,quantity])=>({id:CONFIG.products[index].id,quantity}))});
     const activeNationalRate = lines => {
-      if (shippingQuote.key !== nationalQuoteKey(lines) || !shippingQuote.data || Date.now()-shippingQuote.at>600000) return null;
-      if (shippingQuote.data.valid_to && Date.parse(shippingQuote.data.valid_to) <= Date.now()) return null;
+      if (shippingQuote.key !== nationalQuoteKey(lines) || !shippingQuote.data || Date.now()-shippingQuote.at>300000) return null;
       return shippingQuote.data.services?.find(rate=>rate.code==='CP') || null;
     };
     const shippingCost = (subtotal, locality, lines=[...cart.entries()].filter(([,quantity])=>quantity>0)) => {
