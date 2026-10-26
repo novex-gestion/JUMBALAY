@@ -19,7 +19,7 @@ $pages = array_fill_keys([
   'berenjenas-condimentadas', 'untable-fruta-frutos-bosque',
   'pepinitos-en-vinagre', 'pimientos-agridulces',
   'pasta-de-aceitunas-verdes', 'pasta-de-aceitunas-negras',
-  'zanahorias-encurtidas-agridulces', 'tomates-triturados',
+  'zanahorias-encurtidas-agridulces',
 ], true);
 
 function cell(string $value): string {

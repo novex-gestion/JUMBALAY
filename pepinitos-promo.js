@@ -1,17 +1,11 @@
 // Shared stock remains expressed in physical jars. The promo is a pair.
 function cnPromoCatalog(products) {
-  return products.flatMap(p => {
+  return products.filter(p => !['tomates-triturados','tomates-triturados-4x3'].includes(p.id)).flatMap(p => {
     if(p.id==='pepinitos-en-vinagre' && p.price>0) return [
       p,
       {...p,id:'pepinitos-2x1',name:'Pepinitos en vinagre · 2×1',
         description:`Llevá 2 frascos por $${p.price.toLocaleString('es-AR')} · $${(p.price/2).toLocaleString('es-AR')} cada uno. El selector cuenta promos de 2 frascos. No acumulable con códigos de descuento. Envío según condiciones habituales.`,
         referencePrice:p.price*2,stock:Math.floor(p.stock/2),promoSource:p.id,promoUnits:2,promoLabel:'2×1',promoNoun:'frascos',couponExcluded:true}
-    ];
-    if(p.id==='tomates-triturados' && p.price>0) return [p,
-      {...p,id:'tomates-triturados-4x3',name:'Tomates triturados · Promo 4×3',
-        description:`Llevá 4 botellas de 1 litro y pagá 3: $${(p.price*3).toLocaleString('es-AR')} el pack. No acumulable con códigos de descuento.`,
-        price:p.price*3,referencePrice:p.price*4,stock:Math.floor(p.stock/4),
-        promoSource:p.id,promoUnits:4,promoLabel:'4×3',promoNoun:'botellas',couponExcluded:true}
     ];
     return [p];
   });

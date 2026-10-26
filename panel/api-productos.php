@@ -16,6 +16,7 @@ if (!is_file($archivo)) {
 $data = json_decode((string)file_get_contents($archivo), true);
 $salida = [];
 foreach (($data['productos'] ?? []) as $p) {
+  if (in_array((string)($p['id'] ?? ''), ['tomates-triturados', 'tomates-triturados-4x3'], true)) continue;
   if (empty($p['visible'])) continue;           // oculto desde el panel
   // Todas las fotos del producto (las viejas traían una sola).
   $fotos = [];
