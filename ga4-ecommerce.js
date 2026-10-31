@@ -5,7 +5,7 @@ window.CNAnalytics = (() => {
   const viewed = new Set();
   const positive = value => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : 0;
   const emit = (name, params) => {
-    if (typeof window.gtag !== 'function') return false;
+    if (!window.CasaPrivacy?.allowed('analytics') || typeof window.gtag !== 'function') return false;
     try { window.gtag('event', name, params); return true; } catch (_) { return false; }
   };
   const item = (product, quantity, unitPrice = product?.price) => ({
@@ -56,22 +56,9 @@ window.CNAnalytics = (() => {
       emit('add_payment_info', { ...data, payment_type: paymentType });
     },
     purchase(payment) {
-      if (payment?.purchase_owner === 'server') return true; // Server owns this conversion; preserve receipt UI.
-      const transactionId = String(payment?.transaction_id || payment?.payment_id || payment?.id || '');
-      const items = validItems((Array.isArray(payment?.items) ? payment.items : []).map(line => ({
-        item_id: String(line.item_id || line.id || ''),
-        item_name: String(line.item_name || line.name || line.nombre || ''),
-        price: positive(line.price ?? line.unit_price ?? line.precio),
-        quantity: Number(line.quantity ?? line.cantidad) || 0
-      })));
-      const value = positive(payment?.value) || items.reduce((total, line) => total + line.price * line.quantity, 0);
-      if (!transactionId || !items.length || !value) return false;
-      const key = `cn-ga4-purchase-${transactionId}`;
-      try { if (localStorage.getItem(key)) return false; } catch (_) {}
-      const emitted = emit('purchase', { transaction_id: transactionId, affiliation: 'Casa Natural', currency, value, shipping: positive(payment?.shipping), items });
-      if (!emitted) return false;
-      try { localStorage.setItem(key, '1'); } catch (_) {}
-      return true;
+      // The server alone sends Purchase after checking captured and current consent.
+      return true; // Receipt display does not depend on optional measurement.
+
     }
   };
 })();
@@ -83,11 +70,14 @@ window.CNAnalytics = (() => {
   if (typeof originalFetch !== 'function') return;
   const cookie = name => { try { const v=document.cookie.split('; ').find(v=>v.startsWith(name+'=')); return v?decodeURIComponent(v.slice(name.length+1)):''; } catch (_) { return ''; } };
   const context = async () => {
+    await window.CasaPrivacy?.ready;
     const result = {};
+    const analytics=window.CasaPrivacy?.allowed('analytics')===true,marketing=window.CasaPrivacy?.allowed('marketing')===true;
+    if(!analytics&&!marketing)return result;
     const ga=cookie('_ga').match(/^GA\d+\.\d+\.(\d+\.\d+)$/);
-    if (ga) result.client_id=ga[1];
-    for (const key of ['fbp','fbc']) { const value=cookie('_'+key); if (/^fb\.\d\.\d{10,16}\.[A-Za-z0-9_.-]{1,200}$/.test(value)) result[key]=value; }
-    if (typeof window.gtag==='function') {
+    if (analytics&&ga) result.client_id=ga[1];
+    for (const key of marketing?['fbp','fbc']:[]) { const value=cookie('_'+key); if (/^fb\.\d\.\d{10,16}\.[A-Za-z0-9_.-]{1,200}$/.test(value)) result[key]=value; }
+    if (analytics&&typeof window.gtag==='function') {
       const get=field=>new Promise(resolve=>{const timer=setTimeout(()=>resolve(''),180);try{window.gtag('get','G-0KWGE3QME7',field,value=>{clearTimeout(timer);resolve(String(value||''));});}catch(_){clearTimeout(timer);resolve('');}});
       const [client,session]=await Promise.all([get('client_id'),get('session_id')]);
       if (/^\d{1,20}\.\d{1,20}$/.test(client)) result.client_id=client;
@@ -101,7 +91,7 @@ window.CNAnalytics = (() => {
       const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:'',location.href);
       if(url.origin==='https://panel.tucasaesnatural.com'&&url.pathname==='/api/create-order.php'&&init?.method?.toUpperCase()==='POST'&&typeof init.body==='string') {
         const body=JSON.parse(init.body);
-        if(body&&typeof body==='object'&&!Array.isArray(body))next={...init,body:JSON.stringify({...body,analytics_context:await context()})};
+        if(body&&typeof body==='object'&&!Array.isArray(body))next={...init,credentials:'include',body:JSON.stringify({...body,analytics_context:await context()})};
       }
     } catch (_) {} // Measurement cannot prevent order submission.
     return originalFetch.call(this,input,next);

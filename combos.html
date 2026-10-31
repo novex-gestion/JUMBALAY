@@ -1,21 +1,17 @@
 <!doctype html>
 <html lang="es-AR">
 <head>
+<script src="/privacy-consent.js?v=20261031-1" data-measure="1" data-marketing="1"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="/favicon-casa-natural-redondo.svg">
   <link rel="stylesheet" href="navigation-menu.css?v=20261009-6">
   <link rel="stylesheet" href="typography.css?v=20261009-1">
   <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0KWGE3QME7"></script>
+
   <link rel="preload" as="script" href="pepinitos-promo.js?v=20261019-auto-linked-1">
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-0KWGE3QME7');
-  </script>
-  <link rel="preload" as="script" href="ga4-ecommerce.js?v=20261019-purchases-1">
+
+  <link rel="preload" as="script" href="ga4-ecommerce.js?v=20261031-consent-1">
   <link rel="preload" as="script" href="product-links.js?v=20261009-promos-1">
   <title>Combos de conservas para compartir | Casa Natural</title>
   <meta name="description" content="Elegí entre los combos Casa Natural para picadas, regalos y encuentros. Cada selección muestra productos incluidos y precios vigentes.">
@@ -257,7 +253,7 @@
   <footer class="cn-site-footer" aria-label="Pie de página"><div class="cn-footer-grid"><section class="cn-footer-brand"><a class="cn-footer-logo" href="/">Casa Natural</a><p>Conservas y delicatessen<br>para tu mesa.</p><p class="cn-footer-delivery">Envíos a todo el país.</p><a class="cn-footer-contact" href="https://wa.me/5491158436511">Hablemos por WhatsApp ↗</a></section><nav aria-label="Comprar"><h2>Comprar</h2><a href="/coleccion.html">Colección</a><a href="/combos.html">Combos</a><a href="/promos.html">Promos</a><a href="/comercios/">Soy un comercio</a><a href="https://panel.tucasaesnatural.com/mi-cuenta.php">Mi cuenta</a></nav><nav aria-label="Ayuda y guías"><h2>Te ayudamos</h2><a href="/index.html#como-comprar">Cómo comprar</a><a href="/guias.html">Guías</a><a href="/cambios-devoluciones/">Cambios y devoluciones</a><a href="/cambios-devoluciones/#solicitud">Botón de arrepentimiento</a></nav><nav aria-label="Redes sociales"><h2>Seguinos</h2><a href="https://www.instagram.com/tucasaesnatural/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://www.facebook.com/profile.php?id=61594287721318" target="_blank" rel="noopener noreferrer">Facebook ↗</a></nav></div><div class="cn-footer-bottom">Casa Natural · Conservas y delicatessen</div></footer>
   <!-- Preserve dependency order after the storefront markup is parsed. -->
   <script src="pepinitos-promo.js?v=20261019-auto-linked-1"></script>
-  <script src="ga4-ecommerce.js?v=20261019-purchases-1"></script>
+  <script src="ga4-ecommerce.js?v=20261031-consent-1"></script>
   <script src="product-links.js?v=20261009-promos-1"></script>
   <script src="discount-codes-no-promos-20261015.js?v=3"></script>
   <script>
@@ -273,7 +269,7 @@
     };
     const track = (event, params = {}) => { if (typeof window.fbq === "function") window.fbq("track", event, params); };
     const analyticsUnitPrice = product => cnCoupon.unitPrice(product);
-    if (CONFIG.metaPixelId) { !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js"); fbq("init", CONFIG.metaPixelId); fbq("track", "PageView"); }
+
     const safe = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
     const money = value => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(value);
     const cart = new Map(); const pickupLocation='Retiro por Champagnat 1176, Pilar · 24 hs'; const freeDeliveryLocalities=new Set(['Pilar','Del Viso','Derqui','Villa Rosa']); const pickupPersonal=document.querySelector('#pickup-personal'); const deliveryFields=document.querySelector('#delivery-fields'); const deliveryLocality=document.querySelector('#delivery-locality'); const deliveryZip=document.querySelector('#delivery-zip'); const deliveryAddress=document.querySelector('#delivery-address'); const deliveryStatus=document.querySelector('#delivery-status'); const deliveryWhatsapp=document.querySelector('#delivery-whatsapp'); const actualizarEntrega=()=>{const pickup=pickupPersonal.checked; const ok=pickup||freeDeliveryLocalities.has(deliveryLocality.value); const otraLocalidad=!pickup&&deliveryLocality.value==='other'; deliveryFields.hidden=pickup; deliveryLocality.required=!pickup; deliveryZip.required=!pickup; deliveryAddress.required=!pickup; deliveryStatus.textContent=pickup?'Retiro disponible en Champagnat 1176, Pilar, dentro de las 24 hs.':!deliveryLocality.value?'':ok?'Envío local: $5.000; gratis desde $40.000 en productos después de descuentos.':otraLocalidad?'Envío nacional: $12.000; gratis en compras a partir de $99.000 en productos.':'Para envíos fuera de la zona, te cotizamos por WhatsApp con tu código postal.'; deliveryWhatsapp.hidden=pickup||ok||!deliveryLocality.value; if(!pickup&&!ok&&deliveryLocality.value) deliveryWhatsapp.href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent('Hola, quiero consultar el envío a '+deliveryLocality.value+'. Mi código postal es '+deliveryZip.value.trim()+'.');}; pickupPersonal.addEventListener('change',actualizarEntrega); deliveryLocality.addEventListener('change',actualizarEntrega); deliveryZip.addEventListener('input',actualizarEntrega); actualizarEntrega();
@@ -511,7 +507,7 @@
             "brand": { "@type": "Brand", "name": "Casa Natural" },
             "offers": {
               "hasMerchantReturnPolicy": {"@type":"MerchantReturnPolicy","returnMethod":["https://schema.org/ReturnByMail","https://schema.org/ReturnInStore"],"applicableCountry":"AR","returnPolicyCategory":"https://schema.org/MerchantReturnFiniteReturnWindow","merchantReturnDays":10,"returnFees":"https://schema.org/FreeReturn","merchantReturnLink":"https://tucasaesnatural.com/cambios-devoluciones/","description":"Arrepentimiento dentro de los 10 días corridos, conforme a las condiciones y excepciones de la política publicada. Contactar a Casa Natural para coordinar la devolución."},
-              
+
               "@type": "Offer",
               "priceCurrency": "ARS",
               "price": p.price,
