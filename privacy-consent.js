@@ -55,7 +55,7 @@ async function choose(analytics,marketing){
  if(pending)return;pending=true;box.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Guardando tu elección…';
  // A withdrawal takes effect in this tab immediately, even if the server is unavailable.
  const old={...state};if(!analytics||!marketing)update({...state,analytics:state.analytics&&analytics,marketing:state.marketing&&marketing});
- try{const next=await request('POST',{analytics,marketing});update(next);box.hidden=true;status.textContent='';try{localStorage.setItem(signal,String(Date.now()));}catch{}opener.focus();}
+ try{const next=await request('POST',{analytics,marketing});update(next);box.hidden=true;status.textContent='';try{localStorage.setItem(signal,String(Date.now()));}catch{}opener.focus({preventScroll:true});}
  catch{status.textContent='No pudimos guardar la elección. La medición quedó desactivada en esta página. Reintentá para actualizar también el servidor.';update({});box.hidden=false;}
  finally{pending=false;box.querySelectorAll('button').forEach(b=>b.disabled=false);}
 }
@@ -63,12 +63,19 @@ function build(){
  const css=document.createElement('link');css.rel='stylesheet';css.href='https://tucasaesnatural.com/privacy-consent.css?v=20261031-2';if(script?.dataset.styled!=='1')document.head.append(css);
  box=document.createElement('section');box.id='casa-privacy';box.setAttribute('aria-labelledby','np-title');box.hidden=true;
  box.innerHTML='<h2 id="np-title">Tu privacidad, a tu manera</h2><p>Usamos funciones necesarias para el carrito, tu cuenta y la compra. Con tu permiso, usamos cookies para entender cómo se usa la web y medir nuestra publicidad.</p><p>Podés comprar aunque rechaces las opcionales. <a href="https://tucasaesnatural.com/cookies.html">Ver información de cookies</a>.</p><div id="np-settings" hidden><label><input type="checkbox" checked disabled><span>Necesarias <small>Seguridad, cuenta, carrito y tu elección de privacidad. Siempre activas.</small></span></label><label><input type="checkbox" name="analytics"><span>Analítica <small>Google Analytics: visitas, uso de la tienda y medición de compras.</small></span></label><label><input type="checkbox" name="marketing"><span>Publicidad <small>Meta: rendimiento publicitario y personalización.</small></span></label></div><div class="np-actions"><button type="button" data-choice="all">Aceptar todas</button><button type="button" data-choice="necessary">Solo necesarias</button><button type="button" data-choice="configure">Configurar</button><button type="button" data-choice="save" hidden>Guardar elección</button><button type="button" data-choice="close" hidden>Cerrar</button></div><p id="casa-privacy-status" role="status" aria-live="polite"></p>';
- opener=document.createElement('button');opener.id='casa-privacy-open';opener.type='button';opener.textContent='Cookies';opener.setAttribute('aria-controls',box.id);
+ opener=document.createElement('button');opener.id='casa-privacy-open';opener.type='button';opener.textContent='Preferencias de cookies';opener.setAttribute('aria-controls',box.id);
  opener.onclick=()=>{box.hidden=false;configure();box.querySelector('[name="analytics"]').focus();};
  function configure(){box.querySelector('#np-settings').hidden=false;box.querySelector('[data-choice="configure"]').hidden=true;box.querySelector('[data-choice="save"]').hidden=false;box.querySelector('[data-choice="close"]').hidden=false;}
- box.addEventListener('click',e=>{const choice=e.target.closest('[data-choice]')?.dataset.choice;if(choice==='all')choose(true,true);if(choice==='necessary')choose(false,false);if(choice==='configure')configure();if(choice==='save')choose(box.querySelector('[name="analytics"]').checked,box.querySelector('[name="marketing"]').checked);if(choice==='close'){box.hidden=true;opener.focus();}});
- box.addEventListener('keydown',e=>{if(e.key==='Escape'){box.hidden=true;opener.focus();}});
- document.body.append(box,opener);status=box.querySelector('#casa-privacy-status');box.querySelector('[name="analytics"]').checked=state.analytics;box.querySelector('[name="marketing"]').checked=state.marketing;if(ready&&!state.chosen)box.hidden=false;
+ box.addEventListener('click',e=>{const choice=e.target.closest('[data-choice]')?.dataset.choice;if(choice==='all')choose(true,true);if(choice==='necessary')choose(false,false);if(choice==='configure')configure();if(choice==='save')choose(box.querySelector('[name="analytics"]').checked,box.querySelector('[name="marketing"]').checked);if(choice==='close'){box.hidden=true;opener.focus({preventScroll:true});}});
+ box.addEventListener('keydown',e=>{if(e.key==='Escape'){box.hidden=true;opener.focus({preventScroll:true});}});
+ document.body.append(box);
+ // Keep preferences accessible without a floating control over WhatsApp or the cart.
+ opener.style.cssText='position:static;inset:auto;z-index:auto;display:block;width:auto;min-height:44px;margin:8px 0;padding:10px 0;border:0;border-radius:0;background:transparent;color:inherit;box-shadow:none;font:inherit;font-size:13px;text-align:left;text-decoration:underline;cursor:pointer';
+ const footer=document.querySelector('footer,[role="contentinfo"]');
+ const help=footer&&Array.from(footer.querySelectorAll('nav,section,div')).find(el=>el.querySelector('a[href*="cambios-devoluciones"]')&&!el.querySelector('footer')&&el.querySelectorAll('a').length<10);
+ if(footer)(help||footer).append(opener);
+ else{const preferences=document.createElement('div');preferences.setAttribute('aria-label','Privacidad');preferences.style.cssText='padding:16px 24px 100px;text-align:left';preferences.append(opener);document.body.append(preferences);}
+ status=box.querySelector('#casa-privacy-status');box.querySelector('[name="analytics"]').checked=state.analytics;box.querySelector('[name="marketing"]').checked=state.marketing;if(ready&&!state.chosen)box.hidden=false;
 }
 window.CasaPrivacy={allowed,ready:readyPromise,open:()=>opener?.click()};
 window.addEventListener('storage',e=>{if(e.key===signal){update({});sync();}});
