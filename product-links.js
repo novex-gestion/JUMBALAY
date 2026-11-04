@@ -19,3 +19,6 @@ window.CNProductLinks = products => {
     });
   });
 };
+
+// Shared storefront enhancement; checkout keeps its existing quote and payment logic.
+(()=>{const s=document.createElement('script');s.src='/cart-shipping-preview.js?v=20261104-1';document.head.appendChild(s)})();
