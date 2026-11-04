@@ -32,3 +32,13 @@ html{scroll-padding-top:110px}
 @media(max-width:1050px){.site-header .nav .nav-links{flex-wrap:wrap;justify-content:center;column-gap:12px;row-gap:10px}.site-header .nav .nav-main,.site-header .nav .social-links{flex:0 0 auto}}
 /* Casa Natural: carrito por encima del encabezado sticky (z-index:30). */
 #cart-panel.cart-panel { z-index: 40; }
+
+/* Mobile: readable navigation and touch targets without compressing the labels. */
+@media(max-width:440px){
+ .site-header .nav .nav-links{width:100%;display:flex;flex-wrap:wrap!important;gap:8px!important}
+ .site-header .nav .nav-main{flex:1 0 100%;display:flex;justify-content:center;gap:8px!important;white-space:normal}
+ .site-header .nav .nav-main>a,.site-header .nav .nav-shop summary{display:flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box;font-size:11px!important;line-height:1.3;letter-spacing:0;padding:8px!important}
+ .site-header .nav .social-link,.site-header .nav .header-cart{min-width:44px;min-height:44px;box-sizing:border-box}
+ .site-header .nav .social-links{gap:8px!important}
+ .site-header .nav .nav-shop-menu a{font-size:12px!important;min-height:44px}
+}
