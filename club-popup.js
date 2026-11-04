@@ -5,7 +5,24 @@ const style=document.createElement('style');style.textContent="\n.club-popup{bor
 const d=document.createElement('dialog');d.className='club-popup';d.id='club-popup';d.setAttribute('aria-labelledby','club-popup-title');d.style.cssText=`--club-ink:${c.ink};--club-paper:${c.paper};--club-accent:${c.accent}`;
 d.innerHTML=`<div class="club-popup-layout"><div class="club-popup-art"><img src="${c.image}" alt="${c.imageAlt}"></div><div class="club-popup-content"><button class="club-popup-close" type="button" aria-label="Cerrar invitación">×</button><p class="club-popup-kicker">${c.club}</p><h2 id="club-popup-title">${c.title}</h2><p>${c.intro}</p><form><label for="club-popup-email">Tu email</label><input type="email" id="club-popup-email" name="email" autocomplete="email" maxlength="254" required placeholder="nombre@email.com"><label class="club-popup-consent"><input type="checkbox" name="consent" required><span>Quiero recibir novedades y beneficios de ${c.brand} por email. Puedo darme de baja cuando quiera.</span></label><div class="club-popup-trap" aria-hidden="true"><label>No completar<input name="website" tabindex="-1" autocomplete="off"></label></div><button class="club-popup-submit" type="submit">Quiero mi 10% adicional ↗</button></form><p class="club-popup-status" role="status" aria-live="polite"></p><p class="club-popup-terms">${c.terms} <a href="${c.policy}">Condiciones y privacidad</a>.</p></div></div>`;
 document.body.appendChild(d);const form=d.querySelector('form'),status=d.querySelector('[role=status]'),submit=d.querySelector('[type=submit]');
-function open(){if(d.open)return;previousFocus=document.activeElement;d.showModal();d.querySelector('.club-popup-close').focus()}
+// Privacy always has priority. This coordination does not grant or require optional consent.
+const privacyId='casa-privacy';
+let privacyReady=!window.CasaPrivacy?.ready,privacyWasVisible=false,privacyQuietUntil=0,privacyTimer=0;
+function privacyVisible(){const box=document.getElementById(privacyId);return !!box&&!box.hidden&&getComputedStyle(box).display!=='none';}
+function focusPrivacy(){document.getElementById(privacyId)?.querySelector('button:not(:disabled)')?.focus({preventScroll:true});}
+function privacyChanged(){
+ const visible=privacyVisible();
+ if(visible){privacyWasVisible=true;clearTimeout(privacyTimer);if(d.open){d.close();focusPrivacy();}}
+ else if(privacyWasVisible){privacyWasVisible=false;privacyQuietUntil=Date.now()+10000;clearTimeout(privacyTimer);privacyTimer=setTimeout(maybeInvite,10000);}
+}
+function observePrivacy(){
+ const box=document.getElementById(privacyId);if(!box)return false;
+ new MutationObserver(privacyChanged).observe(box,{attributes:true,attributeFilter:['hidden','style','class']});privacyChanged();return true;
+}
+if(!observePrivacy()){const observer=new MutationObserver(()=>{if(observePrivacy())observer.disconnect();});observer.observe(document.body,{childList:true});}
+Promise.resolve(window.CasaPrivacy?.ready).then(()=>{privacyReady=true;privacyChanged();maybeInvite();}).catch(()=>{privacyReady=false;});
+function open(){if(d.open)return;if(!privacyReady||privacyVisible()){focusPrivacy();return;}previousFocus=document.activeElement;d.showModal();d.querySelector('.club-popup-close').focus()}
+
 function close(){d.close();save({...get(),dismissed:Date.now()});previousFocus?.focus?.()}
 d.querySelector('.club-popup-close').onclick=close;d.addEventListener('cancel',e=>{e.preventDefault();close()});d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close()}});
 form.addEventListener('submit',async e=>{e.preventDefault();if(busy||!form.reportValidity())return;busy=true;submit.disabled=true;status.textContent='Guardando tu inscripción…';try{const response=await fetch(c.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:form.elements.email.value,consent:form.elements.consent.checked,website:form.elements.website.value,source:'popup'}),signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'No pudimos guardar tu inscripción.');save({subscribed:true,at:Date.now()});form.hidden=true;status.textContent=data.message;if(data.coupon){const code=document.createElement('span');code.className='club-popup-code';code.textContent=data.coupon;status.appendChild(code)}document.dispatchEvent(new CustomEvent('club:subscribed'));}catch(e){status.textContent=e.name==='TimeoutError'?'La respuesta tardó demasiado. Reintentá con el mismo email; no se duplica tu inscripción.':e.message}finally{busy=false;submit.disabled=false}});
@@ -15,9 +32,12 @@ const footer=document.querySelector('footer');if(footer){const b=document.create
 let timeReady=false,autoFinished=false;
 function maybeInvite(){
  const s=get();if(autoFinished||s?.subscribed||(s?.dismissed&&Date.now()-s.dismissed<=30*86400000))return;
- if(!timeReady||scrollY<Math.max(180,(document.documentElement.scrollHeight-innerHeight)*.25)||document.visibilityState!=='visible'||document.querySelector('dialog[open]')||document.activeElement?.matches('input,textarea,select')||document.body.classList.contains('checkout-page-mode')||document.querySelector('#cart-panel.open'))return;
+ if(!timeReady||!privacyReady||privacyVisible()||Date.now()<privacyQuietUntil||scrollY<Math.max(180,(document.documentElement.scrollHeight-innerHeight)*.25)||document.visibilityState!=='visible'||document.querySelector('dialog[open]')||document.activeElement?.matches('input,textarea,select')||document.body.classList.contains('checkout-page-mode')||document.querySelector('#cart-panel.open'))return;
  autoFinished=true;removeEventListener('scroll',maybeInvite);open();
 }
 setTimeout(()=>{timeReady=true;maybeInvite()},20000);
 addEventListener('scroll',maybeInvite,{passive:true});
+document.addEventListener('focusout',()=>setTimeout(maybeInvite,0));
+document.addEventListener('visibilitychange',maybeInvite);
 })();
+

@@ -71,4 +71,4 @@ const cnCoupon = (() => {
   return {amount,subtotal,unitPrice,code:()=>applied&&amount([...cart.entries()])>0?applied.code:''};
 })();
 
-(()=>{const load=()=>{if(document.getElementById('club-popup-loader'))return;const s=document.createElement('script');s.id='club-popup-loader';s.src='/club-popup.js?v=20261013-mother-1';s.charset='utf-8';document.head.appendChild(s)};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',load,{once:true}):load()})();
+(()=>{const load=()=>{if(document.getElementById('club-popup-loader'))return;const s=document.createElement('script');s.id='club-popup-loader';s.src='/club-popup.js?v=20261104-privacy-order';s.charset='utf-8';document.head.appendChild(s)};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',load,{once:true}):load()})();
