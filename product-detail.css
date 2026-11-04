@@ -14,3 +14,6 @@ body{padding-bottom:72px}
 .detail-cart-line{padding:18px 0;border-bottom:1px solid #d8ccb9}.detail-cart-line p{margin:5px 0}.detail-cart-line button,#detail-cart-continue{border:0;background:none;color:var(--olive);text-decoration:underline;padding:8px 0;font:inherit;cursor:pointer}
 #detail-cart-subtotal{font-weight:700;margin-top:24px}.detail-cart-note{font-size:14px}#detail-cart-checkout{display:block;text-align:center}#detail-cart-continue{display:block;margin:14px auto}
 @media(max-width:700px){#detail-cart-toggle{right:14px;padding:14px 18px}#detail-cart{padding:20px}}
+
+/* 2026-11-04: product header follows the storefront horizontal frame; mobile unchanged. */
+@media(min-width:1100px){header{padding-left:max(24px,calc((100% - 1120px)/2));padding-right:max(24px,calc((100% - 1120px)/2))}header .brand{font-size:40.8px;font-weight:400;line-height:1}}
