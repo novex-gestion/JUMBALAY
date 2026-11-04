@@ -11,5 +11,13 @@ d.querySelector('.club-popup-close').onclick=close;d.addEventListener('cancel',e
 form.addEventListener('submit',async e=>{e.preventDefault();if(busy||!form.reportValidity())return;busy=true;submit.disabled=true;status.textContent='Guardando tu inscripción…';try{const response=await fetch(c.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:form.elements.email.value,consent:form.elements.consent.checked,website:form.elements.website.value,source:'popup'}),signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'No pudimos guardar tu inscripción.');save({subscribed:true,at:Date.now()});form.hidden=true;status.textContent=data.message;if(data.coupon){const code=document.createElement('span');code.className='club-popup-code';code.textContent=data.coupon;status.appendChild(code)}document.dispatchEvent(new CustomEvent('club:subscribed'));}catch(e){status.textContent=e.name==='TimeoutError'?'La respuesta tardó demasiado. Reintentá con el mismo email; no se duplica tu inscripción.':e.message}finally{busy=false;submit.disabled=false}});
 document.addEventListener('club:subscribed',()=>save({subscribed:true,at:Date.now()}));
 const footer=document.querySelector('footer');if(footer){const b=document.createElement('button');b.type='button';b.className='club-popup-reopen';b.textContent='Sumarme a '+c.club+' · 10% adicional';b.onclick=open;footer.appendChild(b)}
-setTimeout(()=>{const s=get();if(!s?.subscribed&&(!s?.dismissed||Date.now()-s.dismissed>30*86400000)&&!document.querySelector('dialog[open]')&&!document.body.classList.contains('checkout-page-mode')&&!document.querySelector('#cart-panel.open')&&document.visibilityState==='visible')open()},4500);
+// APPROVED UX 2026-11-04: wait for time AND browsing interest; never interrupt a form or dialog.
+let timeReady=false,autoFinished=false;
+function maybeInvite(){
+ const s=get();if(autoFinished||s?.subscribed||(s?.dismissed&&Date.now()-s.dismissed<=30*86400000))return;
+ if(!timeReady||scrollY<Math.max(180,(document.documentElement.scrollHeight-innerHeight)*.25)||document.visibilityState!=='visible'||document.querySelector('dialog[open]')||document.activeElement?.matches('input,textarea,select')||document.body.classList.contains('checkout-page-mode')||document.querySelector('#cart-panel.open'))return;
+ autoFinished=true;removeEventListener('scroll',maybeInvite);open();
+}
+setTimeout(()=>{timeReady=true;maybeInvite()},20000);
+addEventListener('scroll',maybeInvite,{passive:true});
 })();
