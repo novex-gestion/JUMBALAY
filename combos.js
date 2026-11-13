@@ -5,8 +5,6 @@
   document.documentElement.classList.add(comboPage ? 'catalog-combos' : 'catalog-selection');
   document.documentElement.classList.toggle('catalog-promos',promoPage);
   const definitions = [
-    {id:'sandwich-campo',name:'Sándwich de campo',description:'Tres conservas para darle sabor a tu sándwich.',note:'3 frascos · Pan no incluido.',image:'https://panel.tucasaesnatural.com/uploads/combo-sandwich-campo.jpg',items:['pasta-de-aceitunas-verdes','berenjenas-condimentadas','pepinitos-en-vinagre']},
-    {id:'pizza-olivas',name:'Pizza de olivas',description:'Una combinación de olivas para tu próxima pizza.',note:'3 frascos · Masa y mozzarella no incluidas.',image:'https://panel.tucasaesnatural.com/uploads/combo-pizza-olivas.jpg',items:['pasta-de-aceitunas-negras','aceitunas-negras-premium','aceitunas-verdes-magna']},
     {id:'bruschetta',name:'La Bruschetta',description:'Tres sabores para tu próxima tostada.',note:'3 frascos · Pan no incluido.',items:['pasta-de-aceitunas-verdes','tomates-secos-mediterraneos','aceitunas-negras-premium']},
     {id:'amigos',name:'Mesa de Amigos',description:'Una selección para acompañar tu próxima picada.',note:'4 frascos para compartir.',items:['aceitunas-verdes-magna','berenjenas-condimentadas','pepinitos-en-vinagre','tomates-secos-mediterraneos']},
     {id:'regalo',name:'Quedá Bien',description:'Un detalle rico para llevar y compartir.',note:'4 frascos · Presentación de regalo no incluida.',items:['pasta-de-aceitunas-verdes','tomates-secos-mediterraneos','aceitunas-negras-premium','pimientos-agridulces']},
@@ -63,7 +61,7 @@
   document.querySelector('.brand').href='index.html';
   function groupPhotos(entries){
     const def=definitions.find(d=>d.items.length===entries.length && d.items.every(id=>entries.some(e=>e.product.id===id)));
-    return `<img class="combo-family" loading="lazy" decoding="async" width="1536" height="1024" style="display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;margin:12px 0 18px" src="${def.image || `combo-${def.id}.jpg`}" alt="${safe(def.name)}: ${entries.map(e=>safe(e.product.name)).join(', ')}">`;
+    return `<img class="combo-family" loading="lazy" decoding="async" width="1536" height="1024" style="display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;margin:12px 0 18px" src="combo-${def.id}.jpg" alt="${safe(def.name)}: ${entries.map(e=>safe(e.product.name)).join(', ')}">`;
   }
   function resolve(def) { return def.items.map(id=>({index:CONFIG.products.findIndex(p=>p.id===id)})).map(({index})=>({index,product:CONFIG.products[index]})); }
   // Real text keeps prices current and readable at every screen size.
