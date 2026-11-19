@@ -74,6 +74,14 @@
   }
   function update() {
     const left = remaining(); quantity = Math.max(1, Math.min(quantity,left));
+    const basePrice=Number(product.price),listPrice=Number(product.referencePrice);
+    $('#price').textContent=money(basePrice*quantity);
+    $('#price').setAttribute('aria-live','polite');
+    $('.purchase .eyebrow').textContent=quantity>1?('TOTAL POR '+quantity+(product.promoUnits?' PROMOS':' UNIDADES')):(product.promoUnits?`PRECIO POR PROMO DE ${product.promoUnits} ${(product.promoNoun||'frascos').toUpperCase()}`:'PRECIO POR UNIDAD');
+    let unitNote=$('#quantity-unit-price');if(!unitNote){unitNote=document.createElement('p');unitNote.id='quantity-unit-price';unitNote.style.cssText='font-size:14px;color:#666;margin:6px 0';$('#price').after(unitNote);}
+    unitNote.textContent=money(basePrice)+(product.promoUnits?' por promo':' por unidad');unitNote.hidden=quantity===1;
+    const struck=reference.querySelector('s');if(struck)struck.textContent=money(listPrice*quantity);
+    if(!saving.hidden)saving.textContent=`Ahorrás ${money(Math.max(0,listPrice-basePrice)*quantity)}${product.promoUnits?' frente a comprarlos sueltos':''}`;
     $('#quantity').textContent = quantity; $('#minus').disabled = quantity <= 1 || !left;
     $('#plus').disabled = quantity >= left; $('#add').disabled = !left;
     $('#add').textContent = left ? (product.promoUnits?'AGREGAR PROMO AL CARRITO':'AGREGAR AL CARRITO') : product.stock ? 'TODO EL STOCK EN TU CARRITO' : 'SIN STOCK';
