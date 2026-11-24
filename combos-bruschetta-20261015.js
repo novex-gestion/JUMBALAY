@@ -21,7 +21,7 @@
     .catalog-promos #promos{display:block!important}
     #promos{scroll-margin-top:100px;padding:40px 0 64px;background:#f6f2e9}
     #promo-grid:empty:after{content:'Estamos actualizando las promociones.';font:15px Arial,sans-serif}
-    .catalog-combos #combos{padding-top:32px}.combo-explainer{margin-bottom:12px}#combo-status:empty{display:none}
+    .catalog-combos #combos{padding-top:32px}#combos #combos-title{text-align:center}#combo-status:empty{display:none}
     .combo-photo{position:relative;display:block;isolation:isolate;overflow:hidden;height:270px;background:#f5f1e7;margin:12px 0 18px;border-radius:8px}
     .combo-photo:after{content:'';position:absolute;bottom:16px;left:14%;right:14%;height:18px;background:radial-gradient(ellipse,#b9b3a0,transparent 70%);z-index:-1}
     .combo-photo img,.combo-photo img.small-jar{position:absolute;bottom:18px;left:calc(50% + var(--x));width:auto;max-width:none;height:230px;object-fit:contain;transform:translateX(-50%);clip-path:inset(6% 24% 8% 24% round 18% 18% 14% 14%);z-index:var(--layer)}
@@ -55,7 +55,7 @@
   const section = document.createElement('section');
   section.id = 'combos'; section.setAttribute('aria-labelledby','combos-title');
   const comboHeading=comboPage?'h1':'h2';
-  section.innerHTML = `<div class="wrap"><p class="eyebrow">Elegí tu próximo encuentro</p><${comboHeading} id="combos-title">Combos</${comboHeading}><p class="combo-explainer">El ahorro total compara el precio final de cada combo con la suma de los precios de lista de sus productos. La Bruschetta incluye además un 5% extra sobre los precios vigentes por separado, ya contemplado en el precio final y en el ahorro total. Envío según tu localidad y el total de la compra.</p><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>`;
+  section.innerHTML = `<div class="wrap"><${comboHeading} id="combos-title">Combos</${comboHeading}><p id="combo-status" role="status" aria-live="polite"></p><div class="combo-grid"></div></div>`;
   document.querySelector('#productos').before(section);
   const commerceLink=document.createElement('a');
   commerceLink.href='comercios/';commerceLink.textContent='Soy un comercio';
