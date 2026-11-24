@@ -50,7 +50,7 @@
 }
 
 /* Keep storefront selectors legible, including saved addresses loaded by the account script. */
-select, .checkout-step select {
+select, body .cart-panel select, body .checkout-step select {
   min-height:44px;
   max-width:100%;
   color:#263126;
@@ -59,6 +59,7 @@ select, .checkout-step select {
   border-radius:8px;
   font-size:16px;
 }
+#delivery-locality { min-height:44px!important; }
 select:focus-visible {
   outline:2px solid #465536;
   outline-offset:2px;
