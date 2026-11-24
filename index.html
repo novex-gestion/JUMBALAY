@@ -238,6 +238,66 @@
 /* Let the welcome headline grow without overlapping the service details. */
 #inicio .promo-cover .hero-banner .hero-copy,#inicio .promo-banner.promo-all-combos>.promo-copy{grid-template-rows:26px max-content max-content 24px 48px 30px 1fr}
 #inicio .promo-cover .hero-copy h1,#inicio .promo-all-combos .promo-copy h2{padding-bottom:16px}
+
+@media (max-width:600px) {
+  #inicio .combo-promos :is(.promo-cover,.promo-all-combos):not([hidden]) {
+    height:auto;
+  }
+  #inicio .combo-promos .promo-cover .hero-banner {
+    display:flex;
+    flex-direction:column;
+    height:auto;
+  }
+  #inicio .combo-promos .promo-cover .hero-banner::after {
+    display:none;
+  }
+  #inicio .promo-cover .hero-banner .hero-copy,
+  #inicio .promo-banner.promo-all-combos > .promo-copy {
+    position:relative;
+    inset:auto;
+    order:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:auto;
+    max-width:none;
+    height:auto;
+    padding:22px 24px 14px;
+  }
+  #inicio .promo-cover .hero-banner .hero-copy :is(h1,.lead) {
+    color:#303c29;
+    text-shadow:none;
+  }
+  #inicio .promo-cover .hero-copy h1,
+  #inicio .promo-all-combos .promo-copy h2 {
+    padding-bottom:0;
+  }
+  #inicio .combo-promos :is(.hero-cta,.promo-cta) {
+    align-self:flex-start;
+  }
+  #inicio .promo-cover .hero-banner .hero-photo,
+  #inicio .combo-promos .promo-all-combos > img {
+    position:relative;
+    inset:auto;
+    order:1;
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:16 / 9;
+  }
+  #inicio .promo-cover .hero-photo video {
+    position:absolute;
+    inset:0;
+    object-position:right center;
+  }
+  #inicio .combo-promos .promo-all-combos > img {
+    object-fit:contain;
+  }
+  #inicio .combo-promos .promo-controls [data-direction] {
+    position:static;
+    transform:none;
+  }
+}
 </style>
 <style>
 .quantity-stepper{display:flex;align-items:center;border:1px solid #465536;border-radius:4px;overflow:hidden}
