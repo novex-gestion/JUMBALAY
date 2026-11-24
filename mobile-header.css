@@ -48,3 +48,50 @@
   .site-header.cn-mobile-ready .nav-shop .nav-shop-menu { position:static; }
   .site-header.cn-mobile-ready .nav-links .header-cart { display:none; }
 }
+
+/* Keep storefront selectors legible, including saved addresses loaded by the account script. */
+select, .checkout-step select {
+  min-height:44px;
+  max-width:100%;
+  color:#263126;
+  background-color:#fffdf8;
+  border:1px solid #a6ad99;
+  border-radius:8px;
+  font-size:16px;
+}
+select:focus-visible {
+  outline:2px solid #465536;
+  outline-offset:2px;
+}
+select option {
+  color:#263126;
+  background:#fffdf8;
+}
+@supports (appearance:base-select) and selector(::picker(select)) {
+  .quantity-picker select:not([multiple]):not([size]),
+  select:not([multiple]):not([size]),
+  select:not([multiple]):not([size])::picker(select) {
+    appearance:base-select;
+  }
+  .quantity-picker select:not([multiple]):not([size]) {
+    background-image:none;
+    padding-inline:12px;
+  }
+  select:not([multiple]):not([size])::picker(select) {
+    max-width:calc(100vw - 24px);
+    color:#263126;
+    background:#fffdf8;
+    border:1px solid #a6ad99;
+    border-radius:8px;
+  }
+  select:not([multiple]):not([size]) option {
+    min-height:44px;
+    padding:10px 12px;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  select:not([multiple]):not([size]) option:checked {
+    color:#fff;
+    background:#465536;
+  }
+}
