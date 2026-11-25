@@ -225,9 +225,30 @@
     });
     if(comboPage&&!initialAnchorHandled&&catalogReady){const target=[...section.querySelectorAll('[id]')].find(el=>'#'+el.id===location.hash)||section;requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'instant'}));initialAnchorHandled=true;}
   }
+  const cartPanel = document.querySelector('#cart-panel');
+  const cartSuggestions = document.createElement('section');
+  cartSuggestions.className = 'cart-combo-suggestions';
+  cartSuggestions.setAttribute('aria-labelledby','cart-combo-title');
+  cartSuggestions.hidden = true;
+  cartSuggestions.innerHTML = '<h4 id="cart-combo-title">Sumá otro combo</h4><div class="cart-combo-track" tabindex="0" role="region" aria-label="Combos para agregar"></div><p class="cart-combo-status" role="status"></p>';
+  cartPanel.querySelector('#cart-checkout-link').before(cartSuggestions);
+  style.textContent += `
+    .cart-panel .cart-combo-suggestions{padding:12px 0;margin:0}
+    .cart-combo-suggestions h4{margin:0 0 8px;font-size:1rem}
+    .cart-combo-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 8px}
+    .cart-combo-option{flex:0 0 136px;scroll-snap-align:start;display:grid;align-content:start;gap:6px;padding:8px;border:1px solid #d8ccb9;border-radius:10px;background:#fffdf8}
+    .cart-combo-option img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px}
+    .cart-combo-option h5,.cart-combo-status{font:600 .82rem/1.3 system-ui,sans-serif;margin:0}
+    .cart-combo-option .button{width:100%;min-height:44px;margin:0;padding:5px;border-radius:8px;font-size:.75rem}
+    .cart-combo-status:empty{display:none}
+  `;
+  const comboTrack = cartSuggestions.querySelector('.cart-combo-track');
+  const cartComboStatus = cartSuggestions.querySelector('.cart-combo-status');
+
   function render() {
+    const suggestions = [];
     const grid = section.querySelector('.combo-grid');
-    if (!catalogReady) { grid.innerHTML='<p>Los combos estarán disponibles cuando se verifiquen los precios y el stock del catálogo.</p>'; return; }
+    if (!catalogReady) { cartSuggestions.hidden=true; grid.innerHTML='<p>Los combos estarán disponibles cuando se verifiquen los precios y el stock del catálogo.</p>'; return; }
     grid.innerHTML=definitions.map(def=>{
       const entries=resolve(def), missing=entries.some(e=>!e.product);
       if(missing) return `<article class="combo-card"><h3>${safe(def.name)}</h3><p>Esta selección no está disponible por el momento.</p></article>`;
@@ -236,28 +257,43 @@
       const list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0);
       const saving=list-total;
       const available=bundle?cnRemaining(bundle)>0:entries.every(e=>cnRemaining(e.product)>0);
+      if(available) suggestions.push(`<article class="cart-combo-option"><img src="${safe(def.image)}" alt="" loading="lazy"><h5>${safe(def.name)}</h5><strong>${money(total)}</strong><button class="button" type="button" data-add-combo="${def.id}" aria-label="Agregar ${safe(def.name)}">Agregar</button></article>`);
       return `<article class="combo-card" data-combo-card="${def.id}"><h3>${safe(def.name)}</h3><p>${safe(def.description)}</p>${groupPhotos(entries)}<ul>${entries.map(e=>`<li>1 frasco de ${safe(e.product.name)}</li>`).join('')}</ul><p class="combo-note">${safe(def.note)}</p><div class="combo-price">${saving>0?`<del>Precio de lista ${money(list)}</del>`:''}<strong>${money(total)}</strong>${saving>0?`<span class="combo-saving">Ahorro total ${money(saving)} <small>(${(saving/list*100).toLocaleString('es-AR',{maximumFractionDigits:1})}%)</small></span>`:''}${bundle?'<span class="combo-extra">5% EXTRA</span><span class="combo-extra-note">Sobre los precios vigentes por separado. Ya incluido en el precio final y en el ahorro total.</span>':''}</div><button class="button" type="button" data-add-combo="${def.id}" ${available?'':'disabled'}>${available?'Agregar combo al carrito':'Sin disponibilidad para sumar otro'}</button></article>`;
     }).join('');
+    cartSuggestions.hidden = suggestions.length === 0;
+    const cards = suggestions.join('');
+    if (comboTrack.innerHTML !== cards) {
+      const scroll = comboTrack.scrollLeft;
+      comboTrack.innerHTML = cards;
+      comboTrack.scrollLeft = scroll;
+    }
   }
-  section.addEventListener('click',event=>{
+
+  function addBundle(event){
     const button=event.target.closest('[data-add-combo]'); if(!button||!catalogReady)return;
     const def=definitions.find(d=>d.id===button.dataset.addCombo); if(!def)return;
+    const inCart=cartSuggestions.contains(button);
+    const status=inCart?cartComboStatus:section.querySelector('#combo-status');
     const entries=resolve(def);
     const bundle=def.id==='bruschetta'?CONFIG.products.find(p=>p.id==='combo-bruschetta-5off'):null;
-    if(entries.some(e=>!e.product||cnRemaining(e.product)<=0)) {render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
+    if(entries.some(e=>!e.product||cnRemaining(e.product)<=0)) {render();status.textContent='No hay stock suficiente para agregar el combo completo.';return;}
     if(bundle){
-      if(cnRemaining(bundle)<=0){render();section.querySelector('#combo-status').textContent='No hay stock suficiente para agregar el combo completo.';return;}
+      if(cnRemaining(bundle)<=0){render();status.textContent='No hay stock suficiente para agregar el combo completo.';return;}
       const index=CONFIG.products.findIndex(p=>p.id===bundle.id);
       cart.set(index,(cart.get(index)||0)+1);
     }else entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
     renderCart();
-    section.querySelector('#combo-status').textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
+    status.textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
     const added=bundle?[{product:bundle,quantity:1}]:entries.map(e=>({product:e.product,quantity:1}));
     if(window.CNAnalytics)CNAnalytics.addToCartLines(added,product=>cnCoupon.unitPrice(product));
     track('AddToCart',{content_ids:added.map(e=>e.product.id),contents:added.map(e=>({id:e.product.id,quantity:1,item_price:e.product.price})),content_type:'product',value:added.reduce((s,e)=>s+e.product.price,0),currency:'ARS'});
     if(button.hasAttribute('data-buy-combo')){location.href=location.pathname+'?checkout=1';return;}
-    document.querySelector('#cart-panel').classList.remove('open');
-  });
+    if(inCart){
+      if(!button.isConnected)(comboTrack.querySelector(`[data-add-combo="${def.id}"]`)||cartPanel.querySelector('#cart-checkout-link')).focus();
+    }else cartPanel.classList.remove('open');
+  }
+  section.addEventListener('click',addBundle);
+  cartSuggestions.addEventListener('click',addBundle);
   document.addEventListener('cn:cart-updated',render);
   document.addEventListener('cn:cart-updated',refreshPromos);
   if(!activePage)renderPromos();
