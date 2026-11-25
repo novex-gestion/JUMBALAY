@@ -20,9 +20,6 @@ window.CNProductLinks = products => {
   });
 };
 
-// Shared storefront enhancement; checkout keeps its existing quote and payment logic.
-(()=>{const s=document.createElement('script');s.src='/cart-shipping-preview.js?v=20261104-1';document.head.appendChild(s)})();
-
 // Keep the existing storefront navigation and cart actions in the mobile header.
 document.addEventListener('DOMContentLoaded', () => {
   const header = document.querySelector('.site-header');

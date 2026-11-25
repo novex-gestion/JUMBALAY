@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="/favicon-casa-natural-redondo.svg">
-  <link rel="stylesheet" href="navigation-menu.css?v=20261009-6">
+  <link rel="stylesheet" href="navigation-menu.css?v=20261104-mobile44">
   <link rel="stylesheet" href="mobile-header.css?v=20261124-4">
   <link rel="stylesheet" href="typography.css?v=20261009-1">
   <!-- Google Analytics 4 -->
@@ -13,7 +13,7 @@
   <link rel="preload" as="script" href="pepinitos-promo.js?v=20261019-auto-linked-1">
 
   <link rel="preload" as="script" href="ga4-ecommerce.js?v=20261031-consent-1">
-  <link rel="preload" as="script" href="product-links.js?v=20261124-mobile-header">
+  <link rel="preload" as="script" href="product-links.js?v=20261125-checkout-shipping">
   <title>La colección de conservas y delicatessen | Casa Natural</title>
   <meta name="description" content="Explorá la colección Casa Natural: aceitunas, tomates secos, conservas y otras opciones para tu mesa. Consultá precios y disponibilidad actualizados.">
   <link rel="canonical" href="https://tucasaesnatural.com/coleccion.html">
@@ -290,7 +290,7 @@
   <!-- Preserve dependency order after the storefront markup is parsed. -->
   <script src="pepinitos-promo.js?v=20261019-auto-linked-1"></script>
   <script src="ga4-ecommerce.js?v=20261031-consent-1"></script>
-  <script src="product-links.js?v=20261124-mobile-header"></script>
+  <script src="product-links.js?v=20261125-checkout-shipping"></script>
   <script src="discount-codes-no-promos-20261015.js?v=20261104-privacy-order"></script>
   <script>
     // EDITAR SOLO ESTA SECCIÓN PARA CARGAR EL CONTENIDO REAL.
@@ -828,12 +828,6 @@
     page.querySelector('#checkout-payment').append(payment,manual,note);
     const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href=location.pathname+'?checkout=1';link.textContent='Finalizar compra';panel.appendChild(link);
     const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
-    const shippingPreview = document.createElement('div');
-    shippingPreview.className = 'cart-shipping-preview';
-    shippingPreview.style.cssText = 'margin:16px 0;padding:12px;border:1px solid #d8ccb9;font:13px/1.5 Arial,sans-serif';
-    shippingPreview.innerHTML = '<strong>Envíos y retiro</strong><br>Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos.<br>Resto del país: Correo Argentino cotizado según CP y bultos; gratis desde $99.000 en productos después de descuentos.<br>Retiro sin cargo en Pilar, con coordinación previa.';
-    shippingPreview.insertAdjacentHTML('beforeend', '<p style="margin-bottom:0"><a href="#plazos-condiciones" data-close-cart style="font-weight:700;text-decoration:underline">Ver plazos y condiciones</a></p><p><a href="cambios-devoluciones/">Cambios y devoluciones</a></p>');
-    panel.insertBefore(shippingPreview, link);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
     const review = page.querySelector('.checkout-review');
     const arrangeCheckout = () => {
