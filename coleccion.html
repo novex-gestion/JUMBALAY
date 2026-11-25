@@ -673,7 +673,7 @@
     let manualPending = false;
     let manualAttempt = null;
     document.addEventListener('click', event => {
-      if (manualPending && event.target.closest('[data-quantity], [data-remove-item], #send-cart, #send-manual-payment')) {
+      if (manualPending && event.target.closest('[data-quantity], [data-remove-item], [data-remove-combo], #send-cart, #send-manual-payment')) {
         event.preventDefault();
         event.stopImmediatePropagation();
       }
@@ -900,6 +900,6 @@
     route();
   })();
   </script>
-<script src="combos-bruschetta-20261015.js?v=20261125-cart-combos"></script>
+<script src="combos-bruschetta-20261015.js?v=20261125-remove-bundle"></script>
 <script src="https://panel.tucasaesnatural.com/customer-account.js?v=20261026-choice-1"></script></body>
 </html>

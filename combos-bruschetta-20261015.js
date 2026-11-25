@@ -269,6 +269,62 @@
     }
   }
 
+  const bundleStorageKey = 'casa-natural-cart-bundles-v1';
+  let bundleIds = [];
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(bundleStorageKey) || 'null');
+    if (saved && Date.now() - saved.at < 86400000 && Array.isArray(saved.ids)) {
+      bundleIds = saved.ids.filter(id => definitions.some(def => def.id === id));
+    }
+  } catch (_) {}
+
+  const bundleList = document.createElement('div');
+  cartPanel.querySelector('#cart-list').before(bundleList);
+
+  function bundleIndexes(def) {
+    const ids = def.id === 'bruschetta' && CONFIG.products.some(p => p.id === 'combo-bruschetta-5off')
+      ? ['combo-bruschetta-5off'] : def.items;
+    return ids.map(id => CONFIG.products.findIndex(product => product.id === id));
+  }
+
+  function renderBundleActions() {
+    if (!catalogReady) return;
+    // Reserve only complete, explicitly added bundles. Legacy cart lines stay editable individually.
+    const remaining = new Map(cart);
+    bundleIds = bundleIds.filter(id => {
+      const indexes = bundleIndexes(definitions.find(def => def.id === id));
+      if (!indexes.every(index => (remaining.get(index) || 0) > 0)) return false;
+      indexes.forEach(index => remaining.set(index, remaining.get(index) - 1));
+      return true;
+    });
+    try {
+      sessionStorage.setItem(bundleStorageKey, JSON.stringify({at:Date.now(),ids:bundleIds}));
+    } catch (_) {}
+    bundleList.innerHTML = definitions.map(def => {
+      const count = bundleIds.filter(id => id === def.id).length;
+      if (!count) return '';
+      return `<div class="cart-line"><div>${safe(def.name)}<br><span>${count} combo${count === 1 ? '' : 's'}</span></div><button type="button" class="cart-close" data-remove-combo="${def.id}" aria-label="Quitar un combo ${safe(def.name)}">×</button></div>`;
+    }).join('');
+  }
+
+  bundleList.addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-combo]');
+    if (!button) return;
+    const id = button.dataset.removeCombo;
+    const position = bundleIds.lastIndexOf(id);
+    if (position < 0) return;
+    const indexes = bundleIndexes(definitions.find(def => def.id === id));
+    if (!indexes.every(index => (cart.get(index) || 0) > 0)) return;
+    bundleIds.splice(position, 1);
+    indexes.forEach(index => {
+      const quantity = cart.get(index);
+      if (quantity === 1) cart.delete(index);
+      else cart.set(index, quantity - 1);
+    });
+    renderCart();
+    (bundleList.querySelector(`[data-remove-combo="${id}"]`) || cartPanel.querySelector('#cart-checkout-link')).focus();
+  });
+
   function addBundle(event){
     const button=event.target.closest('[data-add-combo]'); if(!button||!catalogReady)return;
     const def=definitions.find(d=>d.id===button.dataset.addCombo); if(!def)return;
@@ -282,6 +338,7 @@
       const index=CONFIG.products.findIndex(p=>p.id===bundle.id);
       cart.set(index,(cart.get(index)||0)+1);
     }else entries.forEach(e=>cart.set(e.index,(cart.get(e.index)||0)+1));
+    bundleIds.push(def.id);
     renderCart();
     status.textContent=`${def.name} agregado: ${entries.length} frascos. Podés revisar cada producto en tu carrito.`;
     const added=bundle?[{product:bundle,quantity:1}]:entries.map(e=>({product:e.product,quantity:1}));
@@ -294,9 +351,11 @@
   }
   section.addEventListener('click',addBundle);
   cartSuggestions.addEventListener('click',addBundle);
+  document.addEventListener('cn:cart-updated',renderBundleActions);
   document.addEventListener('cn:cart-updated',render);
   document.addEventListener('cn:cart-updated',refreshPromos);
   if(!activePage)renderPromos();
+  renderBundleActions();
   render();
   refreshPromos();
 })();
