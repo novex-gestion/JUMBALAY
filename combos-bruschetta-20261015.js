@@ -47,7 +47,7 @@
     products.forEach((product,index)=>{
       if(!product.promoUnits)return;
       const card=document.getElementById(`price-${index}`)?.closest('.card');
-      if(product.id==='combo-bruschetta-5off'){card?.remove();return;}
+      if(/^combo-.+-5off$/.test(product.id)){card?.remove();return;}
       if(card)grid.append(card);
     });
     if(!activePage)syncMotherSlide(products);
@@ -252,7 +252,7 @@
     grid.innerHTML=definitions.map(def=>{
       const entries=resolve(def), missing=entries.some(e=>!e.product);
       if(missing) return `<article class="combo-card"><h3>${safe(def.name)}</h3><p>Esta selección no está disponible por el momento.</p></article>`;
-      const bundle=def.id==='bruschetta'?CONFIG.products.find(p=>p.id==='combo-bruschetta-5off'):null;
+      const bundle=CONFIG.products.find(p=>p.id===`combo-${def.id}-5off`);
       const total=bundle?bundle.price:entries.reduce((s,e)=>s+e.product.price,0);
       const list=entries.reduce((s,e)=>s+Math.max(e.product.price,e.product.referencePrice||0),0);
       const saving=list-total;
@@ -282,8 +282,8 @@
   cartPanel.querySelector('#cart-list').before(bundleList);
 
   function bundleIndexes(def) {
-    const ids = def.id === 'bruschetta' && CONFIG.products.some(p => p.id === 'combo-bruschetta-5off')
-      ? ['combo-bruschetta-5off'] : def.items;
+    const ids = CONFIG.products.some(p => p.id === `combo-${def.id}-5off`)
+      ? [`combo-${def.id}-5off`] : def.items;
     return ids.map(id => CONFIG.products.findIndex(product => product.id === id));
   }
 
@@ -331,7 +331,7 @@
     const inCart=cartSuggestions.contains(button);
     const status=inCart?cartComboStatus:section.querySelector('#combo-status');
     const entries=resolve(def);
-    const bundle=def.id==='bruschetta'?CONFIG.products.find(p=>p.id==='combo-bruschetta-5off'):null;
+    const bundle=CONFIG.products.find(p=>p.id===`combo-${def.id}-5off`);
     if(entries.some(e=>!e.product||cnRemaining(e.product)<=0)) {render();status.textContent='No hay stock suficiente para agregar el combo completo.';return;}
     if(bundle){
       if(cnRemaining(bundle)<=0){render();status.textContent='No hay stock suficiente para agregar el combo completo.';return;}
