@@ -1039,5 +1039,67 @@
   })();
   </script>
 <script src="combos-bruschetta-20261015.js?v=20261127-cart-rich"></script>
-<script src="https://panel.tucasaesnatural.com/customer-account.js?v=20261127-login-button-1"></script></body>
+<script src="https://panel.tucasaesnatural.com/customer-account.js?v=20261127-login-button-1"></script><style>
+.checkout-phone-error { display: none; }
+@media (max-width: 760px) {
+  .checkout-phone-error:not([hidden]) {
+    display: block;
+    color: #962d35;
+    font-size: .875rem;
+    margin: .35rem 0 .65rem;
+    grid-column: 1 / -1;
+  }
+}
+</style>
+<script>
+(() => {
+  const phone = document.getElementById('customer-phone');
+  if (!phone) return;
+
+  const mobile = matchMedia('(max-width:760px)');
+  const initialMode = phone.getAttribute('inputmode');
+  const initialAutocomplete = phone.getAttribute('autocomplete');
+  const initialDescription = phone.getAttribute('aria-describedby');
+  const error = document.createElement('span');
+  error.id = 'checkout-phone-error';
+  error.className = 'checkout-phone-error';
+  error.setAttribute('aria-live', 'polite');
+  error.hidden = true;
+  phone.after(error);
+
+  let touched = false;
+  function restore(attribute, value) {
+    if (value === null) phone.removeAttribute(attribute);
+    else phone.setAttribute(attribute, value);
+  }
+  function update() {
+    const digits = phone.value.replace(/\D/g, '');
+    const invalid = mobile.matches && phone.value.trim() !== '' && (digits.length < 8 || digits.length > 15);
+    const message = digits.length < 8
+      ? 'Completá tu número de WhatsApp con el código de área.'
+      : 'Revisá tu número de WhatsApp. Ingresá hasta 15 dígitos.';
+    phone.setCustomValidity(invalid ? message : '');
+    error.hidden = !(invalid && touched);
+    if (error.hidden) phone.removeAttribute('aria-invalid');
+    else {
+      phone.setAttribute('aria-invalid', 'true');
+      if (error.textContent !== message) error.textContent = message;
+    }
+  }
+  function configure() {
+    restore('inputmode', mobile.matches ? 'tel' : initialMode);
+    restore('autocomplete', mobile.matches ? 'tel' : initialAutocomplete);
+    restore('aria-describedby', mobile.matches ? [initialDescription, error.id].filter(Boolean).join(' ') : initialDescription);
+    update();
+  }
+  phone.addEventListener('input', () => { touched = true; update(); });
+  phone.addEventListener('change', update);
+  phone.addEventListener('blur', () => { touched = true; update(); });
+  phone.addEventListener('invalid', () => { touched = true; update(); });
+  mobile.addEventListener('change', configure);
+  configure();
+})();
+</script>
+
+</body>
 </html>
