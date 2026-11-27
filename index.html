@@ -350,7 +350,7 @@
     <section class="business" aria-labelledby="linea-completa-title"><div class="wrap" style="text-align:center;max-width:900px"><h2 id="linea-completa-title" style="margin:0 0 24px;font-size:clamp(26px,3.5vw,42px)">Elegí toda la línea y lo pedimos especialmente para vos</h2><a class="button" href="catalogo-completo/">Ver catálogo de la línea completa →</a></div></section>
     <section id="comercios" aria-labelledby="comercios-title" style="padding:28px 0 44px"><div class="wrap"><div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;padding:28px;background:#e9eddf;border:1px solid #cbd3bf;border-radius:8px"><div style="flex:1 1 280px"><p class="eyebrow">Casa Natural para comercios</p><h2 id="comercios-title" style="font-size:clamp(25px,3vw,36px);margin:8px 0 12px">Una propuesta para tu comercio</h2><p style="margin:0;line-height:1.5">Consultanos por precios por cantidad y productos a pedido. Te preparamos una cotización con valores y disponibilidad actualizados.</p></div><a class="button" href="comercios/" style="white-space:normal;text-align:center;max-width:100%">Solicitar cotización para comercios →</a></div></div></section>
   </main>
-  <aside class="cart-panel" id="cart-panel" aria-label="Tu carrito"><div class="cart-head"><div><p class="eyebrow">Tu selección</p><h3>Tu carrito</h3></div><button class="cart-close" data-close-cart aria-label="Cerrar">×</button></div><div class="cart-list" id="cart-list"></div><div class="cart-total"><span>Total</span><span id="cart-total">$0</span></div><p class="cart-savings" id="cart-savings" hidden></p><div style="margin:18px 0;padding:16px;border:1px solid #ded2bf;background:#f8f5ee"><strong>¿Cómo lo recibís?</strong><p style="margin:6px 0 13px;color:#586259;font:13px Arial,sans-serif">Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos; o retiro por Champagnat 1176, Pilar, dentro de las 24 hs.</p><label style="display:flex;gap:9px;align-items:center;margin:13px 0;font:700 13px Arial,sans-serif"><input id="pickup-personal" type="checkbox"> Retiro personal por Champagnat 1176</label><div id="delivery-fields"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD</label><select id="delivery-locality" style="width:100%;min-height:43px;padding:10px" required><option value="">Elegí tu localidad</option><option>Pilar</option><option>Del Viso</option><option>Derqui</option><option>Villa Rosa</option><option value="other">Otra localidad</option></select><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">CÓDIGO POSTAL</label><input id="delivery-zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="4" placeholder="Ej.: 1629" style="width:100%;min-height:43px;padding:10px" required><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">DIRECCIÓN DE ENTREGA</label><input id="delivery-address" type="text" placeholder="Calle, número, barrio o referencia" style="width:100%;min-height:43px;padding:10px" required></div><p id="delivery-status" style="margin:10px 0 0;color:#52623d;font:700 13px Arial,sans-serif"></p><a id="delivery-whatsapp" href="https://wa.me/5491158436511" target="_blank" rel="noopener" hidden style="display:block;margin-top:11px;padding:11px;background:#25d366;color:#073c1d;font:700 12px Arial,sans-serif;text-align:center;text-decoration:none">CONSULTAR ENTREGA POR WHATSAPP</a></div><button class="button" id="send-cart">Pagar con Mercado Pago</button><button class="button payment-choice" id="send-manual-payment">Pagar por transferencia</button><p class="payment-note">Transferencia: alias <strong>juan.allegrina</strong></p></aside>
+  <aside class="cart-panel" id="cart-panel" aria-label="Tu carrito"><div class="cart-head"><div><p class="eyebrow">Tu selección</p><h3>Tu carrito</h3></div><button class="cart-close" data-close-cart aria-label="Cerrar">×</button></div><div class="cart-list" id="cart-list"></div><div class="cart-total"><span>Total</span><span id="cart-total">$0</span></div><p class="cart-savings" id="cart-savings" hidden></p><div style="margin:18px 0;padding:16px;border:1px solid #ded2bf;background:#f8f5ee"><strong>¿Cómo lo recibís?</strong><p style="margin:6px 0 13px;color:#586259;font:13px Arial,sans-serif">Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos; o retiro por Champagnat 1176, Pilar, dentro de las 24 hs.</p><label style="display:flex;gap:9px;align-items:center;margin:13px 0;font:700 13px Arial,sans-serif"><input id="pickup-personal" type="checkbox"> Retiro personal por Champagnat 1176</label><div id="delivery-fields"><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">CÓDIGO POSTAL</label><input id="delivery-zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="4" placeholder="Ej.: 1629" style="width:100%;min-height:43px;padding:10px" required><div id="detected-locality" hidden><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD</label><select id="delivery-locality" style="width:100%;min-height:43px;padding:10px" required><option value="">Elegí tu localidad</option><option>Pilar</option><option>Del Viso</option><option>Derqui</option><option>Villa Rosa</option><option value="other">Otra localidad</option></select></div><label style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">DIRECCIÓN DE ENTREGA</label><input id="delivery-address" type="text" placeholder="Calle, número, barrio o referencia" style="width:100%;min-height:43px;padding:10px" required></div><p id="delivery-status" style="margin:10px 0 0;color:#52623d;font:700 13px Arial,sans-serif"></p><a id="delivery-whatsapp" href="https://wa.me/5491158436511" target="_blank" rel="noopener" hidden style="display:block;margin-top:11px;padding:11px;background:#25d366;color:#073c1d;font:700 12px Arial,sans-serif;text-align:center;text-decoration:none">CONSULTAR ENTREGA POR WHATSAPP</a></div><button class="button" id="send-cart">Pagar con Mercado Pago</button><button class="button payment-choice" id="send-manual-payment">Pagar por transferencia</button><p class="payment-note">Transferencia: alias <strong>juan.allegrina</strong></p></aside>
   <button class="cart-float" data-open-cart aria-label="Ver mi carrito"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span>Ver mi carrito</span><strong class="cart-float-count" id="cart-float-count" hidden aria-live="polite">0</strong></button>  <a class="whatsapp-float" data-whatsapp data-item="consulta general" href="https://wa.me/5491158436511" target="_blank" rel="noopener" aria-label="Hablar por WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3a13 13 0 0 0-11.1 19.8L3 29l6.4-1.7A13 13 0 1 0 16 3Zm0 23.7a10.7 10.7 0 0 1-5.5-1.5l-.4-.2-3.8 1 1-3.7-.3-.4A10.7 10.7 0 1 1 16 26.7Zm5.9-8c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-.9 1.2-.3.3-.6.1a8.7 8.7 0 0 1-2.5-1.5 9.4 9.4 0 0 1-1.7-2.2c-.2-.3 0-.4.1-.6l.4-.5c.1-.1.2-.3.3-.5s0-.4 0-.5l-1-2.3c-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.4 1 2.8 1.1 3 .2.3.3.5a12.3 12.3 0 0 0 4.7 4.1c.6.3 1.1.5 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.8-.7 2-1.4s.3-1.3.2-1.4-.3-.2-.6-.4Z"/></svg><span>WhatsApp</span></a>
   <footer class="cn-site-footer" aria-label="Pie de página"><div class="cn-footer-grid"><section class="cn-footer-brand"><a class="cn-footer-logo" href="/">Casa Natural</a><p>Conservas y delicatessen<br>para tu mesa.</p><p class="cn-footer-delivery">Envíos a todo el país.</p><a class="cn-footer-contact" href="https://wa.me/5491158436511">Hablemos por WhatsApp ↗</a></section><nav aria-label="Comprar"><h2>Comprar</h2><a href="/coleccion.html">Colección</a><a href="/combos.html">Combos</a><a href="/promos.html">Promos</a><a href="/comercios/">Soy un comercio</a><a href="https://panel.tucasaesnatural.com/mi-cuenta.php">Mi cuenta</a></nav><nav aria-label="Ayuda y guías"><h2>Te ayudamos</h2><a href="/index.html#como-comprar">Cómo comprar</a><a href="/guias.html">Guías</a><a href="/cambios-devoluciones/">Cambios y devoluciones</a><a href="/cambios-devoluciones/#solicitud">Botón de arrepentimiento</a></nav><nav aria-label="Redes sociales"><h2>Seguinos</h2><a href="https://www.instagram.com/tucasaesnatural/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://www.facebook.com/profile.php?id=61594287721318" target="_blank" rel="noopener noreferrer">Facebook ↗</a></nav></div><div class="cn-footer-bottom">Casa Natural · Conservas y delicatessen<br>Titular: ALLEGRINA JUAN SEBASTIAN GUIDO</div></footer>
   <!-- Preserve dependency order after the storefront markup is parsed. -->
@@ -477,7 +477,7 @@
       }
       couponRow.hidden = !couponDiscount;
       couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
-      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Elegí entrega o retiro' : shipping === null ? 'Pendiente de cotización' : shipping ? money(shipping) : 'Gratis';
+      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Ingresá tu código postal o elegí retiro' : shipping === null ? 'Pendiente de cotización' : shipping ? money(shipping) : 'Gratis';
       document.querySelector('#cart-total').textContent = shipping === null ? money(total) + ' + envío' : money(total + shipping);
       const quoteStatus=document.querySelector('#correo-quote-status');
       const rate=locality==='other' ? activeNationalRate(lines) : null;
@@ -608,7 +608,7 @@
       let address = deliveryAddress.value.trim().replace(/\s+/g, ' ');
       const pickup = pickupPersonal.checked; const locality = pickup ? pickupLocation : deliveryLocality.value; const zip = deliveryZip.value.trim();
       if (!lines.length) return null;
-      if (!pickup && !locality) { alert('Elegí cómo recibir tu pedido.'); deliveryLocality.focus(); return null; }
+      if (!pickup && !locality) { alert('Ingresá un código postal válido de 4 dígitos.'); deliveryZip.focus(); return null; }
       if (!pickup && locality === 'other') {
         const city = document.querySelector('#national-city').value.trim().replace(/\s+/g, ' ');
         const province = document.querySelector('#national-province').value.trim().replace(/\s+/g, ' ');
@@ -750,7 +750,28 @@
     }
     cargarCatalogo();
     deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"></div>');
-    const updateNationalDelivery = () => {
+    const detectedLocality = document.querySelector('#detected-locality');
+    let lastPostalCode = '';
+    let nationalOverrideZip = '';
+    function resolvePostalZone(event) {
+      const zip = deliveryZip.value.trim();
+      const valid = /^[0-9]{4}$/.test(zip);
+      const local = valid ? Object.keys(localPostalCodes).find(name => localPostalCodes[name] === zip) : '';
+      if (zip !== lastPostalCode && nationalOverrideZip !== zip) nationalOverrideZip = '';
+      lastPostalCode = zip;
+      if (event?.target === deliveryLocality && local) {
+        nationalOverrideZip = deliveryLocality.value === 'other' ? zip : '';
+      }
+      deliveryLocality.value = valid ? (local && nationalOverrideZip !== zip ? local : 'other') : '';
+      for (const option of deliveryLocality.options) {
+        option.hidden = option.value !== 'other' && option.value !== local;
+        option.disabled = option.hidden;
+      }
+      detectedLocality.hidden = !local;
+    }
+    const updateNationalDelivery = event => {
+      resolvePostalZone(event);
+      actualizarEntrega();
       const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
       document.querySelector('#national-fields').hidden = !national;
       document.querySelector('#national-city').required = national;
@@ -773,7 +794,7 @@
       }
     };
     [pickupPersonal, deliveryLocality, deliveryZip, document.querySelector('#national-city'), document.querySelector('#national-province')].forEach(node => node.addEventListener('input', updateNationalDelivery));
-    [pickupPersonal, deliveryLocality].forEach(node => node.addEventListener('change', updateNationalDelivery));
+    [pickupPersonal, deliveryLocality, deliveryZip].forEach(node => node.addEventListener('change', updateNationalDelivery));
     // El retiro es una disponibilidad permanente, no un plazo de preparación.
     document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'En Pilar, Del Viso, Derqui y Villa Rosa, el envío cuesta $5.000 y es gratis desde $40.000 en productos después de descuentos.';
     document.querySelector('#pickup-personal').addEventListener('change', () => {
@@ -979,7 +1000,7 @@
       const checkout=isCheckout();page.hidden=!checkout;document.body.classList.toggle('checkout-page-mode',checkout);panel.classList.remove('open');
       for(const node of summaryNodes) {if(checkout)page.querySelector('#checkout-summary').appendChild(node);else panel.insertBefore(node,link);}
       document.querySelector('#shipping-breakdown').hidden=!checkout;
-      document.querySelector('.cart-total > span').textContent=checkout?'Total a pagar':'Productos';
+      document.querySelector('.cart-total > span').textContent=checkout?'Subtotal':'Productos';
       document.title=checkout?'Finalizar compra · Casa Natural':storefrontTitle;
       renderCart();
       if(focus){window.scrollTo(0,0);if(checkout)page.querySelector('h1').focus();}
@@ -994,15 +1015,16 @@
     const deliveryIds = ['delivery-locality','delivery-zip','delivery-address','national-city','national-province'];
     function saveDelivery() {
       const fields = Object.fromEntries(deliveryIds.map(id => [id, document.getElementById(id).value]));
-      try { sessionStorage.setItem(deliveryStorageKey, JSON.stringify({at:Date.now(),pickup:pickupPersonal.checked,fields})); } catch (_) {}
+      try { sessionStorage.setItem(deliveryStorageKey, JSON.stringify({at:Date.now(),pickup:pickupPersonal.checked,nationalOverrideZip,fields})); } catch (_) {}
     }
     try {
       const saved = JSON.parse(sessionStorage.getItem(deliveryStorageKey) || 'null');
       if (saved && Date.now() - saved.at >= 0 && Date.now() - saved.at < 86400000 && saved.fields) {
         deliveryIds.forEach(id => { if (typeof saved.fields[id] === 'string') document.getElementById(id).value = saved.fields[id]; });
+        nationalOverrideZip = typeof saved.nationalOverrideZip === 'string' ? saved.nationalOverrideZip : '';
         pickupPersonal.checked = saved.pickup === true;
         pickupPersonal.dispatchEvent(new Event('change', {bubbles:true}));
-      } else { sessionStorage.removeItem(deliveryStorageKey); }
+      } else { sessionStorage.removeItem(deliveryStorageKey); updateNationalDelivery(); }
     } catch (_) {}
     [pickupPersonal,...deliveryIds.map(id=>document.getElementById(id))].forEach(node=>{
       node.addEventListener('input',saveDelivery);
