@@ -391,7 +391,7 @@
       return null;
     };
     const shippingPolicy = 'micorreo-clasico-national-free-99000-v1';
-    document.querySelector('.cart-total').insertAdjacentHTML('beforebegin', '<div id="shipping-breakdown" style="font:14px/1.7 Arial,sans-serif"><div>Productos: <strong id="products-subtotal"></strong></div><div>Envío: <strong id="shipping-total"></strong></div></div>');
+    document.querySelector('.cart-total').insertAdjacentHTML('beforebegin', '<div id="shipping-breakdown" style="font:14px/1.7 Arial,sans-serif"><div>Productos: <strong id="products-subtotal"></strong></div><div><span id="shipping-label">Envío: </span><strong id="shipping-total"></strong></div></div>');
     document.querySelector('#shipping-breakdown').insertAdjacentHTML('afterend','<div id="correo-quote-status" role="status" style="font:13px/1.5 Arial,sans-serif;margin:5px 0"></div>');
     const requestNationalQuote = (lines, immediate=false) => {
       if (pickupPersonal.checked || deliveryLocality.value !== 'other' || !/^[0-9]{4}$/.test(deliveryZip.value.trim()) || !lines.length) return;
@@ -478,12 +478,14 @@
       }
       couponRow.hidden = !couponDiscount;
       couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
-      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Ingresá tu código postal o elegí retiro' : shipping === null ? 'Pendiente de cotización' : shipping ? money(shipping) : 'Gratis';
+      const freeShipping = lines.length > 0 && shipping === 0 && locality !== pickupLocation;
+      document.querySelector('#shipping-label').hidden = freeShipping;
+      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Ingresá tu código postal o elegí retiro' : shipping === null ? 'Pendiente de cotización' : freeShipping ? 'Envío gratis' : shipping ? money(shipping) : 'Gratis';
       document.querySelector('#cart-total').textContent = shipping === null ? money(total) + ' + envío' : money(total + shipping);
       const quoteStatus=document.querySelector('#correo-quote-status');
       const rate=locality==='other' ? activeNationalRate(lines) : null;
-      quoteStatus.hidden=!document.body.classList.contains('checkout-page-mode') || locality!=='other' || !lines.length;
-      quoteStatus.innerHTML=rate ? `Correo Argentino Clásico · ${shippingQuote.data.packages.length} bulto${shippingQuote.data.packages.length===1?'':'s'} · Tarifa Correo: ${money(rate.cost_cents/100)}${total>=99000?' · Envío sin cargo para vos':''}` : !/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Ingresá un código postal de 4 dígitos para cotizar.' : shippingQuote.error ? `${safe(shippingQuote.error)} <button type="button" id="retry-correoshop-quote">Reintentar</button>` : 'Cotizando el envío con Correo Argentino…';
+      quoteStatus.hidden=!document.body.classList.contains('checkout-page-mode') || locality!=='other' || !lines.length || freeShipping;
+      quoteStatus.innerHTML=freeShipping ? '' : rate ? `Correo Argentino Clásico · ${shippingQuote.data.packages.length} bulto${shippingQuote.data.packages.length===1?'':'s'} · Tarifa Correo: ${money(rate.cost_cents/100)}` : !/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Ingresá un código postal de 4 dígitos para cotizar.' : shippingQuote.error ? `${safe(shippingQuote.error)} <button type="button" id="retry-correoshop-quote">Reintentar</button>` : 'Cotizando el envío con Correo Argentino…';
       const savingsNode = document.querySelector('#cart-savings');
       savingsNode.hidden = !(savings + cnCoupon.amount(lines));
       savingsNode.textContent = savings + couponDiscount ? `Ahorrás ${money(savings + couponDiscount)} frente al precio de lista${couponDiscount ? ', incluyendo tu código' : ''}.` : '';
