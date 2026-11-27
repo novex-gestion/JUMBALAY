@@ -63,10 +63,10 @@
 
   function renderSuggestions() {
     const section = $('#detail-combos');
-    const track = section.querySelector('.detail-combo-track');
+    const carousel = section.querySelector('.detail-combo-track');
     const lines = cartLines();
-    const scroll = track.scrollLeft;
-    track.replaceChildren();
+    const scroll = carousel.scrollLeft;
+    carousel.replaceChildren();
     for (const id of comboOrder) {
       const combo = catalog.find(p => p.id === id);
       if (!combo || !cnRemaining(combo,catalog,lines)) continue;
@@ -94,10 +94,10 @@
           status.textContent = combo.name+' agregado al carrito.';
         } catch (_) { status.textContent = 'No pudimos agregar el combo. Intentá nuevamente.'; }
       };
-      card.append(name,price,button); track.append(card);
+      card.append(name,price,button); carousel.append(card);
     }
-    section.hidden = !track.children.length;
-    track.scrollLeft = scroll;
+    section.hidden = !carousel.children.length;
+    carousel.scrollLeft = scroll;
   }
 
   function renderCart() {
