@@ -749,7 +749,7 @@
       } finally { clearTimeout(timeout); grid.setAttribute('aria-busy', 'false'); }
     }
     cargarCatalogo();
-    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"><p style="font:14px/1.5 Arial,sans-serif"><strong>Envío a todo el país cotizado por Correo Argentino.</strong> Gratis desde $99.000 en productos después de descuentos. Una compra de $99.000 ya tiene envío gratis. Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 después de descuentos. Retiro personal: siempre gratis.</p></div>');
+    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"></div>');
     const updateNationalDelivery = () => {
       const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
       document.querySelector('#national-fields').hidden = !national;
@@ -766,7 +766,7 @@
         deliveryWhatsapp.href = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + encodeURIComponent('Hola, quiero consultar por la entrega de mi pedido' + (deliveryLocality.value ? ' en ' + deliveryLocality.value : '') + '.');
       }
       if (national) {
-        deliveryStatus.textContent = 'Envío nacional con Correo Argentino: ingresá tu CP y el carrito se cotiza en tiempo real. Gratis desde $99.000 en productos después de descuentos. El despacho se coordina tras confirmar el pedido.';
+        deliveryStatus.textContent = 'Ingresá el código postal para cotizar Correo Argentino. Gratis desde $99.000 en productos después de descuentos.';
         const city = document.querySelector('#national-city').value.trim();
         const province = document.querySelector('#national-province').value.trim();
         deliveryWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hola, quiero consultar un envío a ${city || 'mi localidad'}, ${province || 'mi provincia'}, CP ${deliveryZip.value.trim()}.`)}`;
@@ -775,9 +775,9 @@
     [pickupPersonal, deliveryLocality, deliveryZip, document.querySelector('#national-city'), document.querySelector('#national-province')].forEach(node => node.addEventListener('input', updateNationalDelivery));
     [pickupPersonal, deliveryLocality].forEach(node => node.addEventListener('change', updateNationalDelivery));
     // El retiro es una disponibilidad permanente, no un plazo de preparación.
-    document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'Envío en Pilar, Del Viso, Derqui y Villa Rosa: $5.000; gratis desde $40.000 en productos después de descuentos; o retiro por Champagnat 1176, Pilar, con coordinación previa por WhatsApp.';
+    document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'En Pilar, Del Viso, Derqui y Villa Rosa, el envío cuesta $5.000 y es gratis desde $40.000 en productos después de descuentos.';
     document.querySelector('#pickup-personal').addEventListener('change', () => {
-      if (pickupPersonal.checked) deliveryStatus.textContent = 'Podés coordinar el retiro las 24 horas en Champagnat 1176, Pilar. Antes de acercarte, esperá nuestra confirmación por WhatsApp de que tu pedido está listo. Comprar o pagar no significa que ya esté preparado.';
+      if (pickupPersonal.checked) deliveryStatus.textContent = 'Retiro gratis en Pilar con cita previa. Esperá nuestra confirmación por WhatsApp antes de acercarte.';
     });
     document.querySelector('#delivery-whatsapp').textContent = 'SI TENÉS DUDAS, CHATEÁ CON NOSOTROS';
     const receipt = document.createElement('dialog');
