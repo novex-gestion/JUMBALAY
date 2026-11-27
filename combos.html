@@ -291,7 +291,7 @@
         const product = CONFIG.products[index];
         return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0);
       }, 0);
-      document.querySelector('#cart-list').innerHTML = lines.length ? lines.map(([index, quantity]) => `<div class="cart-line"><div>${safe(CONFIG.products[index].name)}<br><span>${quantity} unidad${quantity > 1 ? 'es' : ''} · ${money(CONFIG.products[index].price * quantity)}</span></div><button class="cart-close" data-remove-item="${index}" aria-label="Quitar producto">×</button></div>`).join('') : '<p class="cart-empty">Todavía no agregaste productos.</p>';
+      document.querySelector('#cart-list').innerHTML = lines.length ? lines.map(([index, quantity]) => `<div class="cart-line"><div class="cart-line-details"><div class="cart-line-copy">${safe(CONFIG.products[index].name)}<br><span>${quantity} unidad${quantity > 1 ? 'es' : ''} · ${money(CONFIG.products[index].price * quantity)}</span></div></div><button class="cart-close" data-remove-item="${index}" aria-label="Quitar producto">×</button></div>`).join('') : '<p class="cart-empty">Todavía no agregaste productos.</p>';
       CONFIG.products.forEach((product, index) => {
         const remaining = cnRemaining(product);
         const quantity = Math.min(draftQuantities.get(index) || 1, remaining || 1);
@@ -790,8 +790,10 @@
     #checkout-empty { padding:22px;background:#f2ebdd;font:15px/1.6 Arial,sans-serif; }
     #cart-checkout-link { display:block;margin-top:18px;text-align:center; }
     #cart-checkout-link[aria-disabled=true] { opacity:.45;pointer-events:none; }
+    .cart-line-details { display:flex;gap:10px;align-items:flex-start;min-width:0; }
+    .cart-line-copy { min-width:0; }
     .cart-edit-controls { display:flex;gap:6px;align-items:center;margin-top:5px; }
-    .cart-edit-controls button { width:36px;height:34px;padding:0;border-radius:5px;border:1px solid #d8ccb9;background:#fff;color:var(--ink);cursor:pointer; }
+    .cart-edit-controls button { width:32px;height:30px;padding:0;border-radius:5px;border:1px solid #d8ccb9;background:#fff;color:var(--ink);cursor:pointer; }
     @media(max-width:900px) { #checkout-page{margin:22px auto;padding:0 16px}.checkout-layout{grid-template-columns:1fr;gap:0}.checkout-review{position:static;grid-column:1;grid-row:3}#checkout-payment{grid-row:4}.checkout-step,.checkout-review{padding:20px}.checkout-top{display:block}.checkout-top h1{font-size:2rem} }
     @media(max-width:360px) { #checkout-page{padding:0 12px}.checkout-step,.checkout-review{padding:16px}.checkout-step h2,.checkout-review h2{font-size:1.3rem} }
   </style>
@@ -842,7 +844,7 @@
         const i=Number(line.querySelector('[data-remove-item]').dataset.removeItem);
         const controls=document.createElement('div');controls.className='cart-edit-controls';
         for(const [change,label] of [[-1,'Quitar una unidad'],[1,'Sumar una unidad']]) {const b=document.createElement('button');b.type='button';b.dataset.quantity=i;b.dataset.change=change;b.setAttribute('aria-label',label+' de '+CONFIG.products[i].name);b.textContent=change===1?'+':'−';b.disabled=change===1&&cnRemaining(CONFIG.products[i])<=0;controls.appendChild(b);}
-        line.firstElementChild.appendChild(controls);
+        line.querySelector('.cart-line-copy').appendChild(controls);
       });
     }
     const storefrontTitle=document.title;
@@ -888,6 +890,6 @@
     route();
   })();
   </script>
-<script src="combos-bruschetta-20261015.js?v=20261127-cart-compact"></script>
+<script src="combos-bruschetta-20261015.js?v=20261127-cart-aligned"></script>
 <script src="https://panel.tucasaesnatural.com/customer-account.js?v=20261127-login-button-1"></script></body>
 </html>
