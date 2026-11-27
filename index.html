@@ -1051,9 +1051,27 @@
       if(focus){window.scrollTo(0,0);if(checkout)page.querySelector('h1').focus();}
     }
     link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;CNAnalytics.beginCheckout([...cart.entries()].filter(([,quantity])=>quantity>0),CONFIG.products,analyticsUnitPrice);history.pushState({},'',link.href);route(true);});
-    page.querySelector('[data-return-store]').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname+'#productos');route(true);});
+    const returnStore = page.querySelector('[data-return-store]');
+    const checkoutSources = new Map([
+      ['combos', '/combos.html#combos'],
+      ['coleccion', '/coleccion.html'],
+      ['promos', '/promos.html']
+    ]);
+    function checkoutSource() {
+      return checkoutSources.get(new URLSearchParams(location.search).get('desde'));
+    }
+    returnStore.href = checkoutSource() || location.pathname + '#productos';
+    returnStore.addEventListener('click', e => {
+      if (checkoutSource()) return;
+      e.preventDefault();
+      history.pushState({}, '', location.pathname + '#productos');
+      route(true);
+    });
     receipt.addEventListener('close',()=>{if(isCheckout()&&![...cart.values()].some(q=>q>0)){history.replaceState({},'',location.pathname);route(true);}});
-    window.addEventListener('popstate',()=>route(true));
+    window.addEventListener('popstate', () => {
+      returnStore.href = checkoutSource() || location.pathname + '#productos';
+      route(true);
+    });
     document.addEventListener('cn:cart-updated',update);
     // Conservar la entrega solo durante esta sesión y por un máximo de 24 horas.
     const deliveryStorageKey = 'casa-natural-delivery-v1';

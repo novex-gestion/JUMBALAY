@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="es-AR">
 <head>
+<script>
+  (() => {
+    const query = new URLSearchParams(location.search);
+    if (query.get('checkout') !== '1') return;
+    query.set('desde', 'promos');
+    location.replace('/index.html?' + query.toString());
+  })();
+</script>
 <script src="/privacy-consent.js?v=20261102-footer" data-measure="1" data-marketing="1"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -861,7 +869,7 @@
     page.querySelector('#checkout-delivery').appendChild(delivery);
     delivery.style.cssText='margin:0;padding:0;border:0;background:transparent';
     page.querySelector('#checkout-payment').append(payment,manual,note);
-    const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href=location.pathname+'?checkout=1';link.textContent='Finalizar compra';panel.appendChild(link);
+    const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href='/index.html?checkout=1&desde=promos';link.textContent='Finalizar compra';panel.appendChild(link);
     const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
     const review = page.querySelector('.checkout-review');
@@ -903,7 +911,7 @@
       renderCart();
       if(focus){window.scrollTo(0,0);if(checkout)page.querySelector('h1').focus();}
     }
-    link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;CNAnalytics.beginCheckout([...cart.entries()].filter(([,quantity])=>quantity>0),CONFIG.products,analyticsUnitPrice);history.pushState({},'',link.href);route(true);});
+    link.addEventListener('click',e=>{e.preventDefault();if(link.getAttribute('aria-disabled')==='true')return;CNAnalytics.beginCheckout([...cart.entries()].filter(([,quantity])=>quantity>0),CONFIG.products,analyticsUnitPrice);location.assign(link.href);});
     page.querySelector('[data-return-store]').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname+'#promos');route(true);});
     receipt.addEventListener('close',()=>{if(isCheckout()&&![...cart.values()].some(q=>q>0)){history.replaceState({},'',location.pathname);route(true);}});
     window.addEventListener('popstate',()=>route(true));
