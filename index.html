@@ -480,7 +480,7 @@
       couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
       const freeShipping = lines.length > 0 && shipping === 0 && locality !== pickupLocation;
       document.querySelector('#shipping-label').hidden = freeShipping;
-      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? 'Ingresá tu código postal o elegí retiro' : shipping === null ? 'Pendiente de cotización' : freeShipping ? 'Envío gratis' : shipping ? money(shipping) : 'Gratis';
+      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? (/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Elegí tu localidad' : 'Ingresá tu código postal o elegí retiro') : shipping === null ? 'Pendiente de cotización' : freeShipping ? 'Envío gratis' : shipping ? money(shipping) : 'Gratis';
       document.querySelector('#cart-total').textContent = shipping === null ? money(total) + ' + envío' : money(total + shipping);
       const quoteStatus=document.querySelector('#correo-quote-status');
       const rate=locality==='other' ? activeNationalRate(lines) : null;
@@ -611,7 +611,11 @@
       let address = deliveryAddress.value.trim().replace(/\s+/g, ' ');
       const pickup = pickupPersonal.checked; const locality = pickup ? pickupLocation : deliveryLocality.value; const zip = deliveryZip.value.trim();
       if (!lines.length) return null;
-      if (!pickup && !locality) { alert('Ingresá un código postal válido de 4 dígitos.'); deliveryZip.focus(); return null; }
+      if (!pickup && !locality) {
+        if (/^\d{4}$/.test(zip)) { alert('Elegí tu localidad.'); postalDestination.focus(); }
+        else { alert('Ingresá un código postal válido de 4 dígitos.'); deliveryZip.focus(); }
+        return null;
+      }
       if (!pickup && locality === 'other') {
         const city = document.querySelector('#national-city').value.trim().replace(/\s+/g, ' ');
         const province = document.querySelector('#national-province').value.trim().replace(/\s+/g, ' ');
@@ -756,41 +760,75 @@
     const detectedLocality = document.querySelector('#detected-locality');
     const nationalCity = document.querySelector('#national-city');
     const nationalProvince = document.querySelector('#national-province');
+    detectedLocality.insertAdjacentHTML('afterend', `<div id="postal-destination-fields" hidden>
+      <label for="postal-destination" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label>
+      <select id="postal-destination" style="width:100%;min-height:43px;padding:10px"></select>
+    </div>`);
+    const postalDestination = document.querySelector('#postal-destination');
+    const postalDestinationFields = document.querySelector('#postal-destination-fields');
+    const manualDestination = '__manual__';
+    let postalCatalog;
     let lastPostalCode = '';
-    let nationalOverrideZip = '';
-    function resolvePostalZone(event) {
+    let selectedDestination = '';
+    let displayedPostalCode = null;
+    let displayedCatalog;
+    function resolvePostalZone() {
       const zip = deliveryZip.value.trim();
       const valid = /^[0-9]{4}$/.test(zip);
-      const local = valid ? Object.keys(localPostalCodes).find(name => localPostalCodes[name] === zip) : '';
-      if (zip !== lastPostalCode && nationalOverrideZip !== zip) nationalOverrideZip = '';
-      const zipChanged = zip !== lastPostalCode;
-      if (zipChanged && (lastPostalCode || event?.target === deliveryZip)) {
+      const local = Object.keys(localPostalCodes).find(name => localPostalCodes[name] === zip);
+      if (zip !== lastPostalCode) {
         nationalCity.value = '';
         nationalProvince.value = '';
+        selectedDestination = '';
+        lastPostalCode = zip;
       }
-      lastPostalCode = zip;
-      if (event?.target === deliveryLocality && local) {
-        nationalOverrideZip = deliveryLocality.value === 'other' ? zip : '';
+      postalDestinationFields.hidden = !valid;
+      if (!valid) {
+        deliveryLocality.value = '';
+        return;
       }
-      deliveryLocality.value = valid ? (local && nationalOverrideZip !== zip ? local : 'other') : '';
-      for (const option of deliveryLocality.options) {
-        option.hidden = option.value !== 'other' && option.value !== local;
-        option.disabled = option.hidden;
+      if (postalCatalog === undefined) {
+        postalCatalog = null;
+        fetch('/checkout-localidades-ar-v1.json')
+          .then(response => response.ok ? response.json() : Promise.reject())
+          .then(data => { postalCatalog = data.codes; })
+          .catch(() => { postalCatalog = {}; })
+          .finally(() => updateNationalDelivery());
       }
-      detectedLocality.hidden = !local;
-      if (deliveryLocality.value === 'other' && zipChanged) {
+      if (displayedPostalCode !== zip || displayedCatalog !== postalCatalog) {
         const [city, province] = window.cnPostalDestinations?.[zip] ?? [];
-        if (city) nationalCity.value = city;
-        if (province) nationalProvince.value = province;
+        const localOption = local ? local + ', Buenos Aires' : '';
+        const fallback = city && province ? city + ', ' + province : '';
+        const choices = [...new Set([
+          localOption, ...(postalCatalog?.[zip] ?? []), ...(zip === '1428' || !postalCatalog?.[zip]?.length ? [fallback] : [])
+        ].filter(Boolean).map(name => zip === '1635' && name === 'Presidente Derqui, Buenos Aires' ? localOption : name))];
+        postalDestination.replaceChildren(
+          new Option('Elegí tu localidad', ''),
+          ...choices.map(name => new Option(name, name)),
+          new Option('Mi localidad no aparece', manualDestination)
+        );
+        postalDestination.value = selectedDestination || (choices.length === 1 ? choices[0] : '');
+        if (selectedDestination && !postalDestination.value) postalDestination.value = manualDestination;
+        displayedPostalCode = zip;
+        displayedCatalog = postalCatalog;
+      }
+      const selection = postalDestination.value;
+      const localSelection = local && selection === local + ', Buenos Aires';
+      deliveryLocality.value = selection ? (localSelection ? local : 'other') : '';
+      if (selection && selection !== manualDestination && !localSelection) {
+        const separator = selection.lastIndexOf(', ');
+        nationalCity.value = selection.slice(0, separator);
+        nationalProvince.value = selection.slice(separator + 2);
       }
     }
-    const updateNationalDelivery = event => {
-      resolvePostalZone(event);
+    const updateNationalDelivery = () => {
+      resolvePostalZone();
       actualizarEntrega();
       const national = !pickupPersonal.checked && deliveryLocality.value === 'other';
-      document.querySelector('#national-fields').hidden = !national;
-      document.querySelector('#national-city').required = national;
-      document.querySelector('#national-province').required = national;
+      const manualLocality = national && postalDestination.value === manualDestination;
+      document.querySelector('#national-fields').hidden = !manualLocality;
+      nationalCity.required = manualLocality;
+      nationalProvince.required = manualLocality;
       document.querySelector('#send-cart').hidden = false;
       const manual = document.querySelector('#send-manual-payment');
       if (!manualPending) manual.textContent = 'Pagar por transferencia';
@@ -809,6 +847,13 @@
     };
     [pickupPersonal, deliveryLocality, deliveryZip, document.querySelector('#national-city'), document.querySelector('#national-province')].forEach(node => node.addEventListener('input', updateNationalDelivery));
     [pickupPersonal, deliveryLocality, deliveryZip].forEach(node => node.addEventListener('change', updateNationalDelivery));
+    postalDestination.addEventListener('change', () => {
+      selectedDestination = postalDestination.value;
+      nationalCity.value = '';
+      nationalProvince.value = '';
+      updateNationalDelivery();
+      saveDelivery();
+    });
     // El retiro es una disponibilidad permanente, no un plazo de preparación.
     document.querySelector('#pickup-personal').closest('div').querySelector('p').textContent = 'En Pilar, Del Viso, Derqui y Villa Rosa, el envío cuesta $5.000 y es gratis desde $40.000 en productos después de descuentos.';
     document.querySelector('#pickup-personal').addEventListener('change', () => {
@@ -1080,13 +1125,14 @@
     const deliveryIds = ['delivery-locality','delivery-zip','delivery-address','national-city','national-province'];
     function saveDelivery() {
       const fields = Object.fromEntries(deliveryIds.map(id => [id, document.getElementById(id).value]));
-      try { sessionStorage.setItem(deliveryStorageKey, JSON.stringify({at:Date.now(),pickup:pickupPersonal.checked,nationalOverrideZip,fields})); } catch (_) {}
+      try { sessionStorage.setItem(deliveryStorageKey, JSON.stringify({at:Date.now(),pickup:pickupPersonal.checked,postalDestination:postalDestination.value,fields})); } catch (_) {}
     }
     try {
       const saved = JSON.parse(sessionStorage.getItem(deliveryStorageKey) || 'null');
       if (saved && Date.now() - saved.at >= 0 && Date.now() - saved.at < 86400000 && saved.fields) {
         deliveryIds.forEach(id => { if (typeof saved.fields[id] === 'string') document.getElementById(id).value = saved.fields[id]; });
-        nationalOverrideZip = typeof saved.nationalOverrideZip === 'string' ? saved.nationalOverrideZip : '';
+        lastPostalCode = deliveryZip.value.trim();
+        selectedDestination = typeof saved.postalDestination === 'string' ? saved.postalDestination : '';
         pickupPersonal.checked = saved.pickup === true;
         pickupPersonal.dispatchEvent(new Event('change', {bubbles:true}));
       } else { sessionStorage.removeItem(deliveryStorageKey); updateNationalDelivery(); }
