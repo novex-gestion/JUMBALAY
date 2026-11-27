@@ -936,6 +936,13 @@
     .checkout-review { position:sticky;top:22px;grid-column:2;grid-row:1 / span 3; }
     .checkout-review .cart-list { max-height:none;margin:10px 0 20px; }
     .checkout-review .cart-total { margin-top:12px; }
+    .checkout-products-toggle { display:none; }
+    @media(max-width:760px) {
+      .checkout-products-toggle { display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:700 14px Arial,sans-serif;cursor:pointer; }
+      .checkout-products-toggle::after { content:"+"; }
+      .checkout-products-toggle[aria-expanded="true"]::after { content:"−"; }
+      #checkout-summary .checkout-products-toggle[aria-expanded="false"] ~ #cart-list { display:none; }
+    }
     .checkout-page-mode > main:not(#checkout-page),.checkout-page-mode > .site-header,.checkout-page-mode > .announcement-bar,.checkout-page-mode > footer,.checkout-page-mode > .cart-float,.checkout-page-mode > .whatsapp-float,.checkout-page-mode > #cart-panel { display:none!important; }
     #checkout-empty { padding:22px;background:#f2ebdd;font:15px/1.6 Arial,sans-serif; }
     #cart-checkout-link { display:block;margin-top:18px;text-align:center; }
@@ -967,6 +974,19 @@
     const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
     const review = page.querySelector('.checkout-review');
+    const summary = review.querySelector('#checkout-summary');
+    const productsToggle = document.createElement('button');
+    productsToggle.type = 'button';
+    productsToggle.className = 'checkout-products-toggle';
+    productsToggle.textContent = 'Ver productos';
+    productsToggle.setAttribute('aria-controls', 'cart-list');
+    productsToggle.setAttribute('aria-expanded', 'false');
+    productsToggle.addEventListener('click', () => {
+      const expanded = productsToggle.getAttribute('aria-expanded') === 'true';
+      productsToggle.setAttribute('aria-expanded', String(!expanded));
+      productsToggle.textContent = expanded ? 'Ver productos' : 'Ocultar productos';
+    });
+    summary.prepend(productsToggle);
     const arrangeCheckout = () => {
       if (mobileCheckout.matches) page.querySelector('#checkout-payment').before(review);
       else page.querySelector('.checkout-layout').appendChild(review);
