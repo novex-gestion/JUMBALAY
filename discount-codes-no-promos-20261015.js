@@ -1,5 +1,5 @@
 /* Server validates the code and recalculates every order; browser totals are a preview. */
-function cnCreateCoupon({getLines, getProduct, ordersApi, afterChange, panelId, checkoutLinkId, moveToCheckout}) {
+function cnCreateCoupon({getLines, getProduct, ordersApi, afterChange, panelId, checkoutLinkId}) {
   let applied = null;
   const key = 'cn-discount-v1';
   try { const saved = JSON.parse(sessionStorage.getItem(key)); if (saved && Date.now()-saved.at<86400000) applied=saved; } catch (_) {}
@@ -64,15 +64,15 @@ function cnCreateCoupon({getLines, getProduct, ordersApi, afterChange, panelId, 
         document.getElementById('coupon-status').textContent='Esperá un momento: estamos validando tu código.';
       }
     },true);
-    const move=()=>{const summary=document.getElementById('checkout-summary');if(moveToCheckout && summary && new URLSearchParams(location.search).get('checkout')==='1')summary.appendChild(box);else panel.insertBefore(box,link);refresh();};
-    document.addEventListener('cn:cart-updated',move);move();
+    document.addEventListener('cn:cart-updated',refresh);
+    refresh();
   }
   return {mount, refresh, amount, subtotal, unitPrice, code:()=>applied&&amount(getLines())>0?applied.code:''};
 }
 const cnCoupon = document.getElementById('cart-panel') ? cnCreateCoupon({
   getLines:()=>[...cart.entries()], getProduct:i=>CONFIG.products[i],
   ordersApi:()=>CONFIG.ordersApi, afterChange:()=>renderCart(),
-  panelId:'cart-panel', checkoutLinkId:'cart-checkout-link', moveToCheckout:true
+  panelId:'cart-panel', checkoutLinkId:'cart-checkout-link'
 }) : null;
 if(cnCoupon) document.addEventListener('DOMContentLoaded',cnCoupon.mount);
 

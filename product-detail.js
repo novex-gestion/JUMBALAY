@@ -52,8 +52,7 @@
   function cartLines() { return readCart().map(x=>[catalog.findIndex(p=>p.id===x.id),x.quantity]).filter(([i])=>i>=0); }
   const detailCoupon = cnCreateCoupon({
     getLines:cartLines, getProduct:i=>catalog[i], ordersApi:()=>host+'/api/',
-    afterChange:renderCart, panelId:'detail-cart', checkoutLinkId:'detail-cart-checkout',
-    moveToCheckout:false
+    afterChange:renderCart, panelId:'detail-cart', checkoutLinkId:'detail-cart-checkout'
   });
   detailCoupon.mount();
 
