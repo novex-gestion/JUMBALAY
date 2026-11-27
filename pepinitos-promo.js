@@ -10,13 +10,13 @@ function cnPromoCatalog(products) {
     return [p];
   });
 }
-function cnRemaining(product) {
+function cnRemaining(product, products = CONFIG.products, lines = cart) {
   const parts=p=>p.promoComponents||[{id:p.promoSource||p.id,units:p.promoUnits||1}];
   return Math.max(0,Math.min(...parts(product).map(part=>{
-    const physical=CONFIG.products.find(p=>p.id===part.id);
+    const physical=products.find(p=>p.id===part.id);
     let used=0;
-    for(const [i,q] of cart){
-      const component=parts(CONFIG.products[i]).find(x=>x.id===part.id);
+    for(const [i,q] of lines){
+      const component=parts(products[i]).find(x=>x.id===part.id);
       if(component)used+=q*component.units;
     }
     return Math.floor(((physical?.stock||0)-used)/part.units);

@@ -1,31 +1,31 @@
 /* Server validates the code and recalculates every order; browser totals are a preview. */
-const cnCoupon = (() => {
+function cnCreateCoupon({getLines, getProduct, ordersApi, afterChange, panelId, checkoutLinkId, moveToCheckout}) {
   let applied = null;
   const key = 'cn-discount-v1';
   try { const saved = JSON.parse(sessionStorage.getItem(key)); if (saved && Date.now()-saved.at<86400000) applied=saved; } catch (_) {}
   const save = () => { try { applied ? sessionStorage.setItem(key,JSON.stringify(applied)) : sessionStorage.removeItem(key); } catch (_) {} };
-  const eligible = product => !product.couponExcluded && !product.promoSource && !product.promoUnits;
+  const eligible = product => !product.couponExcluded && !product.promoSource && !product.promoUnits && !product.promoComponents;
   const qualifies = lines => {
     if(!applied)return false;
-    const base=lines.reduce((s,[i,q])=>s+CONFIG.products[i].price*q,0), min=applied.minimum||0;
+    const base=lines.reduce((s,[i,q])=>s+getProduct(i).price*q,0), min=applied.minimum||0;
     return applied.exclusive?base>min:base>=min;
   };
   const amount = lines => {
     if(!qualifies(lines))return 0;
     if(applied.type==='fixed'){
-      const eligibleTotal=lines.reduce((s,[i,q])=>s+(eligible(CONFIG.products[i])?Math.max(0,CONFIG.products[i].price-1)*q:0),0);
+      const eligibleTotal=lines.reduce((s,[i,q])=>s+(eligible(getProduct(i))?Math.max(0,getProduct(i).price-1)*q:0),0);
       return eligibleTotal>=applied.fixed?applied.fixed:0;
     }
-    return lines.reduce((sum,[i,q])=>sum+(eligible(CONFIG.products[i])?Math.round(CONFIG.products[i].price*applied.percent/100)*q:0),0);
+    return lines.reduce((sum,[i,q])=>sum+(eligible(getProduct(i))?Math.round(getProduct(i).price*applied.percent/100)*q:0),0);
   };
-  const subtotal = lines => lines.reduce((sum,[i,q])=>sum+CONFIG.products[i].price*q,0)-amount(lines);
+  const subtotal = lines => lines.reduce((sum,[i,q])=>sum+getProduct(i).price*q,0)-amount(lines);
   // Fixed vouchers are displayed once at order level, not as a rounded per-unit price.
-  const unitPrice = product => product.price-(applied&&applied.type!=='fixed'&&qualifies([...cart.entries()])&&eligible(product) ? Math.round(product.price*applied.percent/100) : 0);
+  const unitPrice = product => product.price-(applied&&applied.type!=='fixed'&&qualifies(getLines())&&eligible(product) ? Math.round(product.price*applied.percent/100) : 0);
   function refresh() {
     const status=document.getElementById('coupon-status');
     if (!status || status.dataset.busy) return;
-    const lines=[...cart.entries()].filter(([,q])=>q>0);
-    const hasEligible=lines.some(([i])=>eligible(CONFIG.products[i]));
+    const lines=getLines().filter(([,q])=>q>0);
+    const hasEligible=lines.some(([i])=>eligible(getProduct(i)));
     const value=applied?.type==='fixed'?`$${applied.fixed.toLocaleString('es-AR')}`:`${applied?.percent}%`;
     status.textContent=applied ? (!qualifies(lines)?`Para usar ${applied.code}, la compra en productos debe ser ${applied.exclusive?'mayor a':'de al menos'} $${applied.minimum.toLocaleString('es-AR')}, sin envío.`:hasEligible&&amount(lines)>0 ? `Código ${applied.code} aplicado: ${value} de descuento ${applied.stackable?'adicional, acumulable con promociones y combos':'en productos elegibles'}.` : `El código ${applied.code} no se aplica a este carrito.`) : '';
     document.getElementById('coupon-remove').hidden=!applied;
@@ -34,22 +34,22 @@ const cnCoupon = (() => {
     const input=document.getElementById('coupon-input'), status=document.getElementById('coupon-status'), button=document.getElementById('coupon-apply');
     const code=input.value.trim().toUpperCase();
     if(!code){status.textContent='Ingresá tu código.';return;}
-    const items=[...cart.entries()].filter(([,q])=>q>0).map(([i,quantity])=>({id:CONFIG.products[i].id,quantity}));
+    const items=getLines().filter(([,q])=>q>0).map(([i,quantity])=>({id:getProduct(i).id,quantity}));
     button.disabled=true;status.dataset.busy='1';status.textContent='Validando código…';
     try {
-      const response=await fetch(new URL('validate-discount.php',CONFIG.ordersApi),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,items}),signal:AbortSignal.timeout(15000)});
+      const response=await fetch(new URL('validate-discount.php',ordersApi()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,items}),signal:AbortSignal.timeout(15000)});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||'No se pudo aplicar el código.');
       if(data.type==='fixed' ? !Number.isInteger(data.fixed_amount)||data.fixed_amount<1 : !Number.isInteger(data.percent)||data.percent<1||data.percent>30)throw new Error('Respuesta inválida. Intentá nuevamente.');
-      applied={code:data.code,type:data.type||'percent',fixed:data.fixed_amount||0,minimum:data.minimum_subtotal||0,exclusive:data.minimum_exclusive===true,percent:data.percent,stackable:data.stackable===true,at:Date.now()};save();delete status.dataset.busy;renderCart();refresh();
+      applied={code:data.code,type:data.type||'percent',fixed:data.fixed_amount||0,minimum:data.minimum_subtotal||0,exclusive:data.minimum_exclusive===true,percent:data.percent,stackable:data.stackable===true,at:Date.now()};save();delete status.dataset.busy;afterChange();refresh();
     } catch(error) {
-      applied=null;save();renderCart();delete status.dataset.busy;
+      applied=null;save();afterChange();delete status.dataset.busy;
       status.textContent=error.name==='TimeoutError'?'No pudimos verificar el código. Intentá nuevamente.':error.message;
       document.getElementById('coupon-remove').hidden=true;
     } finally {button.disabled=false;}
   }
   function mount() {
-    const panel=document.getElementById('cart-panel'),link=document.getElementById('cart-checkout-link');
+    const panel=document.getElementById(panelId),link=document.getElementById(checkoutLinkId);
     if(!panel||!link)return;
     const box=document.createElement('section');box.id='coupon-box';
     box.innerHTML='<label for="coupon-input">¿Tenés un código de descuento?</label><div class="coupon-row"><input id="coupon-input" maxlength="24" autocomplete="off" autocapitalize="characters" placeholder="Ingresá tu código"><button id="coupon-apply" type="button">Aplicar</button></div><p id="coupon-status" role="status" aria-live="polite"></p><button id="coupon-remove" type="button" hidden>Quitar código</button><p class="coupon-note">Los códigos se aplican solo a productos sin promoción; no se acumulan con combos promocionales, 2×1. No incluyen envío. Un código por compra.</p>';
@@ -57,18 +57,24 @@ const cnCoupon = (() => {
     panel.insertBefore(box,link);box.querySelector('input').value=applied?.code||'';
     box.querySelector('#coupon-apply').addEventListener('click',apply);
     box.querySelector('input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();apply();}});
-    box.querySelector('#coupon-remove').addEventListener('click',()=>{applied=null;save();renderCart();refresh();});
+    box.querySelector('#coupon-remove').addEventListener('click',()=>{applied=null;save();afterChange();refresh();});
     document.addEventListener('click',event=>{
-      if(document.getElementById('coupon-status')?.dataset.busy && event.target.closest('#cart-checkout-link,#send-cart,#send-manual-payment,#coupon-remove')){
+      if(document.getElementById('coupon-status')?.dataset.busy && event.target.closest('#'+checkoutLinkId+',#send-cart,#send-manual-payment,#coupon-remove')){
         event.preventDefault();event.stopImmediatePropagation();
         document.getElementById('coupon-status').textContent='Esperá un momento: estamos validando tu código.';
       }
     },true);
-    const move=()=>{const summary=document.getElementById('checkout-summary');if(new URLSearchParams(location.search).get('checkout')==='1')summary.appendChild(box);else panel.insertBefore(box,link);refresh();};
+    const move=()=>{const summary=document.getElementById('checkout-summary');if(moveToCheckout && summary && new URLSearchParams(location.search).get('checkout')==='1')summary.appendChild(box);else panel.insertBefore(box,link);refresh();};
     document.addEventListener('cn:cart-updated',move);move();
   }
-  document.addEventListener('DOMContentLoaded',mount);
-  return {amount,subtotal,unitPrice,code:()=>applied&&amount([...cart.entries()])>0?applied.code:''};
-})();
+  return {mount, refresh, amount, subtotal, unitPrice, code:()=>applied&&amount(getLines())>0?applied.code:''};
+}
+const cnCoupon = document.getElementById('cart-panel') ? cnCreateCoupon({
+  getLines:()=>[...cart.entries()], getProduct:i=>CONFIG.products[i],
+  ordersApi:()=>CONFIG.ordersApi, afterChange:()=>renderCart(),
+  panelId:'cart-panel', checkoutLinkId:'cart-checkout-link', moveToCheckout:true
+}) : null;
+if(cnCoupon) document.addEventListener('DOMContentLoaded',cnCoupon.mount);
 
-(()=>{const load=()=>{if(document.getElementById('club-popup-loader'))return;const s=document.createElement('script');s.id='club-popup-loader';s.src='/club-popup.js?v=20261104-privacy-order';s.charset='utf-8';document.head.appendChild(s)};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',load,{once:true}):load()})();
+
+if(cnCoupon)(()=>{const load=()=>{if(document.getElementById('club-popup-loader'))return;const s=document.createElement('script');s.id='club-popup-loader';s.src='/club-popup.js?v=20261104-privacy-order';s.charset='utf-8';document.head.appendChild(s)};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',load,{once:true}):load()})();

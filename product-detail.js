@@ -10,10 +10,19 @@
   }
   const track = (event,p,q=1) => window.fbq?.('track',event,{content_ids:[p.id],content_name:p.name,content_type:'product',value:unitPrice(p)*q,currency:'ARS'});
   let product, catalog = [], quantity = 1;
-  const unitPrice = p => {
-    try { const c = JSON.parse(sessionStorage.getItem('cn-discount-v1')); if(!p.couponExcluded && !p.promoSource && !p.promoUnits && c && Date.now()-c.at<86400000 && c.percent>0 && c.percent<=30)return p.price-Math.round(p.price*c.percent/100); } catch (_) {}
-    return Number(p.price);
+  const unitPrice = p => detailCoupon.unitPrice(p);
+  const comboOrder = ['combo-amigos-5off','combo-bruschetta-5off','combo-pizza-olivas-5off','combo-regalo-5off','combo-sandwich-campo-5off','combo-completa-5off'];
+  const photoUrl = (product) => {
+    const src = [product?.image, ...(product?.images || [])].find(value => value && !/\.(mp4|webm)(\?|$)/i.test(value));
+    return src ? new URL(src, src.startsWith('/uploads/') ? host : location.origin).href : '';
   };
+  function preview(p, className) {
+    const src = photoUrl(p);
+    if (!src) return null;
+    const img = document.createElement('img');
+    img.src = src; img.alt = ''; img.loading = 'lazy'; img.className = className;
+    return img;
+  }
   const reference = document.createElement('p');
   reference.className = 'reference-price'; reference.hidden = true;
   const discount = document.createElement('span');
@@ -32,7 +41,7 @@
   const money = value => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(value);
   const cartDialog = document.createElement('dialog');
   cartDialog.id='detail-cart';cartDialog.setAttribute('aria-labelledby','detail-cart-title');
-  cartDialog.innerHTML='<div class="detail-cart-heading"><h2 id="detail-cart-title">Tu carrito</h2><button type="button" id="detail-cart-close" aria-label="Cerrar carrito">×</button></div><div id="detail-cart-lines"></div><p id="detail-cart-subtotal"></p><p class="detail-cart-note">El envío y los códigos de descuento se revisan antes de pagar.</p><a class="button" id="detail-cart-checkout" href="../../index.html?checkout=1">CONTINUAR AL PAGO</a><button type="button" id="detail-cart-continue">Seguir comprando</button>';
+  cartDialog.innerHTML='<div class="detail-cart-heading"><h2 id="detail-cart-title">Tu carrito</h2><button type="button" id="detail-cart-close" aria-label="Cerrar carrito">×</button></div><div id="detail-cart-lines"></div><p id="detail-cart-subtotal"></p><section id="detail-combos" hidden aria-labelledby="detail-combos-title"><h3 id="detail-combos-title">Sumá un combo</h3><div class="detail-combo-track" tabindex="0" role="region" aria-label="Combos para agregar"></div><p class="detail-combo-status" role="status"></p></section><a class="button" id="detail-cart-checkout" href="../../index.html?checkout=1">CONTINUAR AL PAGO</a><button type="button" id="detail-cart-continue">Seguir comprando</button>';
   document.body.append(cartDialog);
   const floatingCart=document.createElement('button');floatingCart.type='button';floatingCart.id='detail-cart-toggle';floatingCart.setAttribute('aria-controls',cartDialog.id);floatingCart.setAttribute('aria-haspopup','dialog');
   document.body.append(floatingCart);
@@ -41,25 +50,79 @@
   const viewCart=document.createElement('button');viewCart.type='button';viewCart.className='button';viewCart.id='view-detail-cart';viewCart.textContent='VER CARRITO';
   $('#next').prepend(viewCart);
   function cartLines() { return readCart().map(x=>[catalog.findIndex(p=>p.id===x.id),x.quantity]).filter(([i])=>i>=0); }
+  const detailCoupon = cnCreateCoupon({
+    getLines:cartLines, getProduct:i=>catalog[i], ordersApi:()=>host+'/api/',
+    afterChange:renderCart, panelId:'detail-cart', checkoutLinkId:'detail-cart-checkout',
+    moveToCheckout:false
+  });
+  detailCoupon.mount();
+
+  function saveCart(items) {
+    sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items}));
+  }
+
+  function renderSuggestions() {
+    const section = $('#detail-combos');
+    const track = section.querySelector('.detail-combo-track');
+    const lines = cartLines();
+    const scroll = track.scrollLeft;
+    track.replaceChildren();
+    for (const id of comboOrder) {
+      const combo = catalog.find(p => p.id === id);
+      if (!combo || !cnRemaining(combo,catalog,lines)) continue;
+      const card = document.createElement('article');
+      card.className = 'detail-combo-card';
+      const image = preview(combo,'detail-combo-image');
+      if (image) card.append(image);
+      const name = document.createElement('h4');
+      name.textContent = combo.name;
+      const price = document.createElement('strong');
+      price.textContent = money(combo.price);
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'button';
+      button.textContent = 'Agregar'; button.setAttribute('aria-label','Agregar '+combo.name);
+      button.onclick = () => {
+        const status = section.querySelector('[role=status]');
+        try {
+          if (!cnRemaining(combo,catalog,cartLines())) return;
+          const items = readCart(), item = items.find(p => p.id === combo.id);
+          if (item) item.quantity++; else items.push({id:combo.id,quantity:1});
+          saveCart(items);
+          window.CNAnalytics?.addToCart(combo,1,unitPrice);
+          track('AddToCart',combo);
+          if(product)update();else renderCart();
+          status.textContent = combo.name+' agregado al carrito.';
+        } catch (_) { status.textContent = 'No pudimos agregar el combo. Intentá nuevamente.'; }
+      };
+      card.append(name,price,button); track.append(card);
+    }
+    section.hidden = !track.children.length;
+    track.scrollLeft = scroll;
+  }
+
   function renderCart() {
-    const items=readCart();let total=0,complete=!!catalog.length;
+    const items=readCart(), lines=cartLines(), complete=!!catalog.length && lines.length===items.length;
     const count=items.reduce((n,x)=>n+x.quantity*(catalog.find(p=>p.id===x.id)?.promoUnits||1),0);
     floatingCart.textContent=`VER CARRITO · ${count}`;headerCart.textContent=`MI CARRITO (${count})`;
     $('#detail-cart-lines').replaceChildren();
     for(const item of items){
       const p=catalog.find(p=>p.id===item.id);const line=document.createElement('div');line.className='detail-cart-line';
+      const copy=document.createElement('div');
       const name=document.createElement('strong');name.textContent=p?.name||item.id;
-      const detail=document.createElement('p');const amount=p?unitPrice(p)*item.quantity:0;
-      if(!p||!Number.isFinite(amount)||amount<=0)complete=false;
-      total+=amount;
-      detail.textContent=p?`${item.quantity} ${p.promoUnits?`promo(s) · ${item.quantity*p.promoUnits} ${p.promoNoun||'frascos'}`:'unidad(es)'} · ${money(amount)}`:`${item.quantity} unidad(es) · Precio pendiente de verificar`;
+      const detail=document.createElement('p');
+      detail.textContent=p?`${item.quantity} ${p.promoUnits?`promo(s) · ${item.quantity*p.promoUnits} ${p.promoNoun||'frascos'}`:'unidad(es)'} · ${money(unitPrice(p)*item.quantity)}`:`${item.quantity} unidad(es) · Precio pendiente de verificar`;
       const remove=document.createElement('button');remove.type='button';remove.textContent='Quitar';remove.setAttribute('aria-label',`Quitar ${p?.name||item.id}`);
-      remove.onclick=()=>{try{sessionStorage.setItem(key,JSON.stringify({at:Date.now(),items:readCart().filter(x=>x.id!==item.id)}));if(product)update();else renderCart();}catch(_){$('#detail-cart-subtotal').textContent='No pudimos actualizar el carrito. Intentá nuevamente.';}};
-      line.append(name,detail,remove);$('#detail-cart-lines').append(line);
+      remove.onclick=()=>{try{saveCart(readCart().filter(x=>x.id!==item.id));if(product)update();else renderCart();}catch(_){$('#detail-cart-subtotal').textContent='No pudimos actualizar el carrito. Intentá nuevamente.';}};
+      const image=preview(p,'detail-cart-thumb');
+      if(image)line.append(image);
+      copy.append(name,detail,remove);line.append(copy);$('#detail-cart-lines').append(line);
     }
     if(!items.length)$('#detail-cart-lines').textContent='Tu carrito está vacío. Elegí un producto para empezar.';
-    $('#detail-cart-subtotal').textContent=items.length?(complete?`Subtotal de productos: ${money(total)}`:'El precio se confirmará al cargar el catálogo.'):'Subtotal: $0';
+    $('#detail-cart-subtotal').textContent=items.length?(complete?`Subtotal de productos: ${money(detailCoupon.subtotal(lines))}`:'El precio se confirmará al cargar el catálogo.'):'Subtotal: $0';
     $('#detail-cart-checkout').hidden=!items.length;
+    $('#coupon-box').hidden=!items.length;
+    detailCoupon.refresh();
+    renderSuggestions();
   }
   function openCart(){renderCart();cartDialog.showModal();$('#detail-cart-close').focus();window.CNAnalytics?.viewCart(cartLines(),catalog,unitPrice);}
   for(const button of [floatingCart,headerCart,viewCart])button.onclick=openCart;
@@ -67,10 +130,7 @@
   cartDialog.addEventListener('click',e=>{if(e.target===cartDialog){const r=cartDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)cartDialog.close();}});
   renderCart();
   function remaining() {
-    const source = product.promoSource || product.id;
-    const physical = catalog.find(p=>p.id===source);
-    const used = readCart().reduce((n,x)=>{const p=catalog.find(p=>p.id===x.id);return n+(p && (p.promoSource||p.id)===source ? x.quantity*(p.promoUnits||1):0);},0);
-    return Math.max(0,Math.floor(((physical?.stock||0)-used)/(product.promoUnits||1)));
+    return cnRemaining(product,catalog,cartLines());
   }
   function update() {
     const left = remaining(); quantity = Math.max(1, Math.min(quantity,left));
