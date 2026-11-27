@@ -292,7 +292,8 @@
   <script src="ga4-ecommerce.js?v=20261031-consent-1"></script>
   <script src="product-links.js?v=20261125-checkout-shipping"></script>
   <script src="discount-codes-no-promos-20261015.js?v=20261127-cart-only"></script>
-  <script>
+  <script src="checkout-postal-destinations.js?v=20261127"></script>
+<script>
     // EDITAR SOLO ESTA SECCIÓN PARA CARGAR EL CONTENIDO REAL.
     if(typeof cnCoupon==='undefined')window.cnCoupon={amount:()=>0,subtotal:lines=>lines.reduce((s,[i,q])=>s+CONFIG.products[i].price*q,0),unitPrice:p=>p.price,code:()=>''};
     const CONFIG = {
@@ -637,6 +638,8 @@
     cargarCatalogo();
     deliveryLocality.closest('#detected-locality').insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"></div>');
     const detectedLocality = document.querySelector('#detected-locality');
+    const nationalCity = document.querySelector('#national-city');
+    const nationalProvince = document.querySelector('#national-province');
     let lastPostalCode = '';
     let nationalOverrideZip = '';
     function resolvePostalZone(event) {
@@ -644,6 +647,11 @@
       const valid = /^[0-9]{4}$/.test(zip);
       const local = valid ? Object.keys(localPostalCodes).find(name => localPostalCodes[name] === zip) : '';
       if (zip !== lastPostalCode && nationalOverrideZip !== zip) nationalOverrideZip = '';
+      const zipChanged = zip !== lastPostalCode;
+      if (zipChanged && (lastPostalCode || event?.target === deliveryZip)) {
+        nationalCity.value = '';
+        nationalProvince.value = '';
+      }
       lastPostalCode = zip;
       if (event?.target === deliveryLocality && local) {
         nationalOverrideZip = deliveryLocality.value === 'other' ? zip : '';
@@ -654,6 +662,11 @@
         option.disabled = option.hidden;
       }
       detectedLocality.hidden = !local;
+      if (deliveryLocality.value === 'other' && zipChanged) {
+        const [city, province] = window.cnPostalDestinations?.[zip] ?? [];
+        if (city) nationalCity.value = city;
+        if (province) nationalProvince.value = province;
+      }
     }
     const updateNationalDelivery = event => {
       resolvePostalZone(event);
@@ -673,7 +686,6 @@
         deliveryWhatsapp.href = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + encodeURIComponent('Hola, quiero consultar por la entrega de mi pedido' + (deliveryLocality.value ? ' en ' + deliveryLocality.value : '') + '.');
       }
       if (national) {
-        deliveryStatus.textContent = 'Ingresá el código postal para cotizar Correo Argentino. Gratis desde $99.000 en productos después de descuentos.';
         const city = document.querySelector('#national-city').value.trim();
         const province = document.querySelector('#national-province').value.trim();
         deliveryWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hola, quiero consultar un envío a ${city || 'mi localidad'}, ${province || 'mi provincia'}, CP ${deliveryZip.value.trim()}.`)}`;
