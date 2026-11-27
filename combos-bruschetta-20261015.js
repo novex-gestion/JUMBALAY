@@ -241,7 +241,7 @@
     .cart-combo-option h5,.cart-combo-status{font:600 .82rem/1.3 system-ui,sans-serif;margin:0}
     .cart-combo-option .button{width:100%;min-height:44px;margin:0;padding:5px;border-radius:8px;font-size:.75rem}
     .cart-combo-status:empty{display:none}
-    .cart-product-preview{width:66px;height:66px;object-fit:contain;float:inline-start;margin:0 10px 6px 0;background:#fffdf8;border-radius:7px;border:1px solid #d8ccb9}
+    .cart-product-preview{width:52px;height:52px;object-fit:contain;float:inline-start;margin:0 10px 6px 0;background:#fffdf8;border-radius:7px;border:1px solid #d8ccb9}
   `;
   const comboTrack = cartSuggestions.querySelector('.cart-combo-track');
   const cartComboStatus = cartSuggestions.querySelector('.cart-combo-status');
@@ -316,7 +316,7 @@
     } catch (_) {}
     bundleList.innerHTML = definitions.map(def => {
       const count = bundleIds.filter(id => id === def.id).length;
-      if (!count) return '';
+      if (!count || CONFIG.products.some(product => product.id === `combo-${def.id}-5off`)) return '';
       return `<div class="cart-line"><div>${safe(def.name)}<br><span>${count} combo${count === 1 ? '' : 's'}</span></div><button type="button" class="cart-close" data-remove-combo="${def.id}" aria-label="Quitar un combo ${safe(def.name)}">×</button></div>`;
     }).join('');
   }
