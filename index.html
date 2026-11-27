@@ -749,7 +749,7 @@
       } finally { clearTimeout(timeout); grid.setAttribute('aria-busy', 'false'); }
     }
     cargarCatalogo();
-    deliveryLocality.insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"></div>');
+    deliveryLocality.closest('#detected-locality').insertAdjacentHTML('afterend', '<div id="national-fields" hidden><label for="national-city" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">LOCALIDAD DE DESTINO</label><input id="national-city" autocomplete="address-level2" maxlength="60" placeholder="Ej.: Rosario" style="width:100%;min-height:43px;padding:10px"><label for="national-province" style="display:block;margin:10px 0 5px;font:700 11px Arial,sans-serif">PROVINCIA</label><input id="national-province" autocomplete="address-level1" maxlength="40" placeholder="Ej.: Santa Fe" style="width:100%;min-height:43px;padding:10px"></div>');
     const detectedLocality = document.querySelector('#detected-locality');
     let lastPostalCode = '';
     let nationalOverrideZip = '';
