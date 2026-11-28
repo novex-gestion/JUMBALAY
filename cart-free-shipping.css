@@ -1,0 +1,21 @@
+.cart-free-shipping { margin: 14px 0; font-size: .82rem; color: #39472c; }
+.cart-free-shipping-goals { display: grid; gap: 8px; }
+.cart-free-shipping-goals > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+}
+.cart-free-shipping progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 7px;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #e5e8da;
+  color: #465537;
+}
+.cart-free-shipping progress::-webkit-progress-bar { background: #e5e8da; }
+.cart-free-shipping progress::-webkit-progress-value { background: #465537; }
+.cart-free-shipping progress::-moz-progress-bar { background: #465537; }
+.cart-free-shipping p { margin: 8px 0 0; }

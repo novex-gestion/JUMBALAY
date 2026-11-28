@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="navigation-menu.css?v=20261104-mobile44">
   <link rel="stylesheet" href="mobile-header.css?v=20261124-4">
   <link rel="stylesheet" href="typography.css?v=20261009-1">
+  <link rel="stylesheet" href="cart-free-shipping.css">
   <!-- Google Analytics 4 -->
 
   <link rel="preload" as="script" href="pepinitos-promo.js?v=20261127-cart-rich">
@@ -327,22 +328,15 @@
     <section id="productos"><div class="wrap"><div class="intro product-intro"><p class="eyebrow">Casa Natural</p><h2>Nuestra colección para vos</h2></div><div class="products" id="product-grid"></div></div></section>
     <section id="opiniones-jumbalay" aria-labelledby="opiniones-jumbalay-title">
       <div class="wrap">
-        <div class="jumbalay-reviews-heading"><p class="eyebrow">Opiniones sobre los productos</p><h2 id="opiniones-jumbalay-title">Lo que dicen quienes probaron Jumbalay.</h2></div>
+        <div class="jumbalay-reviews-heading"><p class="eyebrow">Opiniones sobre los productos</p><h2 id="opiniones-jumbalay-title">Lo que dicen quienes probaron Jumbalay.</h2><p class="jumbalay-reviews-note">Opiniones públicas sobre productos Jumbalay.</p></div>
         <div class="jumbalay-reviews-grid">
-          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Muy bueno ideales para pastas y pizzas.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Riquísimas!! parecen caseras!.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Muy buenos, ideales para pastas y pizzas.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“¡Riquísimas! Parecen caseras.”</blockquote></article>
           <article class="jumbalay-review"><h3>Aceitunas verdes Magna</h3><blockquote>“Las mejores.”</blockquote></article>
           <article class="jumbalay-review"><h3>Pimientos agridulces</h3><blockquote>“Son muy sabrosos y bien condimentados.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Pepinitos en vinagre</h3><blockquote>“Son riquísimos! pepinos chiquitos, los como de snack!.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Pasta de aceitunas verdes</h3><blockquote>“Espectacular como todo.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Un manjar.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Riquisimas.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pepinitos en vinagre</h3><blockquote>“¡Son riquísimos! Pepinos chiquitos, los como de snack.”</blockquote></article>
+          <article class="jumbalay-review"><h3>Pasta de aceitunas verdes</h3><blockquote>“Espectacular, como todo.”</blockquote></article>
           <article class="jumbalay-review"><h3>Tomates secos patagónicos</h3><blockquote>“Muy ricos y suaves.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Aceitunas verdes Magna</h3><blockquote>“Riquísimas!!!.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Pepinitos en vinagre</h3><blockquote>“Los pepinos son excelentes.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Pimientos agridulces</h3><blockquote>“Exquisitos , para acompañar carnes, hamburguesa, pizzas.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Tomates secos mediterráneos</h3><blockquote>“Riquísimos!!! un manjar.”</blockquote></article>
-          <article class="jumbalay-review"><h3>Berenjenas condimentadas</h3><blockquote>“Buen producto.”</blockquote></article>
         </div>
       </div>
     </section>
@@ -359,6 +353,7 @@
   <script src="product-links.js?v=20261125-checkout-shipping"></script>
   <script src="discount-codes-no-promos-20261015.js?v=20261127-cart-only"></script>
   <script src="checkout-postal-destinations.js?v=20261127"></script>
+  <script src="cart-free-shipping.js"></script>
 <script>
     // EDITAR SOLO ESTA SECCIÓN PARA CARGAR EL CONTENIDO REAL.
     if(typeof cnCoupon==='undefined')window.cnCoupon={amount:()=>0,subtotal:lines=>lines.reduce((s,[i,q])=>s+CONFIG.products[i].price*q,0),unitPrice:p=>p.price,code:()=>''};
@@ -425,6 +420,7 @@
     const renderCart = () => {
       const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0);
       const total = cnCoupon.subtotal(lines);
+      window.updateFreeShippingIndicator?.(total, lines.length > 0);
       const savings = lines.reduce((sum, [index, quantity]) => {
         const product = CONFIG.products[index];
         return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0);
@@ -605,7 +601,13 @@
       });
     }
 
-    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => { if(product.collectionHidden || product.promoUnits)return ""; const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : ""}${fotosDe(product).map((src, photoIndex) => esVideo(src) ? `<video ${photoIndex ? "data-src" : "src"}="${safe(src)}" muted loop playsinline preload="${photoIndex ? "none" : "metadata"}" aria-label="${safe(product.name)}"></video>` : `<img ${photoIndex ? "data-src" : "src"}="${safe(src)}"${photoIndex ? imagenLiviana(src).replace(" srcset=", " data-srcset=") : imagenLiviana(src)} alt="${safe(product.name)}" loading="${photoIndex ? "eager" : "lazy"}" decoding="async">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p>${descuento ? `<p class="reference-price"><s aria-label="Precio de lista">${money(product.referencePrice)}</s></p>` : ""}<div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<span class="discount-inline">${descuento}% OFF</span>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="product-purchase"><div class="quantity-picker"><span>Cantidad:</span><div class="quantity-stepper"><button type="button" data-draft-change="-1" data-product-index="${index}" aria-label="Reducir cantidad de ${safe(product.name)}">−</button><output id="draft-qty-${index}" aria-label="Cantidad elegida de ${safe(product.name)}">1</output><button type="button" data-draft-change="1" data-product-index="${index}" aria-label="Aumentar cantidad de ${safe(product.name)}">+</button></div><strong id="qty-${index}" hidden>0</strong></div><button type="button" class="button product-add" data-add-product data-product-index="${index}">AGREGAR AL CARRITO</button></div><div class="product-added" hidden><p role="status"></p><button type="button" data-continue-shopping>Seguir comprando</button><button type="button" data-finish-shopping>Finalizar compra</button></div>`}</div></article>`; }).join(""); armarCarruseles(); }
+    const featuredProducts = ['tomates-secos-mediterraneos', 'tomates-secos-patagonicos', 'berenjenas-condimentadas', 'aceitunas-verdes-magna'];
+    const featuredRank = product => {
+      const featured = featuredProducts.indexOf(product.id);
+      if (Number(product.stock) <= 0) return featuredProducts.length + 1;
+      return featured < 0 ? featuredProducts.length : featured;
+    };
+    function pintarGrilla(){ document.querySelector("#product-grid").innerHTML = CONFIG.products.map((product, index) => ({product, index})).sort((a, b) => featuredRank(a.product) - featuredRank(b.product)).map(({product, index}) => { if(product.collectionHidden || product.promoUnits)return ""; const agotado = Number(product.stock) <= 0; const descuento = product.referencePrice > product.price ? Math.round(((product.referencePrice - product.price) / product.referencePrice) * 100) : 0; const ahorro = product.referencePrice - product.price; return `<article class="card${agotado ? " is-out-of-stock" : ""}"><div class="photo">${agotado ? '<span class="out-of-stock-badge"><span class="out-of-stock-cross" aria-hidden="true">×</span> SIN STOCK</span>' : ""}${fotosDe(product).map((src, photoIndex) => esVideo(src) ? `<video ${photoIndex ? "data-src" : "src"}="${safe(src)}" muted loop playsinline preload="${photoIndex ? "none" : "metadata"}" aria-label="${safe(product.name)}"></video>` : `<img ${photoIndex ? "data-src" : "src"}="${safe(src)}"${photoIndex ? imagenLiviana(src).replace(" srcset=", " data-srcset=") : imagenLiviana(src)} alt="${safe(product.name)}" loading="${photoIndex ? "eager" : "lazy"}" decoding="async">`).join("")}</div><div class="card-body"><h3>${safe(product.name)}</h3><p class="product-description">${safe(product.description)}</p>${descuento ? `<p class="reference-price"><s aria-label="Precio de lista">${money(product.referencePrice)}</s></p>` : ""}<div class="price-line"><p class="price" id="price-${index}">${money(product.price)}</p>${descuento ? `<span class="discount-inline">${descuento}% OFF</span>` : ""}</div>${descuento ? `<p class="saving">Ahorrás ${money(ahorro)}</p>` : ""}${agotado ? '<p class="stock-unavailable">Temporalmente agotado</p>' : `<div class="product-purchase"><div class="quantity-picker"><span>Cantidad:</span><div class="quantity-stepper"><button type="button" data-draft-change="-1" data-product-index="${index}" aria-label="Reducir cantidad de ${safe(product.name)}">−</button><output id="draft-qty-${index}" aria-label="Cantidad elegida de ${safe(product.name)}">1</output><button type="button" data-draft-change="1" data-product-index="${index}" aria-label="Aumentar cantidad de ${safe(product.name)}">+</button></div><strong id="qty-${index}" hidden>0</strong></div><button type="button" class="button product-add" data-add-product data-product-index="${index}">AGREGAR AL CARRITO</button></div><div class="product-added" hidden><p role="status"></p><button type="button" data-continue-shopping>Seguir comprando</button><button type="button" data-finish-shopping>Finalizar compra</button></div>`}</div></article>`; }).join(""); armarCarruseles(); }
     document.querySelector('#product-grid').innerHTML = '<p role="status">Cargando precios y disponibilidad actualizados…</p>';
     document.addEventListener("click", event => { const quantityButton = event.target.closest('[data-quantity]'); if (quantityButton) { const index = Number(quantityButton.dataset.quantity); const product = CONFIG.products[index]; const before = cart.get(index) || 0; const change = Number(quantityButton.dataset.change); const next = Math.max(0, before + (change > 0 ? Math.min(change, cnRemaining(product)) : change)); cart.set(index, next); const count = document.querySelector(`#qty-${index}`); if(count) count.textContent = next; if (next > before) { CNAnalytics.viewItem(product, analyticsUnitPrice); CNAnalytics.addToCart(product, next - before, analyticsUnitPrice); track("ViewContent", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); track("AddToCart", {content_ids:[product.id], content_name:product.name, content_type:"product", value:product.price, currency:"ARS"}); } renderCart(); return; } if (event.target.closest('[data-open-cart]')) { const lines = [...cart.entries()].filter(([, quantity]) => quantity > 0); CNAnalytics.viewCart(lines, CONFIG.products, analyticsUnitPrice); document.querySelector('#cart-panel').classList.add('open'); return; } if (event.target.closest('[data-close-cart]')) { document.querySelector('#cart-panel').classList.remove('open'); return; } const removeButton = event.target.closest('[data-remove-item]'); if (removeButton) { const index = Number(removeButton.dataset.removeItem); cart.set(index, 0); const count = document.querySelector(`#qty-${index}`); if(count) count.textContent = 0; renderCart(); return; } const link = event.target.closest('[data-whatsapp]'); if (!link) return; event.preventDefault(); if (!/^\d{8,15}$/.test(CONFIG.whatsappNumber)) { alert("Completá CONFIG.whatsappNumber con el número de WhatsApp antes de publicar."); return; } const item = link.dataset.item; const message = `Hola, vi Casa Natural y me interesa ${item}. Quisiera consultar disponibilidad y forma de entrega.`; window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener"); });
     const pedidoValido = (permitirCotizacionNacional = false) => {
