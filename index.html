@@ -480,8 +480,10 @@
       couponRow.textContent = couponDiscount ? `Descuento con tu código: −${money(couponDiscount)}` : '';
       const freeShipping = lines.length > 0 && shipping === 0 && locality !== pickupLocation;
       document.querySelector('#shipping-label').hidden = freeShipping;
-      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? (/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Elegí tu localidad' : 'Ingresá tu código postal o elegí retiro') : shipping === null ? 'Pendiente de cotización' : freeShipping ? 'Envío gratis' : shipping ? money(shipping) : 'Gratis';
-      document.querySelector('#cart-total').textContent = shipping === null ? money(total) + ' + envío' : money(total + shipping);
+      document.querySelector('#shipping-total').textContent = !lines.length ? '—' : !locality ? (/^[0-9]{4}$/.test(deliveryZip.value.trim()) ? 'Elegí tu localidad' : 'Ingresá tu código postal o elegí retiro') : shipping === null ? 'Por calcular' : freeShipping ? 'Envío gratis' : shipping ? money(shipping) : 'Gratis';
+      const cartTotalOutput = document.querySelector('#cart-total');
+      cartTotalOutput.parentElement.querySelector('span').textContent = document.body.classList.contains('checkout-page-mode') ? (shipping === null ? 'Subtotal de productos' : 'Total') : 'Productos';
+      cartTotalOutput.textContent = money(total + (shipping ?? 0));
       const quoteStatus=document.querySelector('#correo-quote-status');
       const rate=locality==='other' ? activeNationalRate(lines) : null;
       quoteStatus.hidden=!document.body.classList.contains('checkout-page-mode') || locality!=='other' || !lines.length || freeShipping;
@@ -807,12 +809,13 @@
           ...choices.map(name => new Option(name, name)),
           new Option('Mi localidad no aparece', manualDestination)
         );
-        postalDestination.value = selectedDestination || (choices.length === 1 ? choices[0] : '');
+        postalDestination.value = selectedDestination || (choices.length === 1 ? choices[0] : choices.length === 0 && postalCatalog !== null ? manualDestination : '');
         if (selectedDestination && !postalDestination.value) postalDestination.value = manualDestination;
         displayedPostalCode = zip;
         displayedCatalog = postalCatalog;
       }
       const selection = postalDestination.value;
+      postalDestinationFields.hidden = pickupPersonal.checked || (selection === manualDestination && postalDestination.options.length === 2);
       const localSelection = local && selection === local + ', Buenos Aires';
       deliveryLocality.value = selection ? (localSelection ? local : 'other') : '';
       if (selection && selection !== manualDestination && !localSelection) {
@@ -1070,9 +1073,6 @@
     const isCheckout=()=>new URLSearchParams(location.search).get('checkout')==='1';
     function update() {
       const hasItems=[...cart.values()].some(q=>q>0);
-      document.querySelector('.cart-total > span').textContent = isCheckout()
-        ? (pickupPersonal.checked || deliveryLocality.value ? 'Total a pagar' : cnCoupon.code() ? 'Subtotal con descuento' : 'Subtotal')
-        : 'Productos';
       link.setAttribute('aria-disabled',String(!catalogReady||!hasItems));
       const empty=page.querySelector('#checkout-empty');empty.hidden=catalogReady&&hasItems;
       empty.textContent=!catalogReady?'Estamos verificando precios y disponibilidad. Si no podemos cargarlos, volvé a la tienda para reintentar.':'Tu carrito está vacío. Volvé a la tienda para elegir tus productos.';
