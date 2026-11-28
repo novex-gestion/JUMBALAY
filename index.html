@@ -317,7 +317,7 @@
 <body>
   <style>.announcement-content[data-announcement-rotation]{position:relative;justify-content:center;text-align:center;padding:7px 42px}.announcement-message a{color:inherit;text-decoration:underline}.announcement-next{position:absolute;right:6px;min-width:32px;min-height:32px;background:none;color:inherit;border:0;font-size:18px;cursor:pointer}</style>
   <div class="announcement-bar"><div class="announcement-content" data-announcement-rotation>
-    <div class="announcement-message"><a href="https://wa.me/5491158436511?text=Hola%2C%20quiero%20cotizar%20mi%20pedido%20con%20el%205%25%20por%20transferencia.">5% por transferencia · Cotizá por WhatsApp</a></div>
+    <div class="announcement-message">5% extra por transferencia · Acumulable con cupones válidos</div>
     <div class="announcement-message" hidden>Envío local gratis desde $40.000 · Retiro gratis en Pilar con cita previa</div>
     <div class="announcement-message" hidden>Envío gratis a todo el país desde $99.000</div>
     <button class="announcement-next" type="button" aria-label="Ver siguiente aviso" hidden>›</button>
@@ -467,6 +467,17 @@
       if (locality === 'other') requestNationalQuote(lines);
       const shipping = shippingCost(total, locality);
       const couponDiscount = cnCoupon.amount(lines);
+      const productSubtotal = total;
+      const discount = transferDiscount(productSubtotal);
+      const transferSubtotal = Math.round((productSubtotal - discount) * 100) / 100;
+      const transferShipping = shippingCost(transferSubtotal, pickupPersonal.checked ? pickupLocation : deliveryLocality.value);
+      const preview = document.querySelector('#transfer-discount-preview');
+      if (preview) {
+        preview.textContent = discount
+          ? '5% sobre productos: −' + money(discount) + (transferShipping === null ? ' · Calculá el envío para ver el total.' : ' · Total por transferencia: ' + money(transferSubtotal + transferShipping))
+          : '';
+      }
+
       document.querySelector('#products-subtotal').textContent = money(total + couponDiscount);
       let couponRow = document.querySelector('#coupon-breakdown');
       if (!couponRow) {
@@ -828,6 +839,7 @@
         nationalProvince.value = selection.slice(separator + 2);
       }
     }
+    function transferDiscount(subtotal) { return Math.round(Math.round(subtotal * 100) * 5 / 100) / 100; }
     const updateNationalDelivery = () => {
       resolvePostalZone();
       actualizarEntrega();
@@ -900,8 +912,10 @@
         return [`• ${product.name}`, `${quantity} x ${money(cnCoupon.unitPrice(product))} = ${money(cnCoupon.unitPrice(product) * quantity)}`, ahorro ? `Ahorrás ${money(ahorro)} en este producto` : ''].filter(Boolean).join(salto);
       }).join(salto + salto);
       let total = cnCoupon.subtotal(pedido.lines);
-      let subtotal = total;
+      const discount = transferDiscount(total);
+      let subtotal = Math.round((total - discount) * 100) / 100;
       let shipping = shippingCost(subtotal, pedido.locality);
+      total = subtotal;
       total += shipping;
       let ahorroTotal = pedido.lines.reduce((sum, [index, quantity]) => { const product = CONFIG.products[index]; return sum + (product.referencePrice > product.price ? (product.referencePrice - product.price) * quantity : 0); }, 0);
       const entrega = pedido.locality === pickupLocation
@@ -909,7 +923,7 @@
         : [`Entrega: ${pedido.address}`, `Localidad: ${pedido.locality === 'other' ? 'Otra localidad' : pedido.locality}`, `Código postal: ${pedido.zip}`].join(salto);
       let numeroPedido = '';
       const payload = {
-        payment_method: 'transferencia_efectivo', customer: cliente, contact_version: 'email-v1',
+        payment_method: 'transferencia_efectivo', customer: cliente, contact_version: 'email-v1', transfer_discount: 'transfer-5-v1',
         shipping_policy: shippingPolicy, correo_service: pedido.locality==='other' ? 'CP' : null, packing_fingerprint: pedido.locality==='other' ? shippingQuote.data.packing_fingerprint : null, correo_cost_cents: pedido.locality==='other' ? activeNationalRate(pedido.lines).cost_cents : null, expected_total: total, discount_code: cnCoupon.code(),
         items: pedido.lines.map(([index, quantity]) => ({id: CONFIG.products[index].id, quantity})),
         delivery: {locality: pedido.locality, address: pedido.address, zip: pedido.zip}
@@ -1048,7 +1062,9 @@
     customer.querySelector('strong').hidden=true;
     page.querySelector('#checkout-delivery').appendChild(delivery);
     delivery.style.cssText='margin:0;padding:0;border:0;background:transparent';
-    page.querySelector('#checkout-payment').append(payment,manual,note);
+    const transferPreview = document.createElement('p');
+    transferPreview.id = 'transfer-discount-preview';
+    page.querySelector('#checkout-payment').append(payment,manual,transferPreview,note);
     const link = document.createElement('a');link.id='cart-checkout-link';link.className='button';link.href=location.pathname+'?checkout=1';link.textContent='Finalizar compra';panel.appendChild(link);
     const noteCart=document.createElement('p');noteCart.className='payment-note';noteCart.textContent='La entrega y el pago se eligen en el próximo paso.';panel.appendChild(noteCart);
     const mobileCheckout = window.matchMedia('(max-width:900px)');
